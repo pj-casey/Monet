@@ -1,0 +1,53 @@
+/** English translations (default) */
+export const en = {
+  app: { name: 'Monet' },
+  toolbar: {
+    newDesign: '+ New', save: 'Save', export: 'Export', resize: 'Resize',
+    myDesigns: 'My Designs', marketplace: 'Marketplace', login: 'Log in',
+    saved: 'Saved', saving: 'Saving...', unsaved: 'Unsaved', syncing: 'Syncing...',
+  },
+  tools: {
+    select: 'Select', shape: 'Shapes', text: 'Text', image: 'Image',
+    draw: 'Draw', assets: 'Assets', brand: 'Brand Kit',
+  },
+  panels: {
+    properties: 'Select an object to edit its properties',
+    layers: 'Layers', noLayers: 'No objects on the canvas yet',
+    fill: 'Fill', stroke: 'Stroke', opacity: 'Opacity', cornerRadius: 'Corner Radius',
+    font: 'Font', fontSize: 'Size', style: 'Style', alignment: 'Alignment',
+    lineHeight: 'Line Height', letterSpacing: 'Letter Spacing',
+    pairsWellWith: 'Pairs well with:',
+    harmonies: 'Harmonies:',
+    removeBackground: 'Remove Background',
+    downloadingModel: 'Downloading AI model...',
+    removingBg: 'Removing background...',
+    filters: 'Filters', resetFilters: 'Reset Filters',
+  },
+  dialogs: {
+    newDesign: 'New Design', templates: 'Templates', blankCanvas: 'Blank Canvas',
+    customSize: 'Custom Size', create: 'Create',
+    exportDesign: 'Export Design', filename: 'Filename', format: 'Format',
+    quality: 'Quality', resolution: 'Resolution',
+    shortcuts: 'Keyboard Shortcuts',
+    publish: 'Publish as Template', publishing: 'Publishing...',
+    magicResize: 'Magic Resize', batchExport: 'Batch Export',
+    cancel: 'Cancel', close: 'Close',
+  },
+  auth: {
+    welcomeBack: 'Welcome back', createAccount: 'Create account',
+    email: 'Email', password: 'Password', name: 'Name',
+    logIn: 'Log In', signUp: 'Sign Up',
+    noAccount: "Don't have an account? Sign up",
+    hasAccount: 'Already have an account? Log in',
+    continueAsGuest: 'Continue as guest',
+  },
+  onboarding: {
+    welcome: 'Welcome to Monet!',
+    step1: 'Pick a template or start with a blank canvas',
+    step2: 'Use the tools on the left to add shapes, text, and images',
+    step3: 'Edit properties in the right panel when an object is selected',
+    step4: 'Use the layer panel to reorder and manage objects',
+    step5: 'Export your design as PNG, JPG, SVG, or PDF',
+    gotIt: 'Got it!', next: 'Next', skip: 'Skip tutorial',
+  },
+};

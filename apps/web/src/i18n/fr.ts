@@ -1,0 +1,53 @@
+/** French translations */
+export const fr = {
+  app: { name: 'Monet' },
+  toolbar: {
+    newDesign: '+ Nouveau', save: 'Enregistrer', export: 'Exporter', resize: 'Redimensionner',
+    myDesigns: 'Mes Designs', marketplace: 'Marketplace', login: 'Connexion',
+    saved: 'Enregistré', saving: 'Enregistrement...', unsaved: 'Non enregistré', syncing: 'Synchronisation...',
+  },
+  tools: {
+    select: 'Sélectionner', shape: 'Formes', text: 'Texte', image: 'Image',
+    draw: 'Dessiner', assets: 'Ressources', brand: 'Kit de Marque',
+  },
+  panels: {
+    properties: 'Sélectionnez un objet pour modifier ses propriétés',
+    layers: 'Calques', noLayers: "Pas encore d'objets sur le canevas",
+    fill: 'Remplissage', stroke: 'Contour', opacity: 'Opacité', cornerRadius: 'Rayon de coin',
+    font: 'Police', fontSize: 'Taille', style: 'Style', alignment: 'Alignement',
+    lineHeight: 'Hauteur de ligne', letterSpacing: 'Espacement des lettres',
+    pairsWellWith: 'Se marie bien avec :',
+    harmonies: 'Harmonies :',
+    removeBackground: 'Supprimer le fond',
+    downloadingModel: 'Téléchargement du modèle IA...',
+    removingBg: 'Suppression du fond...',
+    filters: 'Filtres', resetFilters: 'Réinitialiser les filtres',
+  },
+  dialogs: {
+    newDesign: 'Nouveau Design', templates: 'Modèles', blankCanvas: 'Canevas vierge',
+    customSize: 'Taille personnalisée', create: 'Créer',
+    exportDesign: 'Exporter le Design', filename: 'Nom du fichier', format: 'Format',
+    quality: 'Qualité', resolution: 'Résolution',
+    shortcuts: 'Raccourcis clavier',
+    publish: 'Publier comme modèle', publishing: 'Publication...',
+    magicResize: 'Redimensionnement magique', batchExport: 'Export par lots',
+    cancel: 'Annuler', close: 'Fermer',
+  },
+  auth: {
+    welcomeBack: 'Bon retour', createAccount: 'Créer un compte',
+    email: 'E-mail', password: 'Mot de passe', name: 'Nom',
+    logIn: 'Se connecter', signUp: "S'inscrire",
+    noAccount: "Pas de compte ? Inscrivez-vous",
+    hasAccount: 'Déjà un compte ? Connectez-vous',
+    continueAsGuest: 'Continuer en tant qu\'invité',
+  },
+  onboarding: {
+    welcome: 'Bienvenue sur Monet !',
+    step1: 'Choisissez un modèle ou commencez avec un canevas vierge',
+    step2: 'Utilisez les outils à gauche pour ajouter des formes, du texte et des images',
+    step3: 'Modifiez les propriétés dans le panneau de droite quand un objet est sélectionné',
+    step4: 'Utilisez le panneau de calques pour réorganiser et gérer les objets',
+    step5: 'Exportez votre design en PNG, JPG, SVG ou PDF',
+    gotIt: 'Compris !', next: 'Suivant', skip: 'Passer le tutoriel',
+  },
+};

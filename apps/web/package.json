@@ -1,0 +1,48 @@
+{
+  "name": "@monet/web",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "typecheck": "tsc -b --noEmit",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^4.0.1",
+    "@monet/canvas-engine": "workspace:*",
+    "@monet/shared": "workspace:*",
+    "@monet/templates": "workspace:*",
+    "@tailwindcss/vite": "^4.2.2",
+    "i18next": "^26.0.3",
+    "idb": "^8.0.3",
+    "jszip": "^3.10.1",
+    "lucide": "^1.7.0",
+    "qrcode": "^1.5.4",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-i18next": "^17.0.2",
+    "socket.io-client": "^4.8.3",
+    "tailwindcss": "^4.2.2",
+    "y-websocket": "^3.0.0",
+    "yjs": "^13.6.30",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/node": "^24.12.2",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.58.0",
+    "vite": "^8.0.4"
+  }
+}

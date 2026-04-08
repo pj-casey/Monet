@@ -1,0 +1,53 @@
+/** Spanish translations */
+export const es = {
+  app: { name: 'Monet' },
+  toolbar: {
+    newDesign: '+ Nuevo', save: 'Guardar', export: 'Exportar', resize: 'Redimensionar',
+    myDesigns: 'Mis Diseños', marketplace: 'Marketplace', login: 'Iniciar sesión',
+    saved: 'Guardado', saving: 'Guardando...', unsaved: 'Sin guardar', syncing: 'Sincronizando...',
+  },
+  tools: {
+    select: 'Seleccionar', shape: 'Formas', text: 'Texto', image: 'Imagen',
+    draw: 'Dibujar', assets: 'Recursos', brand: 'Kit de Marca',
+  },
+  panels: {
+    properties: 'Selecciona un objeto para editar sus propiedades',
+    layers: 'Capas', noLayers: 'Aún no hay objetos en el lienzo',
+    fill: 'Relleno', stroke: 'Trazo', opacity: 'Opacidad', cornerRadius: 'Radio de esquina',
+    font: 'Fuente', fontSize: 'Tamaño', style: 'Estilo', alignment: 'Alineación',
+    lineHeight: 'Altura de línea', letterSpacing: 'Espaciado de letras',
+    pairsWellWith: 'Combina bien con:',
+    harmonies: 'Armonías:',
+    removeBackground: 'Quitar fondo',
+    downloadingModel: 'Descargando modelo IA...',
+    removingBg: 'Quitando fondo...',
+    filters: 'Filtros', resetFilters: 'Restablecer filtros',
+  },
+  dialogs: {
+    newDesign: 'Nuevo Diseño', templates: 'Plantillas', blankCanvas: 'Lienzo en blanco',
+    customSize: 'Tamaño personalizado', create: 'Crear',
+    exportDesign: 'Exportar Diseño', filename: 'Nombre de archivo', format: 'Formato',
+    quality: 'Calidad', resolution: 'Resolución',
+    shortcuts: 'Atajos de teclado',
+    publish: 'Publicar como plantilla', publishing: 'Publicando...',
+    magicResize: 'Redimensión mágica', batchExport: 'Exportación por lotes',
+    cancel: 'Cancelar', close: 'Cerrar',
+  },
+  auth: {
+    welcomeBack: 'Bienvenido de nuevo', createAccount: 'Crear cuenta',
+    email: 'Correo electrónico', password: 'Contraseña', name: 'Nombre',
+    logIn: 'Iniciar sesión', signUp: 'Registrarse',
+    noAccount: '¿No tienes cuenta? Regístrate',
+    hasAccount: '¿Ya tienes cuenta? Inicia sesión',
+    continueAsGuest: 'Continuar como invitado',
+  },
+  onboarding: {
+    welcome: '¡Bienvenido a Monet!',
+    step1: 'Elige una plantilla o comienza con un lienzo en blanco',
+    step2: 'Usa las herramientas de la izquierda para agregar formas, texto e imágenes',
+    step3: 'Edita las propiedades en el panel derecho cuando un objeto esté seleccionado',
+    step4: 'Usa el panel de capas para reordenar y gestionar objetos',
+    step5: 'Exporta tu diseño como PNG, JPG, SVG o PDF',
+    gotIt: '¡Entendido!', next: 'Siguiente', skip: 'Saltar tutorial',
+  },
+};
