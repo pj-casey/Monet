@@ -1,0 +1,32 @@
+{
+  "name": "monet",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Open-source web-based graphic design editor — an alternative to Canva",
+  "license": "AGPL-3.0-only",
+  "scripts": {
+    "dev": "pnpm --filter @monet/web dev",
+    "dev:api": "pnpm --filter @monet/api dev",
+    "dev:all": "pnpm --filter @monet/web dev & pnpm --filter @monet/api dev",
+    "build": "pnpm --filter @monet/web build",
+    "lint": "eslint .",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=10"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "canvas",
+      "esbuild"
+    ]
+  },
+  "devDependencies": {
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.1"
+  }
+}

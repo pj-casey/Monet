@@ -1,0 +1,26 @@
+# Monet — Docker Compose for self-hosting
+#
+# Run:  docker compose up
+# Open: http://localhost:3001
+#
+# The SQLite database is stored in a persistent volume
+# so your designs survive container restarts.
+
+services:
+  monet:
+    build: .
+    ports:
+      - "3001:3001"
+    volumes:
+      - monet-data:/app/apps/api/data
+    environment:
+      - PORT=3001
+      # Uncomment and fill in for OAuth support:
+      # - GOOGLE_CLIENT_ID=
+      # - GOOGLE_CLIENT_SECRET=
+      # - GITHUB_CLIENT_ID=
+      # - GITHUB_CLIENT_SECRET=
+    restart: unless-stopped
+
+volumes:
+  monet-data:
