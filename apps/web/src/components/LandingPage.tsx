@@ -169,9 +169,9 @@ export function LandingPage() {
     <div className="min-h-screen bg-surface font-sans text-text-primary">
 
       {/* Skip to content — keyboard accessibility */}
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-sm focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-fg focus:shadow-lg">
+      <button type="button" onClick={() => scrollTo('main-content')} className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-sm focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-fg focus:shadow-lg">
         Skip to content
-      </a>
+      </button>
 
       {/* ─── Nav ─────────────────────────────────────────────── */}
       <nav aria-label="Main navigation" className="sticky top-0 z-50 border-b border-border bg-surface/80 backdrop-blur-md">
@@ -521,6 +521,7 @@ export function LandingPage() {
               </div>
               <h3 className="mb-1 text-sm font-medium text-text-primary">Crypto</h3>
               <p className="mb-3 text-xs text-text-tertiary">BTC, ETH, SOL</p>
+              {/* TODO: Replace with real wallet addresses before going live */}
               <CryptoAddress label="BTC" address="bc1q...placeholder" />
               <CryptoAddress label="ETH" address="0x...placeholder" />
               <CryptoAddress label="SOL" address="...placeholder" />

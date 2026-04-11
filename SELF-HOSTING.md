@@ -6,8 +6,8 @@ Monet can be self-hosted with a single `docker compose up` command.
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-username/monet.git
-cd monet
+git clone https://github.com/pj-casey/Monet.git
+cd Monet
 
 # Start with Docker Compose
 docker compose up -d

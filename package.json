@@ -4,15 +4,21 @@
   "private": true,
   "description": "Free, open-source graphic design editor. A Canva alternative you can self-host.",
   "license": "AGPL-3.0-only",
+  "homepage": "https://pj-casey.github.io/Monet/",
   "repository": {
     "type": "git",
     "url": "https://github.com/pj-casey/Monet.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pj-casey/Monet/issues"
   },
   "scripts": {
     "dev": "pnpm --filter @monet/web dev",
     "dev:api": "pnpm --filter @monet/api dev",
     "dev:all": "pnpm --filter @monet/web dev & pnpm --filter @monet/api dev",
     "build": "pnpm --filter @monet/web build",
+    "build:web": "pnpm --filter @monet/web build",
+    "deploy": "pnpm build:web && gh-pages -d apps/web/dist",
     "lint": "eslint .",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
@@ -31,6 +37,7 @@
   },
   "devDependencies": {
     "eslint-config-prettier": "^10.1.8",
+    "gh-pages": "^6.3.0",
     "prettier": "^3.8.1",
     "puppeteer": "^24.40.0"
   }

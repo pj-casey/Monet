@@ -1,10 +1,13 @@
 # Monet
 
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/pj-casey/Monet?style=social)](https://github.com/pj-casey/Monet)
+
 **The free, open-source design tool for everyone.**
 
 Create professional social media graphics, presentations, posters, business cards, and more — no design skills required. No account needed. No paywall. No catch.
 
-[Open the Editor](#) · [Self-Host Guide](SELF-HOSTING.md) · [Contribute Templates](docs/TEMPLATE_GUIDE.md) · [Join the Community](#)
+**[Try it live →](https://pj-casey.github.io/Monet/)** · [Self-Host Guide](SELF-HOSTING.md) · [Contribute Templates](docs/TEMPLATE_GUIDE.md)
 
 ---
 

@@ -1,6 +1,6 @@
 import { StrictMode, lazy, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { HashRouter, Routes, Route } from 'react-router-dom'
 import './i18n' // Initialize i18n before rendering
 import './index.css'
 import { LandingPage } from './components/LandingPage.tsx'
@@ -29,7 +29,7 @@ function EditorLoader() {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/editor" element={
@@ -38,6 +38,6 @@ createRoot(document.getElementById('root')!).render(
           </Suspense>
         } />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   </StrictMode>,
 )
