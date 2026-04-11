@@ -399,7 +399,7 @@ export function LandingPage() {
             </div>
             <div className="mt-1">
               <span className="text-accent">$</span>
-              <span className="text-text-primary"> cd monet</span>
+              <span className="text-text-primary"> cd Monet</span>
             </div>
             <div className="mt-1">
               <span className="text-accent">$</span>
@@ -510,17 +510,20 @@ export function LandingPage() {
               </a>
             </div>
 
-            {/* Direct support */}
+            {/* Crypto */}
             <div className="rounded-lg border border-border bg-elevated p-5">
               <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-md bg-accent-subtle mx-auto">
-                <GithubIcon size={18} className="text-accent" />
+                <Terminal size={18} className="text-accent" aria-hidden="true" />
               </div>
-              <h3 className="mb-1 text-sm font-medium text-text-primary">Contribute</h3>
-              <p className="mb-3 text-xs text-text-tertiary">Code, templates, translations</p>
-              <a href="https://github.com/pj-casey/Monet/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer"
-                className="text-xs font-medium text-accent hover:text-accent-hover hover:underline">
-                How to contribute
-              </a>
+              <h3 className="mb-1 text-sm font-medium text-text-primary">Crypto</h3>
+              <p className="mb-3 text-xs text-text-tertiary">BTC, ETH, SOL</p>
+              <p className="text-xs text-text-secondary">Coming soon</p>
+              {/* REPLACE: When wallet addresses are ready, swap the "Coming soon" text above
+                  with CryptoAddress components for each currency:
+                  <CryptoAddress label="BTC" address="bc1q..." />
+                  <CryptoAddress label="ETH" address="0x..." />
+                  <CryptoAddress label="SOL" address="..." />
+              */}
             </div>
           </div>
         </div>

@@ -13,7 +13,7 @@ Thanks for your interest in contributing. This guide will help you get started.
 
 ```bash
 git clone https://github.com/pj-casey/Monet.git
-cd monet
+cd Monet
 pnpm install
 pnpm dev
 ```
@@ -63,7 +63,7 @@ Common areas where help is welcome:
 
 ## Pull Request Process
 
-1. Fork the repo and create a branch from `master`.
+1. Fork the repo and create a branch from `main`.
 2. Make your changes. Run `pnpm build` to verify everything compiles.
 3. Write a clear PR description explaining what changed and why.
 4. One approval required to merge.
