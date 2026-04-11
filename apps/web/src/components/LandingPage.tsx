@@ -6,7 +6,7 @@
  * Intersection Observer drives subtle fade-in on scroll.
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   LayoutTemplate, Type, FileStack, Palette, Sparkles,
@@ -523,6 +523,14 @@ export function LandingPage() {
               </a>
             </div>
           </div>
+
+          {/* Crypto addresses */}
+          <p className="mt-10 mb-4 text-xs text-text-tertiary">Also accepting crypto</p>
+          <div className="flex flex-col items-center gap-2 sm:flex-row sm:justify-center sm:gap-6">
+            <CryptoAddr label="BTC" address="bc1qws49067r4220vsf60ftg70fmnhmn2s24evnk8d" />
+            <CryptoAddr label="ETH" address="0x149F845Cb27b0cFA7AFaFC893e8620228b052731" />
+            <CryptoAddr label="SOL" address="8gRPQgjESd8cCWGtCnBv48FHeAAYaZVBdzzDqoJfN7Zr" />
+          </div>
         </div>
       </section>
 
@@ -554,3 +562,21 @@ export function LandingPage() {
   );
 }
 
+function CryptoAddr({ label, address }: { label: string; address: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(address).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  }, [address]);
+  const short = `${address.slice(0, 6)}...${address.slice(-4)}`;
+  return (
+    <button type="button" onClick={handleCopy} title={`Copy ${label} address`}
+      className="flex items-center gap-1.5 text-xs text-text-tertiary hover:text-text-secondary">
+      <span className="font-medium text-text-secondary">{label}</span>
+      <span className="font-mono">{short}</span>
+      <span className="text-[10px]">{copied ? '✓' : '⧉'}</span>
+    </button>
+  );
+}
