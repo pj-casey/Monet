@@ -271,7 +271,7 @@ export function LandingPage() {
         {/* Hero image — editor screenshot with subtle perspective */}
         <div className="mx-auto mt-16 max-w-4xl">
           <img
-            src="/hero-screenshot.png"
+            src={`${import.meta.env.BASE_URL}hero-screenshot.png`}
             alt="Monet editor showing a luxury product launch design with gradient fills, text shadows, and the properties panel"
             className="w-full rounded-lg shadow-xl"
             style={{

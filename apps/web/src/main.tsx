@@ -12,7 +12,7 @@ const App = lazy(() => import('./App.tsx'))
 // Register Service Worker for offline support
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {
       // Service Worker registration failed — app still works, just no offline cache
     });
   });
