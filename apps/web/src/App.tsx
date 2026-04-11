@@ -65,6 +65,7 @@ function App() {
   const [selection, setSelection] = useState<SelectedObjectProps | null>(null);
   const [layers, setLayers] = useState<LayerInfo[]>([]);
   const [templateBrowserOpen, setTemplateBrowserOpen] = useState(false);
+  const [templateBrowserTab, setTemplateBrowserTab] = useState<'templates' | 'blank' | 'ai' | undefined>(undefined);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [shortcutSheetOpen, setShortcutSheetOpen] = useState(false);
   const [myDesignsOpen, setMyDesignsOpen] = useState(false);
@@ -365,8 +366,8 @@ function App() {
             <CursorOverlay cursors={collab.cursors} />
             <CanvasHints
               hasObjects={layers.length > 0}
-              onGenerateAI={() => setTemplateBrowserOpen(true)}
-              onBrowseTemplates={() => setTemplateBrowserOpen(true)}
+              onGenerateAI={() => { setTemplateBrowserTab('ai'); setTemplateBrowserOpen(true); }}
+              onBrowseTemplates={() => { setTemplateBrowserTab('templates'); setTemplateBrowserOpen(true); }}
             />
             {contextMenu && (
               <ContextMenu
@@ -397,7 +398,7 @@ function App() {
       <BottomBar />
 
       {/* Modals */}
-      <TemplateBrowser isOpen={templateBrowserOpen} onClose={() => setTemplateBrowserOpen(false)} />
+      <TemplateBrowser isOpen={templateBrowserOpen} initialTab={templateBrowserTab} onClose={() => { setTemplateBrowserOpen(false); setTemplateBrowserTab(undefined); }} />
       <ExportDialog isOpen={exportDialogOpen} onClose={() => setExportDialogOpen(false)} />
       <ShortcutSheet isOpen={shortcutSheetOpen} onClose={() => setShortcutSheetOpen(false)} />
       <MyDesigns isOpen={myDesignsOpen} onClose={() => setMyDesignsOpen(false)} onOpenDesign={handleOpenDesign} />

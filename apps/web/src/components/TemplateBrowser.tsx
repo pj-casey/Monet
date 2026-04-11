@@ -25,10 +25,17 @@ interface TemplateBrowserProps {
   isOpen: boolean;
   /** Called when the modal should close */
   onClose: () => void;
+  /** Which tab to show first when opening */
+  initialTab?: 'templates' | 'blank' | 'ai';
 }
 
-export function TemplateBrowser({ isOpen, onClose }: TemplateBrowserProps) {
+export function TemplateBrowser({ isOpen, onClose, initialTab }: TemplateBrowserProps) {
   const [activeTab, setActiveTab] = useState<'blank' | 'templates' | 'ai'>('templates');
+
+  // Sync to initialTab when the modal opens
+  useEffect(() => {
+    if (isOpen && initialTab) setActiveTab(initialTab);
+  }, [isOpen, initialTab]);
   const [customWidth, setCustomWidth] = useState(800);
   const [customHeight, setCustomHeight] = useState(600);
   const [showAIDialog, setShowAIDialog] = useState(false);
