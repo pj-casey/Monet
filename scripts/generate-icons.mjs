@@ -27,22 +27,27 @@ const sizes = [
 ];
 
 async function main() {
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--force-color-profile=srgb'],
+  });
 
   for (const { name, size } of sizes) {
     const page = await browser.newPage();
     await page.setViewport({ width: size, height: size, deviceScaleFactor: 1 });
 
-    // Render the SVG centered on a transparent background
-    const html = `
-      <html>
-        <body style="margin:0; padding:0; display:flex; align-items:center; justify-content:center; width:${size}px; height:${size}px; background:transparent;">
-          <div style="width:${Math.round(size * 0.8)}px; height:${Math.round(size * 0.8)}px;">
-            ${svgContent.replace('width="32"', `width="${Math.round(size * 0.8)}"`).replace('height="32"', `height="${Math.round(size * 0.8)}"`)}
-          </div>
-        </body>
-      </html>
-    `;
+    // Force light mode so we get the primary #C4704A color
+    await page.emulateMediaFeatures([
+      { name: 'prefers-color-scheme', value: 'light' },
+    ]);
+
+    const iconSize = Math.round(size * 0.75);
+    const pad = Math.round((size - iconSize) / 2);
+
+    const html = `<!DOCTYPE html>
+<html><body style="margin:0;padding:${pad}px;width:${size}px;height:${size}px;background:transparent;box-sizing:border-box;">
+${svgContent.replace('width="32"', `width="${iconSize}"`).replace('height="32"', `height="${iconSize}"`)}
+</body></html>`;
 
     await page.setContent(html, { waitUntil: 'networkidle0' });
     await page.screenshot({
@@ -55,7 +60,7 @@ async function main() {
   }
 
   await browser.close();
-  console.log('Done! Icons saved to apps/web/public/');
+  console.log('Done!');
 }
 
 main().catch(console.error);
