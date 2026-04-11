@@ -231,12 +231,12 @@ function ElementsTab() {
         />
       </div>
 
-      {/* Section filter chips */}
-      <div className="flex gap-1.5 border-b border-border px-4 py-2.5">
+      {/* Section filter chips — scrollable so nothing clips */}
+      <div className="flex gap-1.5 overflow-x-auto border-b border-border px-4 py-2.5 scrollbar-none">
         <FilterChip active={section === 'all'} onClick={() => setSection('all')}>All</FilterChip>
         <FilterChip active={section === 'shapes'} onClick={() => setSection('shapes')}>Shapes</FilterChip>
         <FilterChip active={section === 'icons'} onClick={() => setSection('icons')}>Icons</FilterChip>
-        <FilterChip active={section === 'illus'} onClick={() => setSection('illus')}>Illustrations</FilterChip>
+        <FilterChip active={section === 'illus'} onClick={() => setSection('illus')}>Illus</FilterChip>
         <FilterChip active={section === 'photos'} onClick={() => setSection('photos')}>Photos</FilterChip>
       </div>
 
@@ -266,7 +266,7 @@ function FilterChip({ active, onClick, children }: {
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full px-2.5 py-1 text-[10px] font-medium transition-colors ${
+      className={`flex-shrink-0 rounded-full px-2.5 py-1 text-[10px] font-medium transition-colors ${
         active
           ? 'bg-accent-subtle text-accent'
           : 'bg-wash text-text-secondary hover:bg-wash'
@@ -638,13 +638,28 @@ function PhotosSection({ query }: { query: string }) {
 
   if (!hasAny) {
     return (
-      <div className="mb-4">
-        <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
-          Stock Photos
-        </h4>
-        <p className="text-[10px] text-text-tertiary">
-          Stock photos available with Unsplash or Pexels. Check the project docs to connect.
+      <div className="mb-4 flex flex-col items-center py-6 text-center">
+        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-accent-subtle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-accent">
+            <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" />
+          </svg>
+        </div>
+        <p className="mb-1 text-xs font-medium text-text-primary">Add stock photos</p>
+        <p className="mb-4 max-w-[200px] text-[10px] leading-relaxed text-text-tertiary">
+          Connect Unsplash or Pexels to browse millions of free photos, or upload your own.
         </p>
+        <label className="cursor-pointer rounded-sm bg-accent px-4 py-1.5 text-[10px] font-medium text-accent-fg hover:bg-accent-hover">
+          Upload Image
+          <input type="file" accept="image/*" multiple className="hidden"
+            onChange={(e) => {
+              const files = e.target.files;
+              if (!files) return;
+              for (let i = 0; i < files.length; i++) {
+                if (files[i].type.startsWith('image/')) engine.addImageFromFile(files[i]);
+              }
+            }}
+          />
+        </label>
       </div>
     );
   }
