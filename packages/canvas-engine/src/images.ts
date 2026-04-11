@@ -9,7 +9,7 @@
  * effects that modify how the image looks without changing the original data.
  */
 
-import { FabricImage, filters } from 'fabric';
+import { FabricImage, filters, classRegistry } from 'fabric';
 import type { T2DPipelineState } from 'fabric';
 import type { ImageFilterValues } from '@monet/shared';
 import { DEFAULT_IMAGE_FILTERS } from '@monet/shared';
@@ -41,6 +41,10 @@ class VignetteFilter extends filters.BaseFilter<'Vignette', { vignette: number }
     }
   }
 }
+
+// Register with Fabric.js so it can deserialize VignetteFilter from JSON
+classRegistry.setClass(VignetteFilter);
+classRegistry.setClass(VignetteFilter, 'Vignette');
 
 
 /**

@@ -1,8 +1,13 @@
-import { StrictMode } from 'react'
+import { StrictMode, lazy, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './i18n' // Initialize i18n before rendering
 import './index.css'
-import App from './App.tsx'
+import { LandingPage } from './components/LandingPage.tsx'
+
+// Lazy-load the editor — it's ~600KB gzipped and the landing page
+// shouldn't pay for it until the user navigates to /editor.
+const App = lazy(() => import('./App.tsx'))
 
 // Register Service Worker for offline support
 if ('serviceWorker' in navigator) {
@@ -13,8 +18,26 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+/** Minimal loading state while the editor bundle downloads */
+function EditorLoader() {
+  return (
+    <div className="editor-shell flex h-screen w-screen items-center justify-center bg-canvas">
+      <p className="text-sm text-text-secondary">Loading editor...</p>
+    </div>
+  )
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/editor" element={
+          <Suspense fallback={<EditorLoader />}>
+            <App />
+          </Suspense>
+        } />
+      </Routes>
+    </BrowserRouter>
   </StrictMode>,
 )

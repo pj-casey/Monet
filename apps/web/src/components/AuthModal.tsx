@@ -12,6 +12,7 @@
  */
 
 import { useState } from 'react';
+import { FocusTrap } from './A11y';
 
 const API_BASE = 'http://localhost:3001';
 
@@ -73,15 +74,16 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       role="dialog" aria-modal="true" aria-label="Login or sign up"
     >
-      <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-2xl dark:bg-gray-800">
-        <h2 className="mb-1 text-lg font-semibold text-gray-800 dark:text-gray-100">
+      <FocusTrap>
+      <div className="w-full max-w-sm animate-scale-up rounded-lg bg-overlay p-6 shadow-xl">
+        <h2 className="mb-1 text-lg font-semibold text-text-primary">
           {mode === 'login' ? 'Welcome back' : 'Create account'}
         </h2>
-        <p className="mb-4 text-xs text-gray-400">
+        <p className="mb-4 text-xs text-text-tertiary">
           {mode === 'login'
             ? 'Log in to sync your designs across devices'
             : 'Sign up for cloud sync and sharing'}
@@ -92,31 +94,31 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
             <input
               type="text" placeholder="Name (optional)" value={name}
               onChange={(e) => setName(e.target.value)}
-              className="rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+              className="rounded-lg border border-border px-3 py-2 text-sm"
             />
           )}
 
           <input
             type="email" placeholder="Email" value={email} required
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+            className="rounded-lg border border-border px-3 py-2 text-sm"
           />
 
           <input
             type="password" placeholder="Password (min 8 chars)" value={password} required
             minLength={8}
             onChange={(e) => setPassword(e.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+            className="rounded-lg border border-border px-3 py-2 text-sm"
           />
 
           {error && (
-            <p className="rounded bg-red-50 px-3 py-2 text-xs text-red-600 dark:bg-red-900/20 dark:text-red-400">
+            <p className="rounded bg-danger-subtle px-3 py-2 text-xs text-danger">
               {error}
             </p>
           )}
 
           <button type="submit" disabled={loading}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-fg hover:bg-accent-hover disabled:opacity-50">
             {loading ? 'Please wait...' : mode === 'login' ? 'Log In' : 'Sign Up'}
           </button>
         </form>
@@ -124,16 +126,17 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
         <div className="mt-3 flex flex-col gap-2">
           <button type="button"
             onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); }}
-            className="text-xs text-blue-600 hover:underline dark:text-blue-400">
+            className="text-xs text-accent hover:underline">
             {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Log in'}
           </button>
 
           <button type="button" onClick={onClose}
-            className="text-xs text-gray-400 hover:underline">
+            className="text-xs text-text-tertiary hover:underline">
             Continue as guest
           </button>
         </div>
       </div>
+      </FocusTrap>
     </div>
   );
 }

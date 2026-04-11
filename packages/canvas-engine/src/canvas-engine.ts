@@ -24,7 +24,22 @@ import { Canvas as FabricCanvas, Rect, Textbox, FabricImage, Path, Shadow, Gradi
  */
 FabricObjectClass.ownDefaults.originX = 'left';
 FabricObjectClass.ownDefaults.originY = 'top';
-import type { BackgroundOptions, ShapeOptions, SelectedObjectProps, TextOptions, ImageFilterValues, LayerInfo, DesignDocument } from '@monet/shared';
+
+/**
+ * Custom selection handles — polished appearance matching DESIGN.md.
+ * Corner handles: small white circles (6px radius), 1px border.
+ * Bounding box: 1px accent-colored line.
+ */
+FabricObjectClass.ownDefaults.borderColor = 'oklch(0.65 0.15 45)';       // --accent
+FabricObjectClass.ownDefaults.cornerColor = '#ffffff';
+FabricObjectClass.ownDefaults.cornerStrokeColor = 'oklch(0.45 0.01 60)'; // --text-secondary
+FabricObjectClass.ownDefaults.cornerSize = 10;
+FabricObjectClass.ownDefaults.cornerStyle = 'circle';
+FabricObjectClass.ownDefaults.transparentCorners = false;
+FabricObjectClass.ownDefaults.borderScaleFactor = 1;
+FabricObjectClass.ownDefaults.padding = 0;
+
+import type { BackgroundOptions, ShapeOptions, SelectedObjectProps, TextOptions, ImageFilterValues, LayerInfo, DesignDocument, DesignPage } from '@monet/shared';
 import { setupWheelZoom, setupPanning, fitToScreen, setZoom, disposeViewport } from './viewport';
 import { drawGrid, removeGrid, snapToGrid, DEFAULT_GRID_SIZE } from './grid';
 import { setupSmartGuides, clearGuides } from './guides';
@@ -41,7 +56,7 @@ import {
   setDrawingWidth as setBrushWidth,
 } from './drawing';
 import { getLayerList } from './layers';
-import { serializeCanvas, deserializeCanvas } from './serialization';
+import { serializeCanvas, deserializeCanvas, deserializeObjects, serializeCurrentPageObjects, normalizePagesToArray, generateId } from './serialization';
 import { exportCanvas } from './export';
 import type { ExportOptions } from './export';
 import type { TaggedObject } from './tagged-object';
@@ -65,6 +80,8 @@ export interface CanvasEngineOptions {
   getActiveTool?: () => string;
   /** Callback when the layer list changes (objects added/removed/reordered) */
   onLayersChange?: (layers: LayerInfo[]) => void;
+  /** Callback when pages change (added, removed, reordered, switched) */
+  onPagesChange?: (pages: DesignPage[], currentIndex: number) => void;
 }
 
 export class CanvasEngine {
@@ -100,6 +117,16 @@ export class CanvasEngine {
   private penTool = new PenTool();
   /** Edit points mode instance for reshaping existing paths */
   private editPointsMode = new EditPointsMode();
+  /** Multi-page state */
+  private pages: DesignPage[] = [{ id: 'default', name: 'Page 1', objects: [] }];
+  private currentPageIndex = 0;
+  /** Callback when pages list or current page changes */
+  private onPagesChange?: (pages: DesignPage[], currentIndex: number) => void;
+
+  /** Crop mode state: the image being cropped and the crop rectangle */
+  private cropTarget: FabricImage | null = null;
+  private cropRect: Rect | null = null;
+  private cropOriginalState: { clipPath: unknown; opacity: number; left: number; top: number; scaleX: number; scaleY: number } | null = null;
 
   /**
    * Initialize the canvas engine.
@@ -128,6 +155,7 @@ export class CanvasEngine {
     this.onSelectionChange = options.onSelectionChange;
     this.getActiveTool = options.getActiveTool;
     this.onLayersChange = options.onLayersChange;
+    this.onPagesChange = options.onPagesChange;
 
     // Create the Fabric.js canvas at the container size (NOT artboard size)
     // The artboard is a rectangle that sits within this larger canvas
@@ -177,6 +205,9 @@ export class CanvasEngine {
       this.history.commit('Draw stroke');
     });
 
+    // Alt+drag to duplicate — clone the object in place, let user drag the original
+    this.setupAltDragDuplicate();
+
     // Notify the layer panel whenever objects are added, removed, or reordered
     this.canvas.on('object:added', () => this.emitLayersChange());
     this.canvas.on('object:removed', () => this.emitLayersChange());
@@ -184,12 +215,24 @@ export class CanvasEngine {
     // Set up double-click to add text (when text tool active) or edit existing text
     this.setupDoubleClick();
 
+    // Object hover outline — show accent border at 50% opacity on mouse:over
+    this.setupHoverOutline();
+
+    // Real-time property sync — update right panel during drag/resize, not just on mouseup
+    this.setupRealtimeSync();
+
+    // Rotation angle display
+    this.setupRotationDisplay();
+
     // Load the default font (Inter) so it's ready for text and templates
     loadGoogleFont('Inter');
     loadGoogleFont('Playfair Display');
 
     // Center the artboard in the viewport (fit to screen)
     fitToScreen(this.canvas, this.artboardWidth, this.artboardHeight, options.onZoomChange);
+
+    // Sync initial pages state to the store
+    this.emitPagesChange();
   }
 
   /** Clean up everything when the component unmounts */
@@ -203,6 +246,8 @@ export class CanvasEngine {
     this.artboard = null;
     this.bgImage = null;
     this.gridLines = [];
+    this.pages = [{ id: 'default', name: 'Page 1', objects: [] }];
+    this.currentPageIndex = 0;
   }
 
   // ─── Artboard ──────────────────────────────────────────────────────
@@ -227,7 +272,7 @@ export class CanvasEngine {
       excludeFromExport: true,
       objectCaching: false,
       shadow: new Shadow({
-        color: 'rgba(0, 0, 0, 0.12)',
+        color: 'oklch(0.30 0.02 60 / 0.12)',
         blur: 24,
         offsetX: 0,
         offsetY: 4,
@@ -557,7 +602,14 @@ export class CanvasEngine {
     if (!this.canvas) return;
 
     this.canvas.on('mouse:dblclick', (opt) => {
-      // If the user clicked on an existing object, Fabric handles editing
+      // Double-click on an image → enter crop mode
+      if (opt.target && opt.target instanceof FabricImage && !this.cropTarget) {
+        this.canvas?.setActiveObject(opt.target);
+        this.enterCropMode();
+        return;
+      }
+
+      // If the user clicked on an existing object, Fabric handles editing (text)
       if (opt.target) return;
 
       // Only add text on double-click if the text tool is active
@@ -649,14 +701,27 @@ export class CanvasEngine {
     const active = this.canvas.getActiveObject();
     if (!active || !(active instanceof FabricImage)) return;
 
-    // Remember position and size of the current image
-    const { left, top, scaleX, scaleY, angle } = active;
+    // Remember position, visual size, and appearance of the current image
+    const { left, top, scaleX, scaleY, angle, flipX, flipY, opacity, clipPath } = active;
+    const visualWidth = (active.width ?? 1) * (scaleX ?? 1);
+    const visualHeight = (active.height ?? 1) * (scaleY ?? 1);
 
     this.history.saveCheckpoint();
 
     // Create a new image from the data URL
     const newImg = await FabricImage.fromURL(newDataUrl);
-    newImg.set({ left, top, scaleX, scaleY, angle });
+    // Compute new scale to preserve the same visual size on screen
+    const newScaleX = visualWidth / (newImg.width ?? 1);
+    const newScaleY = visualHeight / (newImg.height ?? 1);
+    newImg.set({ left, top, scaleX: newScaleX, scaleY: newScaleY, angle, flipX, flipY, opacity });
+
+    // Preserve crop (clipPath) if the original image was cropped
+    if (clipPath) {
+      const clonedClip = await clipPath.clone();
+      newImg.set('clipPath', clonedClip);
+    }
+
+    newImg.setCoords();
 
     // Remove old, add new
     this.canvas.remove(active);
@@ -695,6 +760,260 @@ export class CanvasEngine {
     }
 
     return tmpCanvas.toDataURL('image/png');
+  }
+
+  // ─── Crop Mode ─────────────────────────────────────────────────
+
+  /** Whether the engine is currently in crop mode */
+  isCropping(): boolean {
+    return this.cropTarget !== null;
+  }
+
+  /**
+   * Enter crop mode for the currently selected image.
+   *
+   * Shows the full uncropped image with a draggable/resizable crop rectangle.
+   * A dark overlay dims the area outside the crop rect.
+   * Other objects become non-interactive until crop mode exits.
+   */
+  enterCropMode(): void {
+    if (!this.canvas) return;
+    const active = this.canvas.getActiveObject();
+    if (!active || !(active instanceof FabricImage)) return;
+    if (this.cropTarget) return; // already cropping
+
+    const img = active;
+
+    // Save original state for cancel
+    this.cropOriginalState = {
+      clipPath: img.clipPath ?? null,
+      opacity: img.opacity ?? 1,
+      left: img.left ?? 0,
+      top: img.top ?? 0,
+      scaleX: img.scaleX ?? 1,
+      scaleY: img.scaleY ?? 1,
+    };
+
+    // Compute the image's visual rectangle on canvas
+    const imgLeft = img.left ?? 0;
+    const imgTop = img.top ?? 0;
+    const imgScaleX = img.scaleX ?? 1;
+    const imgScaleY = img.scaleY ?? 1;
+    const imgW = (img.width ?? 1) * imgScaleX;
+    const imgH = (img.height ?? 1) * imgScaleY;
+
+    // If the image already has a clipPath (already cropped), compute the crop rect from it
+    let cropLeft: number, cropTop: number, cropW: number, cropH: number;
+    if (img.clipPath && img.clipPath instanceof Rect) {
+      const cp = img.clipPath;
+      cropLeft = imgLeft + (cp.left ?? 0) * imgScaleX;
+      cropTop = imgTop + (cp.top ?? 0) * imgScaleY;
+      cropW = (cp.width ?? imgW) * imgScaleX;
+      cropH = (cp.height ?? imgH) * imgScaleY;
+    } else {
+      // Default: crop rect covers the full image
+      cropLeft = imgLeft;
+      cropTop = imgTop;
+      cropW = imgW;
+      cropH = imgH;
+    }
+
+    // Temporarily remove clipPath so the full image is visible
+    img.set('clipPath', undefined);
+    img.set('opacity', 0.35); // dim the full image
+
+    // Disable interaction on all other objects
+    for (const obj of this.canvas.getObjects()) {
+      if (obj !== img && !(obj as TaggedObject).__isArtboard && !(obj as TaggedObject).__isGridLine) {
+        (obj as TaggedObject).__cropPrevEvented = (obj as any).evented;
+        obj.set('evented', false);
+      }
+    }
+
+    // Create crop rectangle (the area that will be kept)
+    this.cropRect = new Rect({
+      left: cropLeft,
+      top: cropTop,
+      width: cropW / imgScaleX,
+      height: cropH / imgScaleY,
+      scaleX: imgScaleX,
+      scaleY: imgScaleY,
+      fill: 'transparent',
+      stroke: '#ffffff',
+      strokeWidth: 2 / imgScaleX, // 2px visual at current scale
+      strokeDashArray: null,
+      strokeUniform: true,
+      cornerColor: '#ffffff',
+      cornerStrokeColor: 'oklch(0.45 0.01 60)',
+      cornerSize: 10,
+      cornerStyle: 'circle' as const,
+      transparentCorners: false,
+      hasRotatingPoint: false,
+      lockRotation: true,
+      borderColor: '#ffffff',
+    });
+    (this.cropRect as TaggedObject).__isCropOverlay = true;
+
+    // Constrain crop rect to image bounds
+    this.cropRect.on('moving', () => this.constrainCropRect());
+    this.cropRect.on('scaling', () => this.constrainCropRect());
+
+    this.canvas.add(this.cropRect);
+    this.canvas.setActiveObject(this.cropRect);
+
+    this.cropTarget = img;
+    img.set('selectable', false);
+    img.set('evented', false);
+
+    this.canvas.requestRenderAll();
+    this.emitSelectionChange();
+  }
+
+  /** Constrain the crop rectangle to stay within the image bounds */
+  private constrainCropRect(): void {
+    if (!this.cropRect || !this.cropTarget) return;
+    const img = this.cropTarget;
+    const imgL = img.left ?? 0;
+    const imgT = img.top ?? 0;
+    const imgSX = img.scaleX ?? 1;
+    const imgSY = img.scaleY ?? 1;
+    const imgW = (img.width ?? 1) * imgSX;
+    const imgH = (img.height ?? 1) * imgSY;
+    const r = this.cropRect;
+    const rW = (r.width ?? 1) * (r.scaleX ?? 1);
+    const rH = (r.height ?? 1) * (r.scaleY ?? 1);
+
+    // Clamp position
+    let left = r.left ?? 0;
+    let top = r.top ?? 0;
+    if (left < imgL) left = imgL;
+    if (top < imgT) top = imgT;
+    if (left + rW > imgL + imgW) left = imgL + imgW - rW;
+    if (top + rH > imgT + imgH) top = imgT + imgH - rH;
+    r.set({ left, top });
+
+    // Clamp size (don't let it grow beyond image)
+    if (rW > imgW) r.set('scaleX', imgW / (r.width ?? 1));
+    if (rH > imgH) r.set('scaleY', imgH / (r.height ?? 1));
+
+    r.setCoords();
+  }
+
+  /**
+   * Apply the crop and exit crop mode.
+   *
+   * Uses Fabric.js clipPath for non-destructive cropping. The original
+   * image data is preserved — users can re-crop later.
+   */
+  applyCrop(): void {
+    if (!this.canvas || !this.cropTarget || !this.cropRect) return;
+
+    const img = this.cropTarget;
+    const r = this.cropRect;
+    const imgSX = img.scaleX ?? 1;
+    const imgSY = img.scaleY ?? 1;
+
+    this.history.saveCheckpoint();
+
+    // Compute clip rect in image-local coordinates
+    const clipLeft = ((r.left ?? 0) - (img.left ?? 0)) / imgSX;
+    const clipTop = ((r.top ?? 0) - (img.top ?? 0)) / imgSY;
+    const clipWidth = ((r.width ?? 1) * (r.scaleX ?? 1)) / imgSX;
+    const clipHeight = ((r.height ?? 1) * (r.scaleY ?? 1)) / imgSY;
+
+    // Create clip path rect in object-local space
+    const clipPath = new Rect({
+      left: clipLeft,
+      top: clipTop,
+      width: clipWidth,
+      height: clipHeight,
+      absolutePositioned: false,
+    });
+
+    img.set('clipPath', clipPath);
+
+    // Restore original opacity (was dimmed to 0.35 during crop mode)
+    img.set('opacity', this.cropOriginalState?.opacity ?? 1);
+    img.set('selectable', true);
+    img.set('evented', true);
+
+    // Clean up crop UI
+    this.canvas.remove(this.cropRect);
+    this.restoreNonCropObjects();
+
+    this.cropTarget = null;
+    this.cropRect = null;
+    this.cropOriginalState = null;
+
+    this.canvas.setActiveObject(img);
+    this.canvas.requestRenderAll();
+    this.history.commit('Crop image');
+    this.emitSelectionChange();
+    this.emitLayersChange();
+  }
+
+  /**
+   * Cancel crop mode and restore original state.
+   */
+  cancelCrop(): void {
+    if (!this.canvas || !this.cropTarget) return;
+
+    const img = this.cropTarget;
+
+    // Restore original clip path and appearance
+    if (this.cropOriginalState) {
+      img.set('clipPath', this.cropOriginalState.clipPath as any ?? undefined);
+      img.set('opacity', this.cropOriginalState.opacity);
+    } else {
+      img.set('opacity', 1);
+    }
+    img.set('selectable', true);
+    img.set('evented', true);
+
+    // Clean up crop UI
+    if (this.cropRect) this.canvas.remove(this.cropRect);
+    this.restoreNonCropObjects();
+
+    this.canvas.setActiveObject(img);
+
+    this.cropTarget = null;
+    this.cropRect = null;
+    this.cropOriginalState = null;
+
+    this.canvas.requestRenderAll();
+    this.emitSelectionChange();
+  }
+
+  /**
+   * Set crop aspect ratio constraint.
+   * Pass null for free crop, or a ratio like 1 (square), 4/3, 16/9.
+   */
+  setCropAspectRatio(ratio: number | null): void {
+    if (!this.cropRect || !this.cropTarget) return;
+    if (ratio === null) {
+      // Free crop — unlock
+      this.cropRect.set('lockUniScaling', false);
+      return;
+    }
+    // Resize crop rect to match the aspect ratio, keeping width
+    const r = this.cropRect;
+    const currentW = (r.width ?? 1) * (r.scaleX ?? 1);
+    const newH = currentW / ratio;
+    r.set('scaleY', newH / (r.height ?? 1));
+    r.set('lockUniScaling', true);
+    this.constrainCropRect();
+    this.canvas?.requestRenderAll();
+  }
+
+  /** Restore evented state on non-crop objects */
+  private restoreNonCropObjects(): void {
+    if (!this.canvas) return;
+    for (const obj of this.canvas.getObjects()) {
+      if ((obj as any).__cropPrevEvented !== undefined) {
+        obj.set('evented', (obj as any).__cropPrevEvented);
+        delete (obj as any).__cropPrevEvented;
+      }
+    }
   }
 
   /**
@@ -736,7 +1055,7 @@ export class CanvasEngine {
    * @param paths - Array of SVG path data strings
    * @param color - Fill/stroke color for the icon
    */
-  addSvgIcon(paths: string[], color: string = '#333333'): void {
+  addSvgIcon(paths: string[], color: string = '#2d2a26'): void {
     if (!this.canvas) return;
 
     const fabricPaths = paths.map((d) => new Path(d, {
@@ -782,9 +1101,9 @@ export class CanvasEngine {
    * SVG element types.
    *
    * @param svgString - Complete SVG markup string
-   * @param color - Stroke color for the icon (default: '#333333')
+   * @param color - Stroke color for the icon (default: '#2d2a26')
    */
-  async addSvgFromString(svgString: string, color: string = '#333333'): Promise<void> {
+  async addSvgFromString(svgString: string, color: string = '#2d2a26'): Promise<void> {
     if (!this.canvas) return;
 
     const { objects } = await loadSVGFromString(svgString);
@@ -884,7 +1203,13 @@ export class CanvasEngine {
 
     const cx = this.artboardWidth / 2;
     const cy = this.artboardHeight / 2;
-    const shape = createShape(options, cx, cy);
+
+    let shape: import('fabric').FabricObject;
+    try {
+      shape = createShape(options, cx, cy);
+    } catch {
+      return '';
+    }
 
     // Record for undo
     this.history.saveCheckpoint();
@@ -921,6 +1246,22 @@ export class CanvasEngine {
     width: number;
     height: number;
     angle: number;
+    // Shadow
+    shadow: { color: string; blur: number; offsetX: number; offsetY: number } | null;
+    // Stroke style
+    strokeDashArray: number[] | null;
+    strokeLineCap: string;
+    strokeLineJoin: string;
+    // Gradient fill
+    gradientFill: { type: 'linear' | 'radial'; angle: number; stops: Array<{ offset: number; color: string }> } | null;
+    // Text extras
+    linethrough: boolean;
+    overline: boolean;
+    textStroke: string;
+    textStrokeWidth: number;
+    // Flip
+    flipX: boolean;
+    flipY: boolean;
   }>): void {
     if (!this.canvas) return;
 
@@ -964,6 +1305,93 @@ export class CanvasEngine {
     }
     if (props.angle !== undefined) {
       active.set('angle', props.angle);
+    }
+
+    // ─── Flip ────────────────────────────────────────────
+    if (props.flipX !== undefined) {
+      active.set('flipX', props.flipX);
+    }
+    if (props.flipY !== undefined) {
+      active.set('flipY', props.flipY);
+    }
+
+    // ─── Shadow ──────────────────────────────────────────
+    if (props.shadow !== undefined) {
+      if (props.shadow === null) {
+        active.set('shadow', null);
+      } else {
+        active.set('shadow', new Shadow({
+          color: props.shadow.color,
+          blur: props.shadow.blur,
+          offsetX: props.shadow.offsetX,
+          offsetY: props.shadow.offsetY,
+        }));
+      }
+    }
+
+    // ─── Stroke style ────────────────────────────────────
+    if (props.strokeDashArray !== undefined) {
+      active.set('strokeDashArray', props.strokeDashArray);
+    }
+    if (props.strokeLineCap !== undefined) {
+      active.set('strokeLineCap', props.strokeLineCap as CanvasLineCap);
+    }
+    if (props.strokeLineJoin !== undefined) {
+      active.set('strokeLineJoin', props.strokeLineJoin as CanvasLineJoin);
+    }
+
+    // ─── Gradient fill ───────────────────────────────────
+    if (props.gradientFill !== undefined) {
+      if (props.gradientFill === null) {
+        // Revert to solid — keep current fill color
+      } else {
+        const { type, angle, stops } = props.gradientFill;
+        // Use base dimensions (not scaled) — Fabric.js applies gradient in object-local space
+        const w = active.width ?? 100;
+        const h = active.height ?? 100;
+
+        if (type === 'linear') {
+          const rad = (angle * Math.PI) / 180;
+          const cos = Math.cos(rad);
+          const sin = Math.sin(rad);
+          active.set('fill', new Gradient({
+            type: 'linear',
+            coords: {
+              x1: w / 2 - cos * w / 2,
+              y1: h / 2 - sin * h / 2,
+              x2: w / 2 + cos * w / 2,
+              y2: h / 2 + sin * h / 2,
+            },
+            colorStops: stops.map((s) => ({ offset: s.offset, color: s.color })),
+          }));
+        } else {
+          active.set('fill', new Gradient({
+            type: 'radial',
+            coords: { x1: w / 2, y1: h / 2, r1: 0, x2: w / 2, y2: h / 2, r2: Math.max(w, h) / 2 },
+            colorStops: stops.map((s) => ({ offset: s.offset, color: s.color })),
+          }));
+        }
+      }
+    }
+
+    // ─── Text extras ─────────────────────────────────────
+    if (props.linethrough !== undefined && active instanceof Textbox) {
+      active.set('linethrough', props.linethrough);
+    }
+    if (props.overline !== undefined && active instanceof Textbox) {
+      active.set('overline', props.overline);
+    }
+    if (props.textStroke !== undefined) {
+      if (active instanceof Textbox) {
+        active.set('stroke', props.textStroke);
+        // Paint stroke behind fill so the outline doesn't eat into the letter glyph
+        active.set('paintFirst', props.textStroke ? 'stroke' : 'fill');
+      }
+    }
+    if (props.textStrokeWidth !== undefined) {
+      if (active instanceof Textbox) {
+        active.set('strokeWidth', props.textStrokeWidth);
+      }
     }
 
     active.setCoords();
@@ -1036,7 +1464,7 @@ export class CanvasEngine {
       selectable: true,
       evented: true,
       opacity: 0.5,
-      fill: clipShape.fill || '#cccccc',
+      fill: clipShape.fill || '#c4b5a8',
     });
     this.canvas.add(clipShape);
 
@@ -1059,11 +1487,21 @@ export class CanvasEngine {
     if (!active) return;
 
     this.history.saveCheckpoint();
-    this.canvas.remove(active);
-    this.canvas.discardActiveObject();
+    // ActiveSelection: remove each child object individually
+    if (active instanceof ActiveSelection) {
+      const objects = active.getObjects();
+      this.canvas.discardActiveObject();
+      for (const obj of objects) {
+        this.canvas.remove(obj);
+      }
+    } else {
+      this.canvas.remove(active);
+      this.canvas.discardActiveObject();
+    }
     this.canvas.requestRenderAll();
     this.history.commit('Delete object');
     this.onSelectionChange?.(null);
+    this.emitLayersChange();
   }
 
   // ─── Selection ────────────────────────────────────────────────────
@@ -1130,6 +1568,61 @@ export class CanvasEngine {
       result.textAlign = textProps.textAlign;
       result.lineHeight = textProps.lineHeight;
       result.charSpacing = textProps.charSpacing;
+      result.linethrough = (active as any).linethrough ?? false;
+      result.overline = (active as any).overline ?? false;
+      result.textStroke = (active.stroke as string) ?? '';
+      result.textStrokeWidth = active.strokeWidth ?? 0;
+    }
+
+    // ─── Flip state ────────────────────────────────────────
+    result.flipX = !!active.flipX;
+    result.flipY = !!active.flipY;
+
+    // ─── Crop state ─────────────────────────────────────
+    result.isCropping = this.cropTarget !== null;
+
+    // ─── Shadow ──────────────────────────────────────────
+    // Shadow may be a Shadow instance or a plain object after deserialization
+    const shadow = active.shadow as Shadow | { color?: string; blur?: number; offsetX?: number; offsetY?: number } | null;
+    if (shadow && (shadow instanceof Shadow || typeof (shadow as any).blur === 'number')) {
+      result.shadowEnabled = true;
+      result.shadowColor = (shadow as any).color ?? 'oklch(0.30 0.02 60 / 0.3)';
+      result.shadowBlur = (shadow as any).blur ?? 0;
+      result.shadowOffsetX = (shadow as any).offsetX ?? 0;
+      result.shadowOffsetY = (shadow as any).offsetY ?? 0;
+    } else {
+      result.shadowEnabled = false;
+    }
+
+    // ─── Stroke style ────────────────────────────────────
+    const dashArr = active.strokeDashArray;
+    if (!dashArr || dashArr.length === 0) {
+      result.strokeDashStyle = 'solid';
+    } else if (dashArr[0] === 1 && dashArr[1] === 2) {
+      result.strokeDashStyle = 'dotted';
+    } else if (dashArr.length === 4) {
+      result.strokeDashStyle = 'dash-dot';
+    } else {
+      result.strokeDashStyle = 'dashed';
+    }
+    result.strokeLineCap = (active.strokeLineCap as string) ?? 'butt';
+    result.strokeLineJoin = (active.strokeLineJoin as string) ?? 'miter';
+
+    // ─── Gradient fill ───────────────────────────────────
+    if (fillValue instanceof Gradient) {
+      result.fillType = fillValue.type === 'radial' ? 'radial' : 'linear';
+      result.gradientStops = (fillValue.colorStops ?? []).map((s: any) => ({
+        offset: s.offset ?? 0,
+        color: s.color ?? '#2d2a26',
+      }));
+      if (fillValue.type === 'linear' && fillValue.coords) {
+        const c = fillValue.coords as any;
+        const dx = (c.x2 ?? 0) - (c.x1 ?? 0);
+        const dy = (c.y2 ?? 0) - (c.y1 ?? 0);
+        result.gradientAngle = Math.round((Math.atan2(dy, dx) * 180) / Math.PI);
+      }
+    } else {
+      result.fillType = 'solid';
     }
 
     return result;
@@ -1150,6 +1643,141 @@ export class CanvasEngine {
   private emitSelectionChange(): void {
     const props = this.getSelectedObjectProps();
     this.onSelectionChange?.(props);
+  }
+
+  // ─── Alt+Drag Duplicate ─────────────────────────────────────────────
+
+  /** Alt+click an object to clone it in place and drag the copy */
+  private setupAltDragDuplicate(): void {
+    if (!this.canvas) return;
+
+    this.canvas.on('mouse:down', (opt) => {
+      if (!opt.e.altKey || !opt.target || !this.canvas) return;
+      // Skip infrastructure objects
+      const tagged = opt.target as TaggedObject;
+      if (tagged.__isArtboard || tagged.__isGridLine || tagged.__isGuide || tagged.__isBgImage || tagged.__isPenPreview || tagged.__isCropOverlay) return;
+
+      const original = opt.target;
+
+      // Clone the original and place it at the same position (this becomes the "original stays behind")
+      original.clone().then((cloned: FabricObject) => {
+        if (!this.canvas) return;
+        cloned.set({ left: original.left, top: original.top });
+        cloned.setCoords();
+        this.canvas.add(cloned);
+        this.canvas.sendObjectBackwards(cloned);
+        // The user is now dragging `original` — the clone sits behind as the "copy left behind"
+        // History: before:transform already saved a checkpoint, commit will fire on object:modified
+        this.emitLayersChange();
+      });
+    });
+  }
+
+  // ─── Hover Outline ─────────────────────────────────────────────────
+
+  /** Show a subtle accent outline when hovering over objects */
+  private setupHoverOutline(): void {
+    if (!this.canvas) return;
+    let hoveredObj: FabricObject | null = null;
+
+    this.canvas.on('mouse:over', (e) => {
+      const target = e.target as TaggedObject | undefined;
+      if (!target) return;
+      // Skip infrastructure objects and currently selected objects
+      if (target.__isArtboard || target.__isGridLine || target.__isGuide || target.__isBgImage || target.__isPenPreview || target.__isCropOverlay) return;
+      if (this.canvas?.getActiveObject() === target) return;
+      // Restore previous hover target
+      if (hoveredObj) {
+        const prev = hoveredObj as any;
+        hoveredObj.set({ stroke: prev.__hoverSavedStroke ?? '', strokeWidth: prev.__hoverSavedWidth ?? 0 });
+      }
+      // Save current stroke and apply hover outline
+      const t = target as any;
+      t.__hoverSavedStroke = target.stroke;
+      t.__hoverSavedWidth = target.strokeWidth;
+      target.set({ stroke: 'oklch(0.65 0.15 45 / 0.5)', strokeWidth: 1 });
+      hoveredObj = target;
+      this.canvas?.requestRenderAll();
+    });
+
+    this.canvas.on('mouse:out', (e) => {
+      const target = e.target as FabricObject | undefined;
+      if (!target || target !== hoveredObj) return;
+      const t = target as any;
+      target.set({ stroke: t.__hoverSavedStroke ?? '', strokeWidth: t.__hoverSavedWidth ?? 0 });
+      hoveredObj = null;
+      this.canvas?.requestRenderAll();
+    });
+  }
+
+  // ─── Real-time Property Sync ───────────────────────────────────────
+
+  /** Update properties panel in real-time during drag/resize (throttled to 60fps) */
+  private setupRealtimeSync(): void {
+    if (!this.canvas) return;
+    let rafId: number | null = null;
+
+    const throttledSync = () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        this.emitSelectionChange();
+      });
+    };
+
+    this.canvas.on('object:moving', throttledSync);
+    this.canvas.on('object:scaling', throttledSync);
+    this.canvas.on('object:rotating', throttledSync);
+  }
+
+  // ─── Rotation Display ─────────────────────────────────────────────
+
+  /** Show current angle as label near object during rotation */
+  private setupRotationDisplay(): void {
+    if (!this.canvas) return;
+    let label: Textbox | null = null;
+
+    this.canvas.on('object:rotating', (e) => {
+      const obj = e.target;
+      if (!obj || !this.canvas) return;
+      const angle = Math.round(obj.angle ?? 0);
+      const text = `${angle}°`;
+      const bound = obj.getBoundingRect();
+
+      if (!label) {
+        label = new Textbox(text, {
+          fontSize: 11,
+          fontFamily: 'DM Sans, system-ui, sans-serif',
+          fill: '#ffffff',
+          backgroundColor: 'oklch(0.65 0.15 45)',
+          textAlign: 'center',
+          width: 40,
+          padding: 3,
+          selectable: false,
+          evented: false,
+        });
+        (label as TaggedObject).__isPenPreview = true; // tag to exclude from serialization
+        this.canvas.add(label);
+      }
+      label.set({
+        text,
+        left: bound.left + bound.width / 2 - 20,
+        top: bound.top - 28,
+      });
+      label.setCoords();
+      this.canvas.requestRenderAll();
+    });
+
+    const removeLabel = () => {
+      if (label && this.canvas) {
+        this.canvas.remove(label);
+        label = null;
+        this.canvas.requestRenderAll();
+      }
+    };
+
+    this.canvas.on('object:modified', removeLabel);
+    this.canvas.on('selection:cleared', removeLabel);
   }
 
   // ─── Layers ────────────────────────────────────────────────────────
@@ -1252,7 +1880,15 @@ export class CanvasEngine {
     this.emitLayersChange();
   }
 
-  /** Duplicate the currently selected object (offset by 20px so it's visible) */
+  /** Smart duplicate offset — remembers the last movement vector */
+  private lastDuplicateOffset = { x: 10, y: 10 };
+
+  /** Set the smart duplicate offset (called from outside when user moves a duplicated object) */
+  setDuplicateOffset(x: number, y: number): void {
+    this.lastDuplicateOffset = { x, y };
+  }
+
+  /** Duplicate the selected object with smart offset (repeats last offset vector) */
   async duplicateSelected(): Promise<void> {
     if (!this.canvas) return;
     const active = this.canvas.getActiveObject();
@@ -1261,7 +1897,9 @@ export class CanvasEngine {
     this.history.saveCheckpoint();
     const cloned = await active.clone() as FabricObject;
     if (!this.canvas) return;
-    cloned.set({ left: (cloned.left ?? 0) + 20, top: (cloned.top ?? 0) + 20 });
+    const dx = this.lastDuplicateOffset.x;
+    const dy = this.lastDuplicateOffset.y;
+    cloned.set({ left: (cloned.left ?? 0) + dx, top: (cloned.top ?? 0) + dy });
     cloned.setCoords();
     this.canvas.add(cloned);
     this.canvas.setActiveObject(cloned);
@@ -1280,26 +1918,117 @@ export class CanvasEngine {
   }
 
   /** Paste from the internal clipboard */
-  pasteClipboard(): void {
+  async pasteClipboard(): Promise<void> {
     if (!this.canvas || !this.clipboard) return;
 
     this.history.saveCheckpoint();
-    util.enlivenObjects([this.clipboard]).then((objects) => {
-      if (!this.canvas) return;
-      for (const item of objects) {
-        if (item && typeof (item as FabricObject).set === 'function') {
-          const obj = item as FabricObject;
-          obj.set({ left: (obj.left ?? 0) + 20, top: (obj.top ?? 0) + 20 });
-          obj.setCoords();
-          this.canvas.add(obj);
-          this.canvas.setActiveObject(obj);
-        }
+    const objects = await util.enlivenObjects([this.clipboard]);
+    if (!this.canvas) return;
+    for (const item of objects) {
+      if (item && typeof (item as FabricObject).set === 'function') {
+        const obj = item as FabricObject;
+        obj.set({ left: (obj.left ?? 0) + 20, top: (obj.top ?? 0) + 20 });
+        obj.setCoords();
+        this.canvas.add(obj);
+        this.canvas.setActiveObject(obj);
       }
-      this.canvas.requestRenderAll();
-      this.history.commit('Paste');
-      this.emitSelectionChange();
-      this.emitLayersChange();
+    }
+    this.canvas.requestRenderAll();
+    this.history.commit('Paste');
+    this.emitSelectionChange();
+    this.emitLayersChange();
+  }
+
+  /** Read the visual style of the selected object for copy-style */
+  getSelectedStyle(): Record<string, unknown> | null {
+    if (!this.canvas) return null;
+    const active = this.canvas.getActiveObject();
+    if (!active) return null;
+
+    const style: Record<string, unknown> = {
+      fill: active.fill,
+      stroke: active.stroke,
+      strokeWidth: active.strokeWidth,
+      opacity: active.opacity,
+      shadow: active.shadow ? {
+        color: (active.shadow as any).color,
+        blur: (active.shadow as any).blur,
+        offsetX: (active.shadow as any).offsetX,
+        offsetY: (active.shadow as any).offsetY,
+      } : null,
+      blendMode: (active as any).globalCompositeOperation ?? 'source-over',
+    };
+
+    // Text-specific properties
+    if (active instanceof Textbox) {
+      style.fontFamily = active.fontFamily;
+      style.fontSize = active.fontSize;
+      style.fontWeight = active.fontWeight;
+      style.fontStyle = active.fontStyle;
+      style.charSpacing = active.charSpacing;
+      style.lineHeight = active.lineHeight;
+      style.textAlign = active.textAlign;
+    }
+
+    return style;
+  }
+
+  /** Apply a copied visual style to the selected object */
+  applyStyleToSelected(style: Record<string, unknown>): void {
+    if (!this.canvas) return;
+    const active = this.canvas.getActiveObject();
+    if (!active) return;
+
+    this.history.saveCheckpoint();
+
+    if (style.fill !== undefined) active.set('fill', style.fill as string);
+    if (style.stroke !== undefined) active.set('stroke', style.stroke as string);
+    if (style.strokeWidth !== undefined) active.set('strokeWidth', style.strokeWidth as number);
+    if (style.opacity !== undefined) active.set('opacity', style.opacity as number);
+    if (style.blendMode !== undefined) active.set('globalCompositeOperation', style.blendMode as string);
+
+    // Shadow
+    if (style.shadow === null) {
+      active.set('shadow', null);
+    } else if (style.shadow && typeof style.shadow === 'object') {
+      const s = style.shadow as { color: string; blur: number; offsetX: number; offsetY: number };
+      active.set('shadow', new Shadow({ color: s.color, blur: s.blur, offsetX: s.offsetX, offsetY: s.offsetY }));
+    }
+
+    // Text-specific — only apply to text objects
+    if (active instanceof Textbox) {
+      if (style.fontFamily !== undefined) active.set('fontFamily', style.fontFamily as string);
+      if (style.fontSize !== undefined) active.set('fontSize', style.fontSize as number);
+      if (style.fontWeight !== undefined) active.set('fontWeight', style.fontWeight as string);
+      if (style.fontStyle !== undefined) active.set('fontStyle', style.fontStyle as string);
+      if (style.charSpacing !== undefined) active.set('charSpacing', style.charSpacing as number);
+      if (style.lineHeight !== undefined) active.set('lineHeight', style.lineHeight as number);
+      if (style.textAlign !== undefined) active.set('textAlign', style.textAlign as string);
+    }
+
+    active.setCoords();
+    this.canvas.requestRenderAll();
+    this.history.commit('Paste style');
+    this.emitSelectionChange();
+  }
+
+  /** Select all user objects on the canvas */
+  selectAllObjects(): void {
+    if (!this.canvas) return;
+    const objs = this.canvas.getObjects().filter((o) => {
+      const t = o as TaggedObject;
+      return o.selectable && !t.__isArtboard && !t.__isGridLine && !t.__isGuide && !t.__isBgImage && !t.__isPenPreview && !t.__isCropOverlay;
     });
+    if (objs.length === 0) return;
+    this.canvas.discardActiveObject();
+    if (objs.length === 1) {
+      this.canvas.setActiveObject(objs[0]);
+    } else {
+      const selection = new ActiveSelection(objs, { canvas: this.canvas });
+      this.canvas.setActiveObject(selection);
+    }
+    this.canvas.requestRenderAll();
+    this.emitSelectionChange();
   }
 
   /** Group the currently selected objects into a single group */
@@ -1333,6 +2062,7 @@ export class CanvasEngine {
     this.canvas.remove(active);
     for (const obj of objects) {
       this.canvas.add(obj);
+      obj.setCoords();
     }
     this.canvas.discardActiveObject();
     this.canvas.requestRenderAll();
@@ -1379,10 +2109,46 @@ export class CanvasEngine {
    */
   alignSelected(alignment: 'left' | 'center-h' | 'right' | 'top' | 'center-v' | 'bottom'): void {
     const objects = this.getSelectedObjects();
-    if (objects.length < 2) return;
+    if (objects.length < 1) return;
 
     this.history.saveCheckpoint();
 
+    // When only 1 object selected, align relative to artboard
+    if (objects.length === 1) {
+      const obj = objects[0];
+      const b = obj.getBoundingRect();
+      const aw = this.artboardWidth;
+      const ah = this.artboardHeight;
+
+      switch (alignment) {
+        case 'left':
+          obj.set('left', (obj.left ?? 0) + 0 - b.left);
+          break;
+        case 'right':
+          obj.set('left', (obj.left ?? 0) + aw - (b.left + b.width));
+          break;
+        case 'center-h':
+          obj.set('left', (obj.left ?? 0) + aw / 2 - (b.left + b.width / 2));
+          break;
+        case 'top':
+          obj.set('top', (obj.top ?? 0) + 0 - b.top);
+          break;
+        case 'bottom':
+          obj.set('top', (obj.top ?? 0) + ah - (b.top + b.height));
+          break;
+        case 'center-v':
+          obj.set('top', (obj.top ?? 0) + ah / 2 - (b.top + b.height / 2));
+          break;
+      }
+
+      obj.setCoords();
+      this.canvas?.requestRenderAll();
+      this.history.commit('Align to artboard');
+      this.emitSelectionChange();
+      return;
+    }
+
+    // Multiple objects: align to each other (existing behavior)
     const bounds = objects.map((obj) => obj.getBoundingRect());
 
     switch (alignment) {
@@ -1421,6 +2187,7 @@ export class CanvasEngine {
     objects.forEach((obj) => obj.setCoords());
     this.canvas?.requestRenderAll();
     this.history.commit('Align objects');
+    this.emitSelectionChange();
   }
 
   /**
@@ -1610,12 +2377,12 @@ export class CanvasEngine {
         version: 1, id: '', name, createdAt: '', updatedAt: '',
         dimensions: { width: 0, height: 0 },
         background: { type: 'solid', value: '#ffffff' },
-        objects: [], metadata: {},
+        objects: [], pages: this.pages, metadata: {},
       };
     }
     return serializeCanvas(
       this.canvas, this.artboardWidth, this.artboardHeight,
-      this.currentBackground, name, existingId,
+      this.currentBackground, name, this.pages, this.currentPageIndex, existingId,
     );
   }
 
@@ -1630,6 +2397,11 @@ export class CanvasEngine {
    */
   async fromJSON(doc: DesignDocument): Promise<void> {
     if (!this.canvas || !this.artboard) return;
+
+    // Normalize pages (backward compat: wrap flat objects into page 1)
+    this.pages = normalizePagesToArray(doc);
+    this.currentPageIndex = 0;
+
     // Remove the old artboard and create a fresh one at the new dimensions.
     this.canvas.remove(this.artboard);
     this.artboardWidth = doc.dimensions.width;
@@ -1641,8 +2413,8 @@ export class CanvasEngine {
     await loadGoogleFont('Inter');
     await loadGoogleFont('Playfair Display');
 
-    // Deserialize objects onto canvas
-    await deserializeCanvas(this.canvas, doc);
+    // Load first page's objects onto canvas
+    await deserializeCanvas(this.canvas, doc, 0);
 
     // Ensure artboard stays behind all user objects
     this.canvas.sendObjectToBack(this.artboard!);
@@ -1655,6 +2427,211 @@ export class CanvasEngine {
     this.fitToScreen();
     this.emitLayersChange();
     this.onSelectionChange?.(null);
+    this.emitPagesChange();
+  }
+
+  // ─── Multi-Page ────────────────────────────────────────────────────
+
+  /** Get the current pages array and active page index */
+  getPages(): { pages: DesignPage[]; currentIndex: number } {
+    return { pages: this.pages, currentIndex: this.currentPageIndex };
+  }
+
+  /**
+   * Switch to a different page.
+   *
+   * Serializes the current page's canvas objects, stores them,
+   * then loads the target page's objects onto the canvas.
+   */
+  async switchToPage(pageIndex: number): Promise<void> {
+    if (!this.canvas || pageIndex === this.currentPageIndex) return;
+    if (pageIndex < 0 || pageIndex >= this.pages.length) return;
+
+    // Save current page's objects
+    this.pages[this.currentPageIndex] = {
+      ...this.pages[this.currentPageIndex],
+      objects: serializeCurrentPageObjects(this.canvas),
+    };
+
+    // Switch index
+    this.currentPageIndex = pageIndex;
+
+    // Load new page's objects
+    await deserializeObjects(this.canvas, this.pages[pageIndex].objects);
+
+    // Ensure artboard stays behind
+    if (this.artboard) {
+      this.canvas.sendObjectToBack(this.artboard);
+    }
+    this.canvas.requestRenderAll();
+    this.emitLayersChange();
+    this.onSelectionChange?.(null);
+    this.emitPagesChange();
+  }
+
+  /** Add a new blank page after the current page */
+  async addPage(): Promise<void> {
+    if (!this.canvas) return;
+
+    // Save current page first
+    this.pages[this.currentPageIndex] = {
+      ...this.pages[this.currentPageIndex],
+      objects: serializeCurrentPageObjects(this.canvas),
+    };
+
+    const newPage: DesignPage = {
+      id: generateId(),
+      name: `Page ${this.pages.length + 1}`,
+      objects: [],
+    };
+
+    // Insert after current page
+    const insertAt = this.currentPageIndex + 1;
+    this.pages.splice(insertAt, 0, newPage);
+    this.currentPageIndex = insertAt;
+
+    // Clear canvas for blank page
+    await deserializeObjects(this.canvas, []);
+    if (this.artboard) this.canvas.sendObjectToBack(this.artboard);
+    this.canvas.requestRenderAll();
+
+    this.history.clear();
+    this.emitLayersChange();
+    this.onSelectionChange?.(null);
+    this.emitPagesChange();
+  }
+
+  /** Delete a page by index. Prevents deleting the last remaining page. */
+  async deletePage(pageIndex: number): Promise<void> {
+    if (!this.canvas || this.pages.length <= 1) return;
+    if (pageIndex < 0 || pageIndex >= this.pages.length) return;
+
+    // Save current page if it's not the one being deleted
+    if (pageIndex !== this.currentPageIndex) {
+      this.pages[this.currentPageIndex] = {
+        ...this.pages[this.currentPageIndex],
+        objects: serializeCurrentPageObjects(this.canvas),
+      };
+    }
+
+    this.pages.splice(pageIndex, 1);
+
+    // Adjust current page index
+    if (this.currentPageIndex >= this.pages.length) {
+      this.currentPageIndex = this.pages.length - 1;
+    } else if (pageIndex < this.currentPageIndex) {
+      this.currentPageIndex--;
+    } else if (pageIndex === this.currentPageIndex) {
+      // Deleted the current page — load the page at the same index (or last)
+      this.currentPageIndex = Math.min(this.currentPageIndex, this.pages.length - 1);
+    }
+
+    // Load the new current page
+    await deserializeObjects(this.canvas, this.pages[this.currentPageIndex].objects);
+    if (this.artboard) this.canvas.sendObjectToBack(this.artboard);
+    this.canvas.requestRenderAll();
+
+    this.history.clear();
+    this.emitLayersChange();
+    this.onSelectionChange?.(null);
+    this.emitPagesChange();
+  }
+
+  /** Duplicate a page (deep copy of objects) */
+  async duplicatePage(pageIndex: number): Promise<void> {
+    if (!this.canvas) return;
+    if (pageIndex < 0 || pageIndex >= this.pages.length) return;
+
+    // Save current page's live objects first
+    this.pages[this.currentPageIndex] = {
+      ...this.pages[this.currentPageIndex],
+      objects: serializeCurrentPageObjects(this.canvas),
+    };
+
+    const source = this.pages[pageIndex];
+    const copy: DesignPage = {
+      id: generateId(),
+      name: `${source.name} (copy)`,
+      objects: JSON.parse(JSON.stringify(source.objects)), // deep clone
+    };
+
+    // Insert after the source page
+    this.pages.splice(pageIndex + 1, 0, copy);
+
+    // Switch to the new copy
+    this.currentPageIndex = pageIndex + 1;
+    await deserializeObjects(this.canvas, copy.objects);
+    if (this.artboard) this.canvas.sendObjectToBack(this.artboard);
+    this.canvas.requestRenderAll();
+
+    this.history.clear();
+    this.emitLayersChange();
+    this.onSelectionChange?.(null);
+    this.emitPagesChange();
+  }
+
+  /** Reorder pages: move page from one index to another */
+  reorderPages(fromIndex: number, toIndex: number): void {
+    if (fromIndex === toIndex) return;
+    if (fromIndex < 0 || fromIndex >= this.pages.length) return;
+    if (toIndex < 0 || toIndex >= this.pages.length) return;
+
+    const [moved] = this.pages.splice(fromIndex, 1);
+    this.pages.splice(toIndex, 0, moved);
+
+    // Adjust currentPageIndex to track the same page
+    if (this.currentPageIndex === fromIndex) {
+      this.currentPageIndex = toIndex;
+    } else if (fromIndex < this.currentPageIndex && toIndex >= this.currentPageIndex) {
+      this.currentPageIndex--;
+    } else if (fromIndex > this.currentPageIndex && toIndex <= this.currentPageIndex) {
+      this.currentPageIndex++;
+    }
+
+    this.emitPagesChange();
+  }
+
+  /** Rename a page */
+  renamePage(pageIndex: number, name: string): void {
+    if (pageIndex < 0 || pageIndex >= this.pages.length) return;
+    this.pages[pageIndex] = { ...this.pages[pageIndex], name };
+    this.emitPagesChange();
+  }
+
+  /** Notify UI that pages changed */
+  private emitPagesChange(): void {
+    this.onPagesChange?.(this.pages, this.currentPageIndex);
+  }
+
+  /**
+   * Render a specific page to a data URL (for thumbnails or multi-page export).
+   * Temporarily loads the page's objects onto the canvas, renders, then restores.
+   */
+  async renderPageToDataURL(pageIndex: number, multiplier = 0.15): Promise<string> {
+    if (!this.canvas || pageIndex < 0 || pageIndex >= this.pages.length) return '';
+
+    // If it's the current page, render directly
+    if (pageIndex === this.currentPageIndex) {
+      return this.getArtboardDataURL(multiplier);
+    }
+
+    // Save current page's objects
+    const currentObjects = serializeCurrentPageObjects(this.canvas);
+
+    // Load target page
+    await deserializeObjects(this.canvas, this.pages[pageIndex].objects);
+    if (this.artboard) this.canvas.sendObjectToBack(this.artboard);
+    this.canvas.requestRenderAll();
+
+    // Render
+    const dataUrl = this.getArtboardDataURL(multiplier);
+
+    // Restore current page
+    await deserializeObjects(this.canvas, currentObjects);
+    if (this.artboard) this.canvas.sendObjectToBack(this.artboard);
+    this.canvas.requestRenderAll();
+
+    return dataUrl;
   }
 
   // ─── Export ────────────────────────────────────────────────────────
@@ -1681,6 +2658,50 @@ export class CanvasEngine {
     if (this.artboard) {
       (this.artboard as TaggedObject).__isArtboard = true;
     }
+  }
+
+  /**
+   * Export all pages as a multi-page PDF.
+   * Renders each page to a PNG data URL, then combines into one PDF.
+   */
+  async exportAllPagesAsPDF(options: Omit<ExportOptions, 'format'>): Promise<void> {
+    if (!this.canvas || this.pages.length <= 1) {
+      // Single page: use normal export
+      this.export({ ...options, format: 'pdf' });
+      return;
+    }
+
+    const multiplier = options.multiplier ?? 1;
+    const pageDataUrls: string[] = [];
+
+    for (let i = 0; i < this.pages.length; i++) {
+      const url = await this.renderPageToDataURL(i, multiplier);
+      pageDataUrls.push(url);
+    }
+
+    exportCanvas(this.canvas, this.artboardWidth, this.artboardHeight, {
+      ...options,
+      format: 'pdf',
+      pageDataUrls,
+    });
+  }
+
+  /**
+   * Export all pages as individual PNG/JPG images packaged in a ZIP file.
+   * Used for social media carousel export where each page = one image file.
+   */
+  async exportAllPagesAsImages(options: Omit<ExportOptions, 'format'> & { format: 'png' | 'jpg' }): Promise<string[]> {
+    if (!this.canvas) return [];
+
+    const multiplier = options.multiplier ?? 1;
+    const dataUrls: string[] = [];
+
+    for (let i = 0; i < this.pages.length; i++) {
+      const url = await this.renderPageToDataURL(i, multiplier);
+      dataUrls.push(url);
+    }
+
+    return dataUrls;
   }
 
   /**

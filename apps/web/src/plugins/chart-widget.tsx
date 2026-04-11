@@ -138,12 +138,12 @@ function ChartWidgetPanel() {
   return (
     <div>
       {/* Chart type */}
-      <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Type</label>
+      <label className="mb-1 block text-xs font-medium text-text-secondary">Type</label>
       <div className="mb-2 flex gap-1">
         {(['bar', 'line', 'pie'] as ChartType[]).map((t) => (
           <button key={t} type="button" onClick={() => setChartType(t)}
             className={`flex-1 rounded px-2 py-1 text-xs font-medium ${
-              chartType === t ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
+              chartType === t ? 'bg-accent-subtle text-accent' : 'bg-wash text-text-secondary'
             }`}>
             {t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
@@ -151,19 +151,19 @@ function ChartWidgetPanel() {
       </div>
 
       {/* Data values */}
-      <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Values</label>
+      <label className="mb-1 block text-xs font-medium text-text-secondary">Values</label>
       <input type="text" value={dataInput} onChange={(e) => setDataInput(e.target.value)}
         placeholder="40, 65, 30, 80"
-        className="mb-2 w-full rounded border border-gray-200 px-2 py-1.5 text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200" />
+        className="mb-2 w-full rounded border border-border px-2 py-1.5 text-xs" />
 
       {/* Labels */}
-      <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Labels</label>
+      <label className="mb-1 block text-xs font-medium text-text-secondary">Labels</label>
       <input type="text" value={labelsInput} onChange={(e) => setLabelsInput(e.target.value)}
         placeholder="Mon, Tue, Wed, Thu"
-        className="mb-3 w-full rounded border border-gray-200 px-2 py-1.5 text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200" />
+        className="mb-3 w-full rounded border border-border px-2 py-1.5 text-xs" />
 
       <button type="button" onClick={handleInsert}
-        className="w-full rounded bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700">
+        className="w-full rounded bg-accent px-3 py-1.5 text-xs font-medium text-accent-fg hover:bg-accent-hover">
         Insert Chart
       </button>
     </div>

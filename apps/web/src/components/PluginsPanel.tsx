@@ -33,19 +33,19 @@ export function PluginsPanel() {
 
   if (panels.length === 0) {
     return (
-      <div className="w-48 border-r border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900">
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+      <div className="w-48 border-r border-border bg-surface p-3">
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-tertiary">
           Plugins
         </h3>
-        <p className="text-[10px] text-gray-400">No plugins loaded.</p>
+        <p className="text-[10px] text-text-tertiary">No plugins loaded.</p>
       </div>
     );
   }
 
   return (
-    <div className="w-56 overflow-y-auto border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+    <div className="w-56 overflow-y-auto border-r border-border bg-surface">
       <div className="p-3 pb-1">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
           Plugins
         </h3>
       </div>
@@ -55,18 +55,18 @@ export function PluginsPanel() {
         const PanelComponent = panel.component;
 
         return (
-          <div key={panel.id} className="border-b border-gray-100 dark:border-gray-800">
+          <div key={panel.id} className="border-b border-border">
             {/* Accordion header */}
             <button
               type="button"
               onClick={() => setExpandedId(isExpanded ? null : panel.id)}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-800"
+              className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-canvas"
             >
-              <span className="text-gray-500 dark:text-gray-400">{panel.icon}</span>
-              <span className="flex-1 text-xs font-medium text-gray-700 dark:text-gray-200">
+              <span className="text-text-secondary">{panel.icon}</span>
+              <span className="flex-1 text-xs font-medium text-text-primary">
                 {panel.label}
               </span>
-              <span className="text-[10px] text-gray-400">
+              <span className="text-[10px] text-text-tertiary">
                 {isExpanded ? '\u25B2' : '\u25BC'}
               </span>
             </button>

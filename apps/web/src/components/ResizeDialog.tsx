@@ -7,6 +7,7 @@
 
 import { useState, useCallback } from 'react';
 import { ARTBOARD_PRESETS } from '@monet/shared';
+import { FocusTrap } from './A11y';
 import type { ArtboardPreset, DesignDocument } from '@monet/shared';
 import { resizeDesign } from '../lib/resize';
 import { engine } from './Canvas';
@@ -109,39 +110,40 @@ export function ResizeDialog({ isOpen, onClose, onOpenResized }: ResizeDialogPro
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       role="dialog" aria-modal="true" aria-label="Magic Resize"
     >
-      <div className="flex h-[80vh] w-[90vw] max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-gray-800">
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+      <FocusTrap>
+      <div className="flex h-[80vh] w-[90vw] max-w-3xl flex-col overflow-hidden animate-scale-up rounded-lg bg-overlay shadow-xl">
+        <div className="flex items-center justify-between border-b border-border px-6 py-4">
           <div>
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Magic Resize</h2>
-            <p className="text-xs text-gray-400">
+            <h2 className="text-lg font-semibold text-text-primary">Magic Resize</h2>
+            <p className="text-xs text-text-tertiary">
               Current: {currentPreset?.name ?? 'Custom'} ({artboardWidth} &times; {artboardHeight})
             </p>
           </div>
           <button type="button" onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-text-tertiary hover:bg-wash"
             aria-label="Close">&#x2715;</button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6">
           <div className="mb-4 flex items-center justify-between">
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-text-secondary">
               Select target sizes ({selected.size} selected)
             </p>
             <div className="flex gap-2">
               <button type="button" onClick={selectAll}
-                className="text-xs text-blue-600 hover:underline">Select all</button>
+                className="text-xs text-accent hover:underline">Select all</button>
               <button type="button" onClick={clearAll}
-                className="text-xs text-gray-400 hover:underline">Clear</button>
+                className="text-xs text-text-tertiary hover:underline">Clear</button>
             </div>
           </div>
 
           {Object.entries(grouped).map(([category, categoryPresets]) => (
             <div key={category} className="mb-4">
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">{category}</h3>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-tertiary">{category}</h3>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {categoryPresets.map((preset) => (
                   <PresetCard key={preset.name} preset={preset}
@@ -154,21 +156,22 @@ export function ResizeDialog({ isOpen, onClose, onOpenResized }: ResizeDialogPro
           ))}
         </div>
 
-        <div className="flex items-center justify-between border-t border-gray-200 px-6 py-4 dark:border-gray-700">
-          <p className="text-xs text-gray-400">Resize scales objects proportionally and centers them.</p>
+        <div className="flex items-center justify-between border-t border-border px-6 py-4">
+          <p className="text-xs text-text-tertiary">Resize scales objects proportionally and centers them.</p>
           <div className="flex gap-2">
             <button type="button" onClick={onClose}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+              className="rounded-lg border border-border-strong px-4 py-2 text-sm text-text-secondary hover:bg-canvas">
               Cancel
             </button>
             <button type="button" onClick={handleBatchExport}
               disabled={selected.size === 0 || exporting}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-fg hover:bg-accent-hover disabled:opacity-50">
               {exporting ? 'Exporting...' : `Batch Export (${selected.size + 1} sizes)`}
             </button>
           </div>
         </div>
       </div>
+      </FocusTrap>
     </div>
   );
 }
@@ -183,17 +186,17 @@ function PresetCard({ preset, checked, onToggle, onResizeSingle }: {
 
   return (
     <div className={`flex items-center gap-3 rounded-lg border p-3 ${
-      checked ? 'border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700'
+      checked ? 'border-accent bg-accent-subtle' : 'border-border'
     }`}>
-      <input type="checkbox" checked={checked} onChange={onToggle} className="h-4 w-4 rounded text-blue-600" />
-      <div className="rounded border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700"
+      <input type="checkbox" checked={checked} onChange={onToggle} className="h-4 w-4 rounded text-accent" />
+      <div className="rounded border border-border-strong bg-surface"
         style={{ width: `${w}px`, height: `${h}px` }} />
       <div className="flex-1">
-        <p className="text-xs font-medium text-gray-700 dark:text-gray-200">{preset.name}</p>
-        <p className="text-[10px] text-gray-400">{preset.width} &times; {preset.height}</p>
+        <p className="text-xs font-medium text-text-primary">{preset.name}</p>
+        <p className="text-[10px] text-text-tertiary">{preset.width} &times; {preset.height}</p>
       </div>
       <button type="button" onClick={onResizeSingle} title="Resize to this format"
-        className="rounded px-2 py-1 text-[10px] text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20">
+        className="rounded px-2 py-1 text-[10px] text-accent hover:bg-accent-subtle">
         Open
       </button>
     </div>

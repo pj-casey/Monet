@@ -36,7 +36,7 @@ function QRCodePanel() {
 
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
+      <label className="mb-1 block text-xs font-medium text-text-secondary">
         URL or Text
       </label>
       <input
@@ -45,13 +45,13 @@ function QRCodePanel() {
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={(e) => { if (e.key === 'Enter') handleGenerate(); }}
         placeholder="https://example.com"
-        className="mb-2 w-full rounded border border-gray-200 px-2 py-1.5 text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+        className="mb-2 w-full rounded border border-border px-2 py-1.5 text-xs"
       />
       <button
         type="button"
         onClick={handleGenerate}
         disabled={generating || !input.trim()}
-        className="w-full rounded bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+        className="w-full rounded bg-accent px-3 py-1.5 text-xs font-medium text-accent-fg hover:bg-accent-hover disabled:opacity-50"
       >
         {generating ? 'Generating...' : 'Insert QR Code'}
       </button>

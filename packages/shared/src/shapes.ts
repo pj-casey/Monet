@@ -7,7 +7,7 @@
  */
 
 /** The kinds of shapes users can create */
-export type ShapeType = 'rectangle' | 'circle' | 'triangle' | 'line' | 'arrow' | 'star';
+export type ShapeType = 'rectangle' | 'circle' | 'triangle' | 'line' | 'arrow' | 'star' | 'rounded-rect' | 'diamond' | 'pentagon' | 'hexagon' | 'heart' | 'arrow-right' | 'speech-bubble';
 
 /** Options when creating a new shape */
 export interface ShapeOptions {
@@ -98,4 +98,41 @@ export interface SelectedObjectProps {
   filterTintAlpha?: number;
   /** Vignette intensity (0 to 1) */
   filterVignette?: number;
+
+  // ─── Shadow (all object types) ──────────────────────────────────
+  shadowEnabled?: boolean;
+  shadowColor?: string;
+  shadowBlur?: number;
+  shadowOffsetX?: number;
+  shadowOffsetY?: number;
+
+  // ─── Stroke style ──────────────────────────────────────────────
+  /** Dash pattern: 'solid' | 'dashed' | 'dotted' | 'dash-dot' */
+  strokeDashStyle?: string;
+  /** Line cap: 'butt' | 'round' | 'square' */
+  strokeLineCap?: string;
+  /** Line join: 'miter' | 'round' | 'bevel' */
+  strokeLineJoin?: string;
+
+  // ─── Gradient fill info ─────────────────────────────────────────
+  /** Fill type: 'solid' | 'linear' | 'radial' */
+  fillType?: string;
+  /** Gradient angle in degrees (linear only) */
+  gradientAngle?: number;
+  /** Gradient color stops */
+  gradientStops?: Array<{ offset: number; color: string }>;
+
+  // ─── Text extras ────────────────────────────────────────────────
+  linethrough?: boolean;
+  overline?: boolean;
+  textStroke?: string;
+  textStrokeWidth?: number;
+
+  // ─── Flip state ────────────────────────────────────────────────
+  flipX?: boolean;
+  flipY?: boolean;
+
+  // ─── Crop state ────────────────────────────────────────────────
+  /** True when the engine is in crop mode for this image */
+  isCropping?: boolean;
 }

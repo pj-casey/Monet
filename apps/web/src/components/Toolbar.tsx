@@ -1,49 +1,42 @@
 /**
- * Toolbar — the top bar with controls.
+ * Toolbar — simplified top bar.
  *
- * Contains: app name, + New, Export, undo/redo, zoom, grid/guides toggles,
- * dark mode toggle, sidebar toggles, shortcuts button.
+ * Left:   Logo + undo/redo + auto-save badge
+ * Center: Select / Draw / Pen tool switcher + zoom controls
+ * Right:  Share + Export + overflow menu (My Designs, Settings, Shortcuts, Rulers, Grid, Dark Mode)
  */
 
+import { useState, useRef, useEffect } from 'react';
 import { useEditorStore } from '../stores/editor-store';
 import { useHistoryStore } from '../stores/history-store';
 import { engine } from './Canvas';
+import { Tooltip } from './Tooltip';
 
 import type { SaveStatus } from '../hooks/use-autosave';
 
 interface ToolbarProps {
-  onNewDesign?: () => void;
   onExport?: () => void;
-  onSave?: () => void;
   onMyDesigns?: () => void;
-  onResize?: () => void;
+  onShowShortcuts?: () => void;
+  saveStatus?: SaveStatus;
+  isDark?: boolean;
+  onToggleTheme?: () => void;
+  onShareLink?: () => void;
   onSaveFile?: () => void;
   onOpenFile?: () => void;
-  onPublish?: () => void;
-  onMarketplace?: () => void;
-  saveStatus?: SaveStatus;
   userName?: string | null;
   onLogin?: () => void;
   onLogout?: () => void;
-  isDark?: boolean;
-  onToggleTheme?: () => void;
-  leftSidebarOpen?: boolean;
-  onToggleLeftSidebar?: () => void;
-  rightSidebarOpen?: boolean;
-  onToggleRightSidebar?: () => void;
-  onSaveAsTemplate?: () => void;
-  onShowShortcuts?: () => void;
 }
 
 export function Toolbar({
-  onNewDesign, onExport, onSave, onMyDesigns, onResize, onSaveFile, onOpenFile, onPublish, onMarketplace, onSaveAsTemplate, saveStatus,
+  onExport, onMyDesigns, onShowShortcuts, saveStatus,
+  isDark, onToggleTheme, onShareLink, onSaveFile, onOpenFile,
   userName, onLogin, onLogout,
-  isDark, onToggleTheme,
-  leftSidebarOpen, onToggleLeftSidebar,
-  rightSidebarOpen, onToggleRightSidebar,
-  onShowShortcuts,
 }: ToolbarProps) {
   const zoom = useEditorStore((s) => s.zoom);
+  const activeTool = useEditorStore((s) => s.activeTool);
+  const setActiveTool = useEditorStore((s) => s.setActiveTool);
   const gridVisible = useEditorStore((s) => s.gridVisible);
   const snapToGrid = useEditorStore((s) => s.snapToGrid);
   const showGuides = useEditorStore((s) => s.showGuides);
@@ -52,209 +45,273 @@ export function Toolbar({
   const toggleShowGuides = useEditorStore((s) => s.toggleShowGuides);
   const rulersVisible = useEditorStore((s) => s.rulersVisible);
   const toggleRulers = useEditorStore((s) => s.toggleRulers);
-  const lockAspectRatio = useEditorStore((s) => s.lockAspectRatio);
-  const toggleLockAspectRatio = useEditorStore((s) => s.toggleLockAspectRatio);
 
   const canUndo = useHistoryStore((s) => s.canUndo);
   const canRedo = useHistoryStore((s) => s.canRedo);
 
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [savePulse, setSavePulse] = useState(false);
+  const prevStatus = useRef(saveStatus);
+
+  // Trigger save pulse animation when status transitions to 'saved'
+  useEffect(() => {
+    if (saveStatus === 'saved' && prevStatus.current === 'saving') {
+      setSavePulse(true);
+      const t = setTimeout(() => setSavePulse(false), 600);
+      prevStatus.current = saveStatus;
+      return () => clearTimeout(t);
+    }
+    prevStatus.current = saveStatus;
+  }, [saveStatus]);
+
+  // Close overflow menu on outside click
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [menuOpen]);
+
   const zoomPercent = `${Math.round(zoom * 100)}%`;
 
   return (
-    <header className="flex h-12 items-center justify-between border-b border-gray-200 bg-white px-3 dark:border-gray-700 dark:bg-gray-900">
-      {/* Left: name + actions */}
+    <header className="flex h-12 items-center justify-between border-b border-border bg-surface px-4 shadow-sm">
+
+      {/* ─── Left: Logo + Undo/Redo + Save badge ─── */}
       <div className="flex items-center gap-2">
-        {onToggleLeftSidebar && (
-          <TbBtn label="Toggle left sidebar" onClick={onToggleLeftSidebar} active={leftSidebarOpen}>
-            <PanelLeftIcon />
-          </TbBtn>
-        )}
-        <h1 className="text-base font-semibold text-gray-800 dark:text-gray-100 max-sm:hidden">Monet</h1>
-        {onNewDesign && (
-          <button type="button" onClick={onNewDesign}
-            className="rounded-md bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700">
-            + New
-          </button>
-        )}
-        {onSave && (
-          <button type="button" onClick={onSave}
-            className="rounded-md border border-gray-300 px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800">
-            Save
-          </button>
-        )}
-        {onExport && (
-          <button type="button" onClick={onExport}
-            className="rounded-md border border-gray-300 px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800">
-            Export
-          </button>
-        )}
-        {onResize && (
-          <button type="button" onClick={onResize}
-            className="rounded-md border border-gray-300 px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 max-sm:hidden">
-            Resize
-          </button>
-        )}
-        {onSaveFile && (
-          <TbBtn label="Save as file" onClick={onSaveFile}><SaveFileIcon /></TbBtn>
-        )}
-        {onOpenFile && (
-          <TbBtn label="Open file" onClick={onOpenFile}><OpenFileIcon /></TbBtn>
-        )}
-        {onSaveAsTemplate && (
-          <TbBtn label="Save as template" onClick={onSaveAsTemplate}><TemplateIcon /></TbBtn>
-        )}
-        {onMyDesigns && (
-          <button type="button" onClick={onMyDesigns}
-            className="rounded-md border border-gray-300 px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 max-sm:hidden">
-            My Designs
-          </button>
-        )}
-        {onMarketplace && (
-          <button type="button" onClick={onMarketplace}
-            className="rounded-md border border-gray-300 px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 max-sm:hidden">
-            Marketplace
-          </button>
-        )}
-        {onPublish && (
-          <TbBtn label="Publish template" onClick={onPublish}><PublishIcon /></TbBtn>
-        )}
-        {/* Save status indicator */}
+        <h1 className="font-display text-base font-semibold text-text-primary">Monet</h1>
+        <Divider />
+        <TbBtn label="Undo (Ctrl+Z)" onClick={() => engine.undo()} disabled={!canUndo}>
+          <UndoIcon />
+        </TbBtn>
+        <TbBtn label="Redo (Ctrl+Y)" onClick={() => engine.redo()} disabled={!canRedo}>
+          <RedoIcon />
+        </TbBtn>
+        {/* Auto-save badge with pulse animation */}
         {saveStatus && (
-          <span className={`text-[10px] ${
-            saveStatus === 'saved' ? 'text-green-500' : saveStatus === 'saving' ? 'text-yellow-500' : 'text-gray-400'
+          <span className={`ml-1 rounded-full px-2.5 py-0.5 text-[9px] font-medium ${savePulse ? 'animate-save-pulse' : ''} ${
+            saveStatus === 'saved'
+              ? 'bg-success-subtle text-success'
+              : saveStatus === 'saving'
+                ? 'bg-warning-subtle text-warning'
+                : 'bg-wash text-text-tertiary'
           }`}>
-            {saveStatus === 'saved' ? 'Saved' : saveStatus === 'saving' ? 'Saving...' : 'Unsaved'}
+            {saveStatus === 'saved' ? 'Saved' : saveStatus === 'saving' ? 'Saving...' : ''}
           </span>
         )}
       </div>
 
-      {/* Center: undo/redo + zoom */}
+      {/* ─── Center: Tool switcher + zoom ─── */}
       <div className="flex items-center gap-1">
-        <TbBtn label="Undo (Ctrl+Z)" onClick={() => engine.undo()} disabled={!canUndo}>&#x21A9;</TbBtn>
-        <TbBtn label="Redo (Ctrl+Y)" onClick={() => engine.redo()} disabled={!canRedo}>&#x21AA;</TbBtn>
+        {/* Tool switcher */}
+        <div className="flex rounded-lg border border-border">
+          <ToolBtn
+            label="Select (V)"
+            active={activeTool === 'select'}
+            onClick={() => setActiveTool('select')}
+            first
+          >
+            <SelectIcon />
+          </ToolBtn>
+          <ToolBtn
+            label="Draw (D)"
+            active={activeTool === 'draw'}
+            onClick={() => setActiveTool(activeTool === 'draw' ? 'select' : 'draw')}
+          >
+            <DrawIcon />
+          </ToolBtn>
+          <ToolBtn
+            label="Pen (P)"
+            active={activeTool === 'pen'}
+            onClick={() => setActiveTool(activeTool === 'pen' ? 'select' : 'pen')}
+            last
+          >
+            <PenIcon />
+          </ToolBtn>
+        </div>
+
         <Divider />
+
+        {/* Zoom */}
         <TbBtn label="Zoom out" onClick={() => engine.setZoom(zoom / 1.2)}>&minus;</TbBtn>
-        <span className="min-w-[48px] select-none text-center text-xs text-gray-500 dark:text-gray-400">{zoomPercent}</span>
+        <span className="min-w-[48px] select-none text-center text-sm tabular-nums text-text-primary">{zoomPercent}</span>
         <TbBtn label="Zoom in" onClick={() => engine.setZoom(zoom * 1.2)}>+</TbBtn>
-        <TbBtn label="Fit to screen" onClick={() => engine.fitToScreen()}><FitIcon /></TbBtn>
+        <TbBtn label="Fit to screen" onClick={() => engine.fitToScreen()}>
+          <FitIcon />
+        </TbBtn>
       </div>
 
-      {/* Right: toggles + user */}
-      <div className="flex items-center gap-1">
-        {userName ? (
-          <>
-            <span className="text-[10px] text-gray-500 dark:text-gray-400 max-sm:hidden">{userName}</span>
-            {onLogout && <TbBtn label="Log out" onClick={onLogout}><LogoutIcon /></TbBtn>}
-          </>
-        ) : (
-          onLogin && (
-            <button type="button" onClick={onLogin}
-              className="rounded-md border border-gray-300 px-2 py-0.5 text-[10px] text-gray-500 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-800">
-              Log in
-            </button>
-          )
+      {/* ─── Right: Share + Export + overflow menu ─── */}
+      <div className="flex items-center gap-2">
+        {onShareLink && (
+          <button type="button" onClick={onShareLink}
+            className="rounded-lg border border-border-strong px-3.5 py-1.5 text-xs font-medium text-text-secondary hover:bg-wash">
+            Share
+          </button>
         )}
-        <Divider />
-        <TogBtn label="Grid" active={gridVisible} onClick={toggleGridVisible}><GridIcon /></TogBtn>
-        <TogBtn label="Snap" active={snapToGrid} onClick={toggleSnapToGrid}><SnapIcon /></TogBtn>
-        <TogBtn label="Guides" active={showGuides} onClick={toggleShowGuides}><GuidesIcon /></TogBtn>
-        <TogBtn label="Rulers" active={rulersVisible} onClick={toggleRulers}><RulerIcon /></TogBtn>
-        <TogBtn label="Lock Aspect Ratio" active={lockAspectRatio} onClick={toggleLockAspectRatio}><LockRatioIcon /></TogBtn>
-        <Divider />
-        {onToggleTheme && (
-          <TbBtn label={isDark ? 'Light mode' : 'Dark mode'} onClick={onToggleTheme}>
-            {isDark ? <SunIcon /> : <MoonIcon />}
+        {onExport && (
+          <button type="button" onClick={onExport}
+            className="rounded-lg bg-accent px-3.5 py-1.5 text-xs font-medium text-accent-fg shadow-sm hover:bg-accent-hover hover:shadow-md">
+            Export
+          </button>
+        )}
+
+        {/* Overflow menu */}
+        <div className="relative" ref={menuRef}>
+          <TbBtn label="More options" onClick={() => setMenuOpen(!menuOpen)}>
+            <MoreIcon />
           </TbBtn>
-        )}
-        {onShowShortcuts && (
-          <TbBtn label="Shortcuts (?)" onClick={onShowShortcuts}>
-            <span className="text-xs font-bold">?</span>
-          </TbBtn>
-        )}
-        {onToggleRightSidebar && (
-          <TbBtn label="Toggle right sidebar" onClick={onToggleRightSidebar} active={rightSidebarOpen}>
-            <PanelRightIcon />
-          </TbBtn>
-        )}
+
+          {menuOpen && (
+            <div className="animate-scale-up absolute right-0 top-full z-50 mt-1.5 w-56 rounded-xl border border-border bg-surface py-1.5 shadow-xl">
+              {onMyDesigns && (
+                <MenuItem onClick={() => { onMyDesigns(); setMenuOpen(false); }}>
+                  My Designs
+                </MenuItem>
+              )}
+              {onSaveFile && (
+                <MenuItem onClick={() => { onSaveFile(); setMenuOpen(false); }}>
+                  Save as .monet File
+                </MenuItem>
+              )}
+              {onOpenFile && (
+                <MenuItem onClick={() => { onOpenFile(); setMenuOpen(false); }}>
+                  Open .monet File
+                </MenuItem>
+              )}
+              <MenuDivider />
+              <MenuToggle label="Grid" active={gridVisible} onClick={() => { toggleGridVisible(); }} />
+              <MenuToggle label="Snap to Grid" active={snapToGrid} onClick={() => { toggleSnapToGrid(); }} />
+              <MenuToggle label="Smart Guides" active={showGuides} onClick={() => { toggleShowGuides(); }} />
+              <MenuToggle label="Rulers" active={rulersVisible} onClick={() => { toggleRulers(); }} />
+              <MenuDivider />
+              {onToggleTheme && (
+                <MenuItem onClick={() => { onToggleTheme(); setMenuOpen(false); }}>
+                  {isDark ? 'Light Mode' : 'Dark Mode'}
+                </MenuItem>
+              )}
+              {onShowShortcuts && (
+                <MenuItem onClick={() => { onShowShortcuts(); setMenuOpen(false); }}>
+                  Keyboard Shortcuts
+                </MenuItem>
+              )}
+              {(userName || onLogin) && <MenuDivider />}
+              {userName && (
+                <div className="px-3 py-1.5 text-[10px] text-text-tertiary">{userName}</div>
+              )}
+              {userName && onLogout && (
+                <MenuItem onClick={() => { onLogout(); setMenuOpen(false); }}>
+                  Log Out
+                </MenuItem>
+              )}
+              {!userName && onLogin && (
+                <MenuItem onClick={() => { onLogin(); setMenuOpen(false); }}>
+                  Log In
+                </MenuItem>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
 }
 
-// ─── Buttons ──────────────────────────────────────────────────────
+// ─── Menu components ──────────────────────────────────────────────
 
-function TbBtn({ label, onClick, disabled, active, children }: {
-  label: string; onClick: () => void; disabled?: boolean; active?: boolean; children: React.ReactNode;
-}) {
+function MenuItem({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
   return (
-    <button type="button" aria-label={label} title={label} onClick={onClick} disabled={disabled}
-      className={`flex h-8 w-8 items-center justify-center rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent dark:text-gray-400 dark:hover:bg-gray-800 ${active ? 'bg-gray-100 dark:bg-gray-800' : ''}`}>
+    <button type="button" onClick={onClick}
+      className="flex w-full items-center px-3 py-2 text-left text-xs text-text-primary hover:bg-canvas">
       {children}
     </button>
   );
 }
 
-function TogBtn({ label, active, onClick, children }: {
-  label: string; active: boolean; onClick: () => void; children: React.ReactNode;
+function MenuToggle({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick}
+      className="flex w-full items-center justify-between px-3 py-2 text-xs text-text-primary hover:bg-canvas">
+      <span>{label}</span>
+      {active && <span className="text-sm text-accent">✓</span>}
+    </button>
+  );
+}
+
+function MenuDivider() {
+  return <div className="my-1 h-px bg-wash" />;
+}
+
+// ─── Toolbar buttons ──────────────────────────────────────────────
+
+function TbBtn({ label, onClick, disabled, children }: {
+  label: string; onClick: () => void; disabled?: boolean; children: React.ReactNode;
 }) {
   return (
-    <button type="button" aria-label={label} aria-pressed={active} title={label} onClick={onClick}
-      className={`flex h-8 w-8 items-center justify-center rounded ${
-        active ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400' : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
-      }`}>
-      {children}
-    </button>
+    <Tooltip label={label}>
+      <button type="button" aria-label={label} onClick={onClick} disabled={disabled}
+        className="flex h-8 w-8 items-center justify-center rounded text-text-secondary hover:bg-wash disabled:opacity-30 disabled:hover:bg-transparent">
+        {children}
+      </button>
+    </Tooltip>
+  );
+}
+
+function ToolBtn({ label, active, onClick, children, first, last }: {
+  label: string; active: boolean; onClick: () => void; children: React.ReactNode;
+  first?: boolean; last?: boolean;
+}) {
+  return (
+    <Tooltip label={label}>
+      <button type="button" aria-label={label} aria-pressed={active} onClick={onClick}
+        className={`flex h-8 w-8 items-center justify-center ${
+          first ? 'rounded-l-md' : ''
+        } ${last ? 'rounded-r-md' : ''} ${
+          active
+            ? 'bg-accent-subtle text-accent'
+            : 'text-text-secondary hover:bg-canvas'
+        }`}>
+        {children}
+      </button>
+    </Tooltip>
   );
 }
 
 function Divider() {
-  return <div className="mx-1 h-5 w-px bg-gray-200 dark:bg-gray-700" />;
+  return <div className="mx-1 h-5 w-px bg-wash" />;
 }
 
 // ─── Icons ────────────────────────────────────────────────────────
 
+function UndoIcon() {
+  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7h7a4 4 0 010 8H6"/><path d="M6 4L3 7l3 3"/></svg>;
+}
+
+function RedoIcon() {
+  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 7H6a4 4 0 000 8h4"/><path d="M10 4l3 3-3 3"/></svg>;
+}
+
+function SelectIcon() {
+  return <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 2l5 14 2-5.5L15.5 8.5z" /></svg>;
+}
+
+function DrawIcon() {
+  return <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 15l3-1L14.5 5.5a1.4 1.4 0 00-2-2L4 12z" /><path d="M11.5 4.5l2 2" /></svg>;
+}
+
+function PenIcon() {
+  return <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 15 Q5 10 9 9 Q13 8 15 3" /><circle cx="3" cy="15" r="1.5" fill="currentColor" /><circle cx="15" cy="3" r="1.5" fill="currentColor" /></svg>;
+}
+
 function FitIcon() {
   return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="10" height="10" rx="1"/><path d="M1 5V2a1 1 0 011-1h3M15 5V2a1 1 0 00-1-1h-3M1 11v3a1 1 0 001 1h3M15 11v3a1 1 0 01-1 1h-3"/></svg>;
 }
-function GridIcon() {
-  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M0 5.5h16M0 10.5h16M5.5 0v16M10.5 0v16"/></svg>;
-}
-function SnapIcon() {
-  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="8" r="2"/><path d="M8 1v3M8 12v3M1 8h3M12 8h3"/></svg>;
-}
-function GuidesIcon() {
-  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 1v14" strokeDasharray="2 2"/><path d="M1 8h14" strokeDasharray="2 2"/></svg>;
-}
-function TemplateIcon() {
-  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><path d="M12 10v4M10 12h4"/></svg>;
-}
-function RulerIcon() {
-  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="1" width="14" height="5" rx="1"/><path d="M4 1v3M7 1v2M10 1v3M13 1v2"/></svg>;
-}
-function LockRatioIcon() {
-  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="8" width="10" height="7" rx="1.5"/><path d="M5 8V5.5a3 3 0 016 0V8"/><circle cx="8" cy="11.5" r="1" fill="currentColor"/></svg>;
-}
-function SunIcon() {
-  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M3.5 12.5l1.4-1.4M11.1 4.9l1.4-1.4"/></svg>;
-}
-function MoonIcon() {
-  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M13.5 8.5a5.5 5.5 0 01-6-6 5.5 5.5 0 106 6z"/></svg>;
-}
-function PanelLeftIcon() {
-  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="2" width="14" height="12" rx="1"/><path d="M6 2v12"/></svg>;
-}
-function PanelRightIcon() {
-  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="2" width="14" height="12" rx="1"/><path d="M10 2v12"/></svg>;
-}
-function SaveFileIcon() {
-  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 2v8M8 10L5 7M8 10l3-3"/><path d="M2 12v2h12v-2"/></svg>;
-}
-function OpenFileIcon() {
-  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 6V3a1 1 0 011-1h4l2 2h4a1 1 0 011 1v1"/><path d="M1 7h14l-2 7H3z"/></svg>;
-}
-function PublishIcon() {
-  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 2v8M5 5l3-3 3 3"/><path d="M3 10v3a1 1 0 001 1h8a1 1 0 001-1v-3"/></svg>;
-}
-function LogoutIcon() {
-  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3"/><path d="M10 11l3-3-3-3"/><path d="M13 8H6"/></svg>;
+
+function MoreIcon() {
+  return <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="3" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="8" cy="13" r="1.5"/></svg>;
 }

@@ -36,14 +36,14 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="flex flex-col items-center justify-center gap-2 p-4 text-center">
-          <p className="text-sm font-medium text-red-600 dark:text-red-400">
+          <p className="text-sm font-medium text-danger">
             Something went wrong in {this.props.name ?? 'this section'}
           </p>
-          <p className="text-xs text-gray-400">{this.state.error?.message}</p>
+          <p className="text-xs text-text-tertiary">{this.state.error?.message}</p>
           <button
             type="button"
             onClick={() => this.setState({ hasError: false, error: null })}
-            className="rounded bg-blue-600 px-3 py-1 text-xs text-white hover:bg-blue-700"
+            className="rounded-lg bg-accent px-4 py-2 text-xs font-medium text-accent-fg hover:bg-accent-hover"
           >
             Try again
           </button>

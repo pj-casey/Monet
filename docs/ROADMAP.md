@@ -447,6 +447,42 @@ A free, open-source, web-based design tool that empowers non-designers to create
 
 ---
 
+## Canva Parity — Gap Analysis & Fixes (Sessions 55-59)
+
+**Goal:** Close all P0 and P1 gaps identified by systematic Canva comparison.
+
+### P0 Gaps (Blockers) — All Complete
+- [x] **Multi-page designs:** DesignPage type, pages array in DesignDocument, switchToPage/addPage/deletePage/duplicatePage/reorderPages, PageNavigator thumbnail strip, multi-page PDF export, keyboard shortcuts (PageUp/PageDown)
+- [x] **Image crop tool:** Non-destructive crop via clipPath, crop mode UI with aspect ratio presets, double-click to crop, re-croppable
+- [x] **Flip horizontal/vertical:** flipX/flipY buttons in FlipRotateSection
+- [x] **Align single object to artboard:** alignSelected() works with 1 object, aligns to artboard edges/center
+- [x] **Transparent PNG export:** Checkbox in ExportDialog, hides artboard rect
+- [x] **FocusTrap in all modals:** 10 dialog components wrapped
+
+### P1 Gaps (Noticeable) — Mostly Complete
+- [x] **Recently used fonts:** Last 8 in localStorage, shown at top of FontBrowser
+- [x] **Text transform:** UPPERCASE/lowercase/Title Case buttons
+- [x] **Image replace:** Button wired to existing replaceSelectedImage()
+- [x] **Rotate 90° buttons:** CW/CCW in FlipRotateSection
+- [x] **Styled tooltips:** Tooltip component (dark pill, 500ms delay), applied to toolbar
+- [x] **More shapes:** 7 new (rounded rect, diamond, pentagon, hexagon, heart, arrow-right, speech bubble)
+- [x] **Eyedropper tool:** Canvas pixel sampling in ColorPicker
+- [x] **Document color palette:** "Used in design" section in ColorPicker
+- [x] **Recently used templates:** Last 5 tracked, shown in TemplateBrowser
+- [x] **Branded delete confirmation:** Styled modal replaces window.confirm()
+- [ ] Vector PDF export (deferred — current raster PDF is functional)
+- [ ] Template preview modal (deferred)
+- [ ] Stock photos without API key (deferred)
+
+### Bug Fixes (Sessions 55-56)
+- [x] Text transform broken (updateTextProps didn't handle text property)
+- [x] Align-to-artboard didn't update panel (missing emitSelectionChange)
+- [x] Image replace wrong visual size (raw scale copy instead of preserving visual dimensions)
+- [x] Undo/redo async race (restoreState .then() → async/await)
+- [x] Ungroup missing setCoords (stale bounding boxes)
+- [x] Non-functional opacity slider removed from ColorPicker
+- [x] Hardcoded white in template skeleton → design token
+
 ## Phase 10 — v1.0 Launch
 
 **Goal:** Ship it.
@@ -512,30 +548,17 @@ A free, open-source, web-based design tool that empowers non-designers to create
 
 ---
 
-## Claude Code Usage Guide
+## What's Next
 
-When working on this project with Claude Code, use the following approach:
+The core editor is complete. Here's what we're working on:
 
-### Starting a session
-```
-Tell Claude Code: "Read ROADMAP.md. We are working on Phase [X], Task [Y]. 
-Here is the current project structure: [paste tree output]. Continue from 
-where we left off."
-```
+- **More templates** — community-contributed designs across more categories
+- **Pro photo editing** — advanced filters, layer effects, RAW support
+- **Improved collaboration** — better conflict resolution, presence indicators
+- **Performance** — WebGL rendering, larger canvas support
+- **Mobile** — responsive editor for tablet and phone
 
-### Phase-specific prompts
-- **Phase 0:** "Set up the monorepo with pnpm workspaces, Vite, React, TypeScript, Tailwind, and Fabric.js. Initialize the canvas-engine package."
-- **Phase 1.1–1.3:** "Build the canvas editor component with [specific tool]. Reference the Fabric.js docs for [specific API]."
-- **Phase 1.4:** "Create the template system. Here is the JSON schema. Generate 5 Instagram post templates with placeholder content."
-- **Phase 5:** "Add the Express API server with Better Auth. Use Docker Compose for Postgres + MinIO."
-- **Phase 6:** "Integrate rembg as a Python sidecar service. Add a one-click background remove button."
-
-### Best practices for Claude Code sessions
-1. Work on one subtask per session for best results
-2. Always provide current file tree and relevant existing code
-3. Ask Claude Code to write tests alongside implementation
-4. Review generated code before committing — Claude Code is fast but not infallible
-5. Use `git commit` frequently so you can roll back if needed
+Want to help? See [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ---
 

@@ -8,6 +8,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { DesignDocument } from '@monet/shared';
+import { FocusTrap } from './A11y';
 
 const API_BASE = 'http://localhost:3001';
 
@@ -92,68 +93,69 @@ export function MarketplaceBrowser({ isOpen, onClose, onUseTemplate }: Marketpla
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       role="dialog" aria-modal="true">
-      <div className="flex h-[85vh] w-[90vw] max-w-5xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-gray-800">
+      <FocusTrap>
+      <div className="flex h-[85vh] w-[90vw] max-w-5xl flex-col overflow-hidden animate-scale-up rounded-lg bg-overlay shadow-xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Template Marketplace</h2>
+        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+          <h2 className="text-xl font-semibold text-text-primary">Template Marketplace</h2>
           <button type="button" onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">&#x2715;</button>
+            className="flex h-7 w-7 items-center justify-center rounded-full text-text-tertiary hover:bg-wash">&#x2715;</button>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 px-6 py-3 dark:border-gray-700">
+        <div className="flex flex-wrap items-center gap-2 border-b border-border px-6 py-3">
           <input type="text" placeholder="Search templates..." value={query}
             onChange={(e) => { setQuery(e.target.value); setPage(1); }}
-            className="w-48 rounded border border-gray-200 px-2 py-1 text-xs dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200" />
+            className="w-48 rounded border border-border px-2 py-1 text-xs" />
           <select value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }}
-            className="rounded border border-gray-200 px-2 py-1 text-xs dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+            className="rounded border border-border px-2 py-1 text-xs">
             {CATEGORIES.map((c) => <option key={c} value={c}>{c || 'All categories'}</option>)}
           </select>
           <div className="flex gap-1">
             {(['newest', 'popular', 'staff'] as const).map((s) => (
               <button key={s} type="button" onClick={() => { setSort(s); setPage(1); }}
-                className={`rounded px-2 py-1 text-xs ${sort === s ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                className={`rounded px-2 py-1 text-xs ${sort === s ? 'bg-accent-subtle text-accent' : 'text-text-secondary hover:bg-wash'}`}>
                 {s === 'staff' ? 'Staff Picks' : s.charAt(0).toUpperCase() + s.slice(1)}
               </button>
             ))}
           </div>
-          <span className="ml-auto text-[10px] text-gray-400">{total} templates</span>
+          <span className="ml-auto text-[10px] text-text-tertiary">{total} templates</span>
         </div>
 
         {/* Template grid */}
         <div className="flex-1 overflow-y-auto p-6">
-          {loading && <p className="text-center text-sm text-gray-400">Loading...</p>}
+          {loading && <p className="text-center text-sm text-text-tertiary">Loading...</p>}
           {!loading && templates.length === 0 && (
-            <p className="text-center text-sm text-gray-400">No templates found. Be the first to publish one!</p>
+            <p className="text-center text-sm text-text-tertiary">No templates found. Be the first to publish one!</p>
           )}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
             {templates.map((t) => (
               <div key={t.id}
-                className="group flex flex-col overflow-hidden rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-md dark:border-gray-700 dark:hover:border-blue-500">
+                className="group flex flex-col overflow-hidden rounded-lg border border-border hover:border-accent hover:shadow-md">
                 <button type="button" onClick={() => handlePreview(t)}
-                  className="flex h-32 items-center justify-center bg-gray-100 dark:bg-gray-700">
+                  className="flex h-32 items-center justify-center bg-wash">
                   {t.thumbnail ? (
                     <img src={t.thumbnail} alt={t.name} className="h-full w-full object-contain" />
                   ) : (
-                    <span className="text-xs text-gray-400">{t.dimensions.width}x{t.dimensions.height}</span>
+                    <span className="text-xs text-text-tertiary">{t.dimensions.width}x{t.dimensions.height}</span>
                   )}
                 </button>
                 <div className="flex flex-col gap-1 p-2.5">
-                  <p className="truncate text-xs font-medium text-gray-800 dark:text-gray-200">{t.name}</p>
-                  <p className="text-[10px] text-gray-400">{t.userName} · {t.category}</p>
+                  <p className="truncate text-xs font-medium text-text-primary">{t.name}</p>
+                  <p className="text-[10px] text-text-tertiary">{t.userName} · {t.category}</p>
                   <div className="flex items-center justify-between">
-                    <div className="flex gap-2 text-[10px] text-gray-400">
+                    <div className="flex gap-2 text-[10px] text-text-tertiary">
                       <span>{t.uses} uses</span>
                       <button type="button" onClick={(e) => { e.stopPropagation(); handleVote(t.id); }}
-                        className="hover:text-blue-500">&#9650; {t.upvotes}</button>
+                        className="hover:text-accent">&#9650; {t.upvotes}</button>
                     </div>
-                    {t.staffPick && <span className="rounded bg-yellow-100 px-1 text-[9px] font-bold text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">PICK</span>}
+                    {t.staffPick && <span className="rounded bg-warning-subtle px-1 text-[9px] font-semibold text-warning">PICK</span>}
                   </div>
                   <button type="button" onClick={() => handleUse(t)}
-                    className="mt-1 rounded bg-blue-600 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 hover:bg-blue-700">
+                    className="mt-1 rounded bg-accent px-2 py-1 text-[10px] font-medium text-accent-fg opacity-0 group-hover:opacity-100 hover:bg-accent-hover">
                     Use Template
                   </button>
                 </div>
@@ -165,10 +167,10 @@ export function MarketplaceBrowser({ isOpen, onClose, onUseTemplate }: Marketpla
           {total > 12 && (
             <div className="mt-4 flex justify-center gap-2">
               <button type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}
-                className="rounded border border-gray-200 px-3 py-1 text-xs disabled:opacity-30 dark:border-gray-600">Prev</button>
-              <span className="py-1 text-xs text-gray-400">Page {page}</span>
+                className="rounded border border-border px-3 py-1 text-xs disabled:opacity-30">Prev</button>
+              <span className="py-1 text-xs text-text-tertiary">Page {page}</span>
               <button type="button" onClick={() => setPage((p) => p + 1)}
-                className="rounded border border-gray-200 px-3 py-1 text-xs dark:border-gray-600">Next</button>
+                className="rounded border border-border px-3 py-1 text-xs">Next</button>
             </div>
           )}
         </div>
@@ -180,6 +182,7 @@ export function MarketplaceBrowser({ isOpen, onClose, onUseTemplate }: Marketpla
             onUse={() => handleUse(preview)} />
         )}
       </div>
+      </FocusTrap>
     </div>
   );
 }
@@ -189,31 +192,31 @@ function PreviewOverlay({ template, onClose, onUse }: {
 }) {
   return (
     <div className="absolute inset-0 flex bg-black/40" onClick={onClose}>
-      <div className="m-auto w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl dark:bg-gray-800"
+      <div className="m-auto w-full max-w-lg animate-scale-up rounded-lg bg-overlay p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}>
         {template.thumbnail && (
-          <img src={template.thumbnail} alt={template.name} className="mb-4 h-48 w-full rounded-lg object-contain bg-gray-100 dark:bg-gray-700" />
+          <img src={template.thumbnail} alt={template.name} className="mb-4 h-48 w-full rounded-lg object-contain bg-wash" />
         )}
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{template.name}</h3>
-        <p className="mt-1 text-xs text-gray-400">by {template.userName} · {template.dimensions.width}×{template.dimensions.height}</p>
-        {template.description && <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{template.description}</p>}
+        <h3 className="text-lg font-semibold text-text-primary">{template.name}</h3>
+        <p className="mt-1 text-xs text-text-tertiary">by {template.userName} · {template.dimensions.width}×{template.dimensions.height}</p>
+        {template.description && <p className="mt-2 text-sm text-text-secondary">{template.description}</p>}
         {template.tags.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
             {template.tags.map((tag) => (
-              <span key={tag} className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500 dark:bg-gray-700 dark:text-gray-400">{tag}</span>
+              <span key={tag} className="rounded bg-wash px-1.5 py-0.5 text-[10px] text-text-secondary">{tag}</span>
             ))}
           </div>
         )}
-        <div className="mt-2 flex gap-3 text-xs text-gray-400">
+        <div className="mt-2 flex gap-3 text-xs text-text-tertiary">
           <span>{template.uses} uses</span>
           <span>{template.upvotes} upvotes</span>
-          {template.staffPick && <span className="text-yellow-600">Staff Pick</span>}
+          {template.staffPick && <span className="text-warning">Staff Pick</span>}
         </div>
         <div className="mt-4 flex gap-2">
           <button type="button" onClick={onClose}
-            className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 dark:border-gray-600 dark:text-gray-300">Close</button>
+            className="flex-1 rounded-lg border border-border-strong px-4 py-2 text-sm text-text-secondary">Close</button>
           <button type="button" onClick={onUse}
-            className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+            className="flex-1 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-fg hover:bg-accent-hover">
             Use Template
           </button>
         </div>

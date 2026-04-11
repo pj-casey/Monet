@@ -1,14 +1,168 @@
 @import "tailwindcss";
+@import "./styles/tokens.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Monet global styles */
+/* ═══════════════════════════════════════════════════════════════ */
+/* Tailwind Token Mapping                                         */
+/* Maps CSS variables from tokens.css to Tailwind utility classes  */
+/* Usage: bg-canvas, bg-surface, text-primary, border-default etc */
+/* ═══════════════════════════════════════════════════════════════ */
+@theme inline {
+  /* Colors — surfaces */
+  --color-canvas:       var(--bg-canvas);
+  --color-surface:      var(--bg-surface);
+  --color-elevated:     var(--bg-elevated);
+  --color-overlay:      var(--bg-overlay);
+  --color-wash:         var(--bg-wash);
+
+  /* Colors — accent */
+  --color-accent:          var(--accent);
+  --color-accent-hover:    var(--accent-hover);
+  --color-accent-active:   var(--accent-active);
+  --color-accent-subtle:   var(--accent-subtle);
+  --color-accent-fg:       var(--accent-foreground);
+
+  /* Colors — secondary accents */
+  --color-accent-blue:     var(--accent-blue);
+  --color-accent-sage:     var(--accent-sage);
+  --color-accent-plum:     var(--accent-plum);
+
+  /* Colors — text */
+  --color-text-primary:    var(--text-primary);
+  --color-text-secondary:  var(--text-secondary);
+  --color-text-tertiary:   var(--text-tertiary);
+  --color-text-inverse:    var(--text-inverse);
+
+  /* Colors — borders */
+  --color-border:          var(--border-default);
+  --color-border-strong:   var(--border-strong);
+  --color-border-accent:   var(--border-accent);
+
+  /* Colors — status */
+  --color-success:         var(--success);
+  --color-success-subtle:  var(--success-subtle);
+  --color-warning:         var(--warning);
+  --color-warning-subtle:  var(--warning-subtle);
+  --color-danger:          var(--danger);
+  --color-danger-subtle:   var(--danger-subtle);
+  --color-info:            var(--info);
+  --color-info-subtle:     var(--info-subtle);
+
+  /* Border radius */
+  --radius-sm:             var(--radius-sm);
+  --radius-md:             var(--radius-md);
+  --radius-lg:             var(--radius-lg);
+  --radius-xl:             var(--radius-xl);
+  --radius-full:           var(--radius-full);
+
+  /* Shadows */
+  --shadow-sm:             var(--shadow-sm);
+  --shadow-md:             var(--shadow-md);
+  --shadow-lg:             var(--shadow-lg);
+  --shadow-xl:             var(--shadow-xl);
+
+  /* Font families */
+  --font-sans:             var(--font-sans);
+  --font-display:          var(--font-display);
+  --font-mono:             var(--font-mono);
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* Global Resets                                                  */
+/* ═══════════════════════════════════════════════════════════════ */
 body {
   margin: 0;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: var(--bg-canvas);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+}
+
+/* Editor layout needs overflow:hidden and fixed viewport.
+   Landing page needs normal scroll. The .editor-shell class
+   is applied by the editor wrapper to constrain itself. */
+.editor-shell {
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
 }
 
-#root {
-  width: 100vw;
-  height: 100vh;
+/* ═══════════════════════════════════════════════════════════════ */
+/* Micro-interaction Animations (using motion tokens)             */
+/* ═══════════════════════════════════════════════════════════════ */
+
+@keyframes save-pulse {
+  0%   { opacity: 1; transform: scale(1); }
+  50%  { opacity: 0.7; transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.animate-save-pulse {
+  animation: save-pulse 600ms var(--ease-out);
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.animate-slide-in-right {
+  animation: slide-in-right var(--duration-normal) var(--ease-out);
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fade-in var(--duration-normal) var(--ease-out);
+}
+
+@keyframes scale-up {
+  0%   { transform: scale(0.97); opacity: 0; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+.animate-scale-up {
+  animation: scale-up var(--duration-slow) var(--ease-spring);
+}
+
+@keyframes tooltip-pop {
+  0%   { transform: scale(0.97) translateY(4px); opacity: 0; }
+  100% { transform: scale(1) translateY(0);       opacity: 1; }
+}
+.animate-tooltip-pop {
+  animation: tooltip-pop var(--duration-slow) var(--ease-spring);
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* Smooth Global Transitions                                      */
+/* ═══════════════════════════════════════════════════════════════ */
+button, [role="button"], a, select, input[type="color"] {
+  transition-property: background-color, border-color, color, box-shadow, transform, opacity;
+  transition-duration: var(--duration-normal);
+  transition-timing-function: var(--ease-default);
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* Scrollbar                                                      */
+/* ═══════════════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* Reduced Motion                                                 */
+/* ═══════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .animate-save-pulse,
+  .animate-slide-in-right,
+  .animate-fade-in,
+  .animate-scale-up,
+  .animate-tooltip-pop {
+    animation: none !important;
+  }
+  button, [role="button"], a, select, input[type="color"] {
+    transition-duration: 0ms !important;
+  }
 }

@@ -15,7 +15,7 @@
 import { Canvas as FabricCanvas, PencilBrush } from 'fabric';
 
 /** Default pen settings */
-const DEFAULT_COLOR = '#333333';
+const DEFAULT_COLOR = '#2d2a26'; // warm near-black — matches --text-primary
 const DEFAULT_WIDTH = 4;
 const ERASER_COLOR = '#ffffff';
 

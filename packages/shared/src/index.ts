@@ -2,7 +2,7 @@
  * @monet/shared — Types and utilities shared across all Monet packages.
  */
 
-export type { DesignDocument, BackgroundOptions } from './types';
+export type { DesignDocument, DesignPage, BackgroundOptions } from './types';
 export { FEATURES } from './features';
 export { ARTBOARD_PRESETS } from './presets';
 export type { ArtboardPreset } from './presets';

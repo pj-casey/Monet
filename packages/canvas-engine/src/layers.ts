@@ -85,7 +85,8 @@ function isInfrastructure(obj: FabricObject): boolean {
     tagged.__isGridLine ||
     tagged.__isGuide ||
     tagged.__isBgImage ||
-    tagged.__isPenPreview
+    tagged.__isPenPreview ||
+    tagged.__isCropOverlay
   );
 }
 

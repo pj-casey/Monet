@@ -10,7 +10,7 @@ export function BottomBar() {
   const artboardHeight = useEditorStore((s) => s.artboardHeight);
 
   return (
-    <footer className="flex h-7 items-center justify-between border-t border-gray-200 bg-white px-4 text-xs text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
+    <footer className="flex h-7 items-center justify-between border-t border-border bg-surface px-5 text-[11px] text-text-tertiary">
       <span>{artboardWidth} &times; {artboardHeight} px</span>
       <span>{Math.round(zoom * 100)}%</span>
     </footer>

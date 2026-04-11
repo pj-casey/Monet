@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import { engine } from './Canvas';
 import { useEditorStore } from '../stores/editor-store';
+import { FocusTrap } from './A11y';
 
 const API_BASE = 'http://localhost:3001';
 
@@ -69,64 +70,66 @@ export function PublishTemplate({ isOpen, onClose }: PublishTemplateProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       role="dialog" aria-modal="true">
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl dark:bg-gray-800">
-        <h2 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-100">Publish as Template</h2>
+      <FocusTrap>
+      <div className="w-full max-w-md animate-scale-up rounded-lg bg-overlay p-6 shadow-xl">
+        <h2 className="mb-4 text-lg font-semibold text-text-primary">Publish as Template</h2>
 
         {status === 'done' ? (
           <div className="py-8 text-center">
-            <p className="text-lg text-green-600">Submitted for review!</p>
-            <p className="mt-1 text-xs text-gray-400">Your template will appear once approved.</p>
+            <p className="text-lg text-success">Submitted for review!</p>
+            <p className="mt-1 text-xs text-text-tertiary">Your template will appear once approved.</p>
           </div>
         ) : (
           <>
             <div className="flex flex-col gap-3">
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Name</label>
+                <label className="mb-1 block text-xs font-medium text-text-secondary">Name</label>
                 <input type="text" value={name} onChange={(e) => setName(e.target.value)}
-                  placeholder="My Awesome Template"
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200" />
+                  placeholder="My Template"
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm" />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Description</label>
+                <label className="mb-1 block text-xs font-medium text-text-secondary">Description</label>
                 <textarea value={description} onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe your template..."
                   rows={3}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200" />
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm" />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Category</label>
+                <label className="mb-1 block text-xs font-medium text-text-secondary">Category</label>
                 <select value={category} onChange={(e) => setCategory(e.target.value)}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm">
                   {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Tags (comma-separated)</label>
+                <label className="mb-1 block text-xs font-medium text-text-secondary">Tags (comma-separated)</label>
                 <input type="text" value={tagsInput} onChange={(e) => setTagsInput(e.target.value)}
                   placeholder="instagram, bold, modern"
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200" />
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm" />
               </div>
-              <p className="text-[10px] text-gray-400">
+              <p className="text-[10px] text-text-tertiary">
                 {artboardWidth} × {artboardHeight} px — Template will be reviewed before publishing.
               </p>
             </div>
 
             <div className="mt-4 flex gap-2">
               <button type="button" onClick={onClose}
-                className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+                className="flex-1 rounded-lg border border-border-strong px-4 py-2 text-sm text-text-secondary hover:bg-canvas">
                 Cancel
               </button>
               <button type="button" onClick={handlePublish} disabled={!name.trim() || status === 'publishing'}
-                className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+                className="flex-1 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-fg hover:bg-accent-hover disabled:opacity-50">
                 {status === 'publishing' ? 'Publishing...' : 'Publish'}
               </button>
             </div>
           </>
         )}
       </div>
+      </FocusTrap>
     </div>
   );
 }

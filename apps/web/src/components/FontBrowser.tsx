@@ -58,6 +58,24 @@ const previewLoaded = new Set<string>();
 // Track which link IDs have been injected
 const injectedLinks = new Set<string>();
 
+/** Recently used fonts — tracked in localStorage */
+const RECENT_FONTS_KEY = 'monet-recent-fonts';
+const MAX_RECENT_FONTS = 8;
+
+function getRecentFonts(): string[] {
+  try {
+    const stored = localStorage.getItem(RECENT_FONTS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch { return []; }
+}
+
+function addRecentFont(family: string): void {
+  const recent = getRecentFonts().filter((f) => f !== family);
+  recent.unshift(family);
+  if (recent.length > MAX_RECENT_FONTS) recent.pop();
+  localStorage.setItem(RECENT_FONTS_KEY, JSON.stringify(recent));
+}
+
 /**
  * Inject a Google Fonts CSS link for a batch of fonts (for preview).
  * Uses the CSS API v2 which doesn't require an API key.
@@ -87,6 +105,7 @@ export function FontBrowser({ fontFamily }: FontBrowserProps) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
   const [scrollTop, setScrollTop] = useState(0);
+  const [recentFonts, setRecentFonts] = useState<string[]>(getRecentFonts);
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -148,10 +167,19 @@ export function FontBrowser({ fontFamily }: FontBrowserProps) {
     return { recommended, catalog: catalogFiltered };
   }, [search, category]);
 
-  // Full list: recommended header + recommended fonts + catalog header + catalog fonts
-  // We represent this as a flat list of items for virtual scrolling
+  // Full list: recently used + recommended + all fonts — flat list for virtual scrolling
   const flatList = useMemo(() => {
     const items: FlatItem[] = [];
+    const q = search.toLowerCase().trim();
+
+    // Recently used (only if not searching or search matches)
+    const filteredRecent = recentFonts.filter((f) => !q || f.toLowerCase().includes(q));
+    if (filteredRecent.length > 0) {
+      items.push({ type: 'header', label: 'Recently Used' });
+      for (const f of filteredRecent) {
+        items.push({ type: 'font', family: f, isRecommended: false });
+      }
+    }
 
     if (fontList.recommended.length > 0) {
       items.push({ type: 'header', label: 'Recommended' });
@@ -168,7 +196,7 @@ export function FontBrowser({ fontFamily }: FontBrowserProps) {
     }
 
     return items;
-  }, [fontList]);
+  }, [fontList, recentFonts, search]);
 
   // Virtual scrolling
   const totalHeight = flatList.length * ROW_HEIGHT;
@@ -199,6 +227,8 @@ export function FontBrowser({ fontFamily }: FontBrowserProps) {
 
   const handleSelect = useCallback((family: string) => {
     engine.updateSelectedTextProps({ fontFamily: family });
+    addRecentFont(family);
+    setRecentFonts(getRecentFonts());
     setOpen(false);
     setSearch('');
   }, []);
@@ -207,40 +237,40 @@ export function FontBrowser({ fontFamily }: FontBrowserProps) {
 
   return (
     <div ref={containerRef} className="relative">
-      <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Font</label>
+      <label className="mb-1 block text-xs font-medium text-text-secondary">Font</label>
 
       {/* Trigger button — shows current font in its own typeface */}
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between rounded border border-gray-200 px-2 py-1.5 text-left text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+        className="flex w-full items-center justify-between rounded border border-border px-2 py-1.5 text-left text-sm"
         style={{ fontFamily: `"${fontFamily}", sans-serif` }}
         aria-label="Font family"
       >
         <span className="truncate">{fontFamily}</span>
-        <span className="ml-1 text-[10px] text-gray-400">{open ? '\u25B2' : '\u25BC'}</span>
+        <span className="ml-1 text-[10px] text-text-tertiary">{open ? '\u25B2' : '\u25BC'}</span>
       </button>
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900 dark:shadow-black/40"
+        <div className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-lg border border-border bg-surface shadow-lg"
           style={{ height: 360 }}>
 
           {/* Search + Category filter */}
-          <div className="border-b border-gray-100 p-1.5 dark:border-gray-700">
+          <div className="border-b border-border p-1.5">
             <input
               ref={searchRef}
               type="text"
               placeholder="Search 1900+ fonts..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="mb-1 w-full rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-500"
+              className="mb-1 w-full rounded border border-border bg-canvas px-2 py-1 text-xs"
               aria-label="Search fonts"
             />
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full rounded border border-gray-200 bg-gray-50 px-1 py-0.5 text-[11px] dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+              className="w-full rounded border border-border bg-canvas px-1 py-0.5 text-[11px]"
               aria-label="Filter by category"
             >
               {CATEGORIES.map((c) => (
@@ -257,7 +287,7 @@ export function FontBrowser({ fontFamily }: FontBrowserProps) {
             style={{ height: 360 - 74 }}
           >
             {flatList.length === 0 ? (
-              <p className="px-3 py-4 text-center text-xs text-gray-400">No fonts found</p>
+              <p className="px-3 py-4 text-center text-xs text-text-tertiary">No fonts found</p>
             ) : (
               <div style={{ height: totalHeight, position: 'relative' }}>
                 <div
@@ -273,7 +303,7 @@ export function FontBrowser({ fontFamily }: FontBrowserProps) {
                       return (
                         <div
                           key={`h-${item.label}`}
-                          className="flex items-center px-3 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500"
+                          className="flex items-center px-3 text-[10px] font-semibold uppercase tracking-wider text-text-tertiary"
                           style={{ height: ROW_HEIGHT }}
                         >
                           {item.label}
@@ -287,10 +317,10 @@ export function FontBrowser({ fontFamily }: FontBrowserProps) {
                         key={item.family}
                         type="button"
                         onClick={() => handleSelect(item.family)}
-                        className={`flex w-full items-center gap-2 px-3 text-left text-sm hover:bg-blue-50 dark:hover:bg-blue-900/30 ${
+                        className={`flex w-full items-center gap-2 px-3 text-left text-sm hover:bg-accent-subtle ${
                           isSelected
-                            ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                            : 'text-gray-700 dark:text-gray-200'
+                            ? 'bg-accent-subtle text-accent'
+                            : 'text-text-primary'
                         }`}
                         style={{
                           height: ROW_HEIGHT,
@@ -299,11 +329,11 @@ export function FontBrowser({ fontFamily }: FontBrowserProps) {
                       >
                         <span className="flex-1 truncate">{item.family}</span>
                         {item.isRecommended && (
-                          <span className="shrink-0 rounded bg-blue-100 px-1 text-[8px] font-medium text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                          <span className="shrink-0 rounded bg-accent-subtle px-1 text-[8px] font-medium text-accent">
                             REC
                           </span>
                         )}
-                        <span className="shrink-0 text-[9px] text-gray-300 dark:text-gray-600">
+                        <span className="shrink-0 text-[9px] text-text-tertiary">
                           {CATEGORY_MAP.get(item.family) ?? ''}
                         </span>
                       </button>
@@ -319,11 +349,11 @@ export function FontBrowser({ fontFamily }: FontBrowserProps) {
       {/* Font pairing suggestions — shown when dropdown is closed */}
       {!open && pairings.length > 0 && (
         <div className="mt-1.5">
-          <span className="text-[9px] text-gray-400 dark:text-gray-500">Pairs well with:</span>
+          <span className="text-[9px] text-text-tertiary">Pairs well with:</span>
           <div className="mt-0.5 flex flex-wrap gap-1">
             {pairings.map((font) => (
               <button key={font} type="button" onClick={() => handleSelect(font)}
-                className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-600 hover:bg-blue-100 hover:text-blue-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-400">
+                className="rounded bg-wash px-1.5 py-0.5 text-[10px] text-text-secondary hover:bg-accent-subtle hover:text-accent">
                 {font}
               </button>
             ))}

@@ -94,7 +94,8 @@ async function migrateIndexedDB(oldName: string, newName: string, storeName: str
 export async function migrateFromOpenCanvas(): Promise<void> {
   // localStorage keys
   migrateLocalStorageKey('opencanvas-current-design-id', 'monet-current-design-id');
-  migrateLocalStorageKey('opencanvas-theme', 'monet-theme');
+  // Theme migration removed — theme is now session-only (always dark by default).
+  // Migrating 'opencanvas-theme' was a source of stale 'light' values.
   migrateLocalStorageKey('opencanvas-onboarding-done', 'monet-onboarding-done');
   migrateLocalStorageKey('opencanvas-lang', 'monet-lang');
   migrateLocalStorageKey('opencanvas-active-brand-kit-id', 'monet-active-brand-kit-id');

@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getAllDesigns, deleteDesign, saveDesign, type SavedDesign } from '../lib/db';
+import { FocusTrap } from './A11y';
 
 interface MyDesignsProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export function MyDesigns({ isOpen, onClose, onOpenDesign }: MyDesignsProps) {
   const [designs, setDesigns] = useState<SavedDesign[]>([]);
   const [renaming, setRenaming] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     const all = await getAllDesigns();
@@ -30,8 +32,14 @@ export function MyDesigns({ isOpen, onClose, onOpenDesign }: MyDesignsProps) {
 
   if (!isOpen) return null;
 
-  const handleDelete = async (id: string) => {
-    await deleteDesign(id);
+  const handleDelete = (id: string) => {
+    setDeleteConfirmId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmId) return;
+    await deleteDesign(deleteConfirmId);
+    setDeleteConfirmId(null);
     refresh();
   };
 
@@ -78,15 +86,16 @@ export function MyDesigns({ isOpen, onClose, onOpenDesign }: MyDesignsProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       role="dialog" aria-modal="true" aria-label="My Designs"
     >
-      <div className="flex h-[80vh] w-[90vw] max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-gray-800">
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">My Designs</h2>
+      <FocusTrap>
+      <div className="animate-scale-up flex h-[80vh] w-[90vw] max-w-4xl flex-col overflow-hidden rounded-lg bg-overlay shadow-xl">
+        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+          <h2 className="text-lg font-semibold text-text-primary">My Designs</h2>
           <button type="button" onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-text-tertiary hover:bg-wash"
             aria-label="Close">
             ✕
           </button>
@@ -94,26 +103,32 @@ export function MyDesigns({ isOpen, onClose, onOpenDesign }: MyDesignsProps) {
 
         <div className="flex-1 overflow-y-auto p-6">
           {designs.length === 0 ? (
-            <div className="flex h-full items-center justify-center">
-              <p className="text-sm text-gray-400">No saved designs yet. Create one with "+ New"!</p>
+            <div className="flex h-full flex-col items-center justify-center text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-xl bg-accent-subtle">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-accent">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8M8 12h8"/>
+                </svg>
+              </div>
+              <p className="text-base font-medium text-text-secondary">No designs yet</p>
+              <p className="mt-1 max-w-xs text-sm text-text-tertiary">Your saved designs will appear here. Start creating by clicking the button below!</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
               {designs.map((design) => (
                 <div
                   key={design.id}
-                  className="group flex flex-col overflow-hidden rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-md dark:border-gray-700 dark:hover:border-blue-500"
+                  className="group flex flex-col overflow-hidden rounded-lg border border-border hover:border-accent hover:shadow-md"
                 >
                   {/* Thumbnail */}
                   <button
                     type="button"
                     onClick={() => { onOpenDesign(design); onClose(); }}
-                    className="flex h-32 items-center justify-center bg-gray-100 dark:bg-gray-700"
+                    className="flex h-32 items-center justify-center bg-wash"
                   >
                     {design.thumbnail ? (
                       <img src={design.thumbnail} alt={design.name} className="h-full w-full object-contain" />
                     ) : (
-                      <span className="text-xs text-gray-400">No preview</span>
+                      <span className="text-xs text-text-tertiary">No preview</span>
                     )}
                   </button>
 
@@ -126,13 +141,13 @@ export function MyDesigns({ isOpen, onClose, onOpenDesign }: MyDesignsProps) {
                         onChange={(e) => setRenameValue(e.target.value)}
                         onBlur={() => handleRenameConfirm(design)}
                         onKeyDown={(e) => { if (e.key === 'Enter') handleRenameConfirm(design); }}
-                        className="rounded border border-blue-400 px-1 py-0.5 text-sm dark:bg-gray-700 dark:text-gray-100"
+                        className="rounded border border-accent px-1 py-0.5 text-sm"
                         autoFocus
                       />
                     ) : (
-                      <p className="truncate text-sm font-medium text-gray-800 dark:text-gray-200">{design.name}</p>
+                      <p className="truncate text-sm font-medium text-text-primary">{design.name}</p>
                     )}
-                    <p className="text-[10px] text-gray-400">{formatDate(design.updatedAt)}</p>
+                    <p className="text-[10px] text-text-tertiary">{formatDate(design.updatedAt)}</p>
 
                     {/* Actions */}
                     <div className="mt-1 flex gap-1 opacity-0 group-hover:opacity-100">
@@ -147,6 +162,31 @@ export function MyDesigns({ isOpen, onClose, onOpenDesign }: MyDesignsProps) {
           )}
         </div>
       </div>
+      </FocusTrap>
+
+      {/* Delete confirmation dialog */}
+      {deleteConfirmId && (
+        <div
+          className="animate-fade-in fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={() => setDeleteConfirmId(null)}
+          role="dialog" aria-modal="true" aria-label="Confirm delete"
+        >
+          <div className="animate-scale-up w-full max-w-xs rounded-lg bg-overlay p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="mb-2 text-sm font-semibold text-text-primary">Delete design?</h3>
+            <p className="mb-5 text-xs text-text-secondary">This cannot be undone. The design will be permanently removed.</p>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 rounded border border-border px-3 py-2 text-xs font-medium text-text-secondary hover:bg-wash">
+                Cancel
+              </button>
+              <button type="button" onClick={confirmDelete}
+                className="flex-1 rounded bg-danger px-3 py-2 text-xs font-medium text-text-inverse hover:opacity-90">
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -158,8 +198,8 @@ function ActionBtn({ label, onClick, children, danger }: {
     <button type="button" aria-label={label} onClick={(e) => { e.stopPropagation(); onClick(); }}
       className={`rounded px-2 py-0.5 text-[10px] ${
         danger
-          ? 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
-          : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
+          ? 'text-danger hover:bg-danger-subtle'
+          : 'text-text-secondary hover:bg-wash'
       }`}>
       {children}
     </button>

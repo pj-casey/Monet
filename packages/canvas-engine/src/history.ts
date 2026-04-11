@@ -180,7 +180,9 @@ export class HistoryManager {
         !(obj as TaggedObject).__isGridLine &&
         !(obj as TaggedObject).__isGuide &&
         !(obj as TaggedObject).__isArtboard &&
-        !(obj as TaggedObject).__isBgImage,
+        !(obj as TaggedObject).__isBgImage &&
+        !(obj as TaggedObject).__isPenPreview &&
+        !(obj as TaggedObject).__isCropOverlay,
     );
     return JSON.stringify(objects.map((obj) => obj.toObject()));
   }
@@ -188,7 +190,7 @@ export class HistoryManager {
   /**
    * Restore the canvas to a previously saved state.
    */
-  private restoreState(stateJson: string): void {
+  private async restoreState(stateJson: string): Promise<void> {
     if (!this.canvas) return;
 
     this.isRestoring = true;
@@ -209,20 +211,16 @@ export class HistoryManager {
     const objectsData = JSON.parse(stateJson) as Record<string, unknown>[];
     if (objectsData.length > 0) {
       // Use Fabric's enlivening to recreate objects from their serialized form
-      util.enlivenObjects(objectsData).then((enlivenedItems) => {
-        for (const item of enlivenedItems) {
-          // enlivenObjects can return various types; we only want FabricObjects
-          if (item && typeof (item as FabricObject).set === 'function') {
-            this.canvas?.add(item as FabricObject);
-          }
+      const enlivenedItems = await util.enlivenObjects(objectsData);
+      for (const item of enlivenedItems) {
+        // enlivenObjects can return various types; we only want FabricObjects
+        if (item && typeof (item as FabricObject).set === 'function') {
+          this.canvas?.add(item as FabricObject);
         }
-        this.canvas?.requestRenderAll();
-        this.isRestoring = false;
-      });
-    } else {
-      this.canvas.requestRenderAll();
-      this.isRestoring = false;
+      }
     }
+    this.canvas?.requestRenderAll();
+    this.isRestoring = false;
   }
 
   /** Notify the UI that undo/redo availability changed */

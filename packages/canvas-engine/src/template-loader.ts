@@ -8,6 +8,11 @@
  * Why not use enlivenObjects()? Because enlivenObjects() expects the full
  * verbose output of toObject() (with version, originX, originY, scaleX, etc.).
  * Our template recipes are deliberately minimal for readability.
+ *
+ * Supports advanced features in recipes:
+ * - Gradient fills: fill as { type, coords, colorStops } object → converted to Gradient instance
+ * - Shadows: { color, blur, offsetX, offsetY } → handled natively by Fabric.js constructors
+ * - Text effects: charSpacing, lineHeight, stroke, strokeWidth, underline, linethrough
  */
 
 import {
@@ -17,6 +22,7 @@ import {
   Textbox,
   Polygon,
   Line,
+  Gradient,
   type FabricObject,
 } from 'fabric';
 
@@ -49,32 +55,54 @@ export function createObjectsFromRecipes(
  *
  * We pull out `type` to decide the constructor, then pass the rest
  * as options. Each constructor handles its own defaults for missing props.
+ * Gradient fills are detected and converted from plain specs to Gradient instances.
  */
 function createSingleObject(recipe: Record<string, unknown>): FabricObject | null {
   const type = recipe.type as string;
   // Remove 'type' from the options — it's not a Fabric.js property
   const { type: _, ...opts } = recipe;
 
+  // Extract gradient fill spec — Fabric.js needs a Gradient instance, not a plain object
+  let gradientSpec: Record<string, unknown> | null = null;
+  if (opts.fill && typeof opts.fill === 'object' && opts.fill !== null && !Array.isArray(opts.fill)) {
+    const fillObj = opts.fill as Record<string, unknown>;
+    if ('type' in fillObj && 'colorStops' in fillObj) {
+      gradientSpec = fillObj;
+      delete opts.fill;
+    }
+  }
+
+  let obj: FabricObject | null = null;
+
   switch (type) {
     case 'rect':
-      return new Rect(opts as ConstructorParameters<typeof Rect>[0]);
+      obj = new Rect(opts as ConstructorParameters<typeof Rect>[0]);
+      break;
 
     case 'circle':
-      return new Circle(opts as ConstructorParameters<typeof Circle>[0]);
+      obj = new Circle(opts as ConstructorParameters<typeof Circle>[0]);
+      break;
 
     case 'triangle':
-      return new Triangle(opts as ConstructorParameters<typeof Triangle>[0]);
+      obj = new Triangle(opts as ConstructorParameters<typeof Triangle>[0]);
+      break;
 
     case 'textbox': {
       const text = (opts.text as string) ?? '';
       delete opts.text;
-      return new Textbox(text, opts as ConstructorParameters<typeof Textbox>[1]);
+      // If the text has a stroke, paint stroke behind fill so it doesn't eat into the letter glyph
+      if (opts.stroke && opts.stroke !== '') {
+        opts.paintFirst = 'stroke';
+      }
+      obj = new Textbox(text, opts as ConstructorParameters<typeof Textbox>[1]);
+      break;
     }
 
     case 'polygon': {
       const points = (opts.points as Array<{ x: number; y: number }>) ?? [];
       delete opts.points;
-      return new Polygon(points, opts as ConstructorParameters<typeof Polygon>[1]);
+      obj = new Polygon(points, opts as ConstructorParameters<typeof Polygon>[1]);
+      break;
     }
 
     case 'line': {
@@ -85,11 +113,23 @@ function createSingleObject(recipe: Record<string, unknown>): FabricObject | nul
         (opts.y2 as number) ?? 0,
       ] as [number, number, number, number];
       delete opts.x1; delete opts.y1; delete opts.x2; delete opts.y2;
-      return new Line(coords, opts as ConstructorParameters<typeof Line>[1]);
+      obj = new Line(coords, opts as ConstructorParameters<typeof Line>[1]);
+      break;
     }
 
     default:
       console.warn(`Unknown template object type: ${type}`);
       return null;
   }
+
+  // Apply gradient fill after construction — must be a Gradient instance
+  if (obj && gradientSpec) {
+    obj.set('fill', new Gradient({
+      type: gradientSpec.type as 'linear' | 'radial',
+      coords: gradientSpec.coords as Record<string, number>,
+      colorStops: gradientSpec.colorStops as Array<{ offset: number; color: string }>,
+    }));
+  }
+
+  return obj;
 }

@@ -58,12 +58,12 @@ function LoremIpsumPanel() {
           key={preset.label}
           type="button"
           onClick={() => handleInsert(preset)}
-          className="w-full rounded border border-gray-200 px-2 py-1.5 text-left text-xs text-gray-600 hover:border-blue-300 hover:bg-blue-50 dark:border-gray-600 dark:text-gray-300 dark:hover:border-blue-500 dark:hover:bg-blue-900/20"
+          className="w-full rounded border border-border px-2 py-1.5 text-left text-xs text-text-secondary hover:border-accent hover:bg-accent-subtle"
         >
           {preset.label}
         </button>
       ))}
-      <p className="mt-1 text-[10px] text-gray-400">
+      <p className="mt-1 text-[10px] text-text-tertiary">
         Click to insert placeholder text onto the canvas.
       </p>
     </div>

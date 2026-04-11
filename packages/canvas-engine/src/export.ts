@@ -25,6 +25,10 @@ export interface ExportOptions {
   multiplier?: number;
   /** Filename without extension */
   filename?: string;
+  /** If true, export with transparent background (PNG only) */
+  transparent?: boolean;
+  /** Page data URLs for multi-page PDF export (one PNG per page) */
+  pageDataUrls?: string[];
 }
 
 /**
@@ -46,11 +50,12 @@ export function exportCanvas(
     quality = 0.92,
     multiplier = 1,
     filename = 'design',
+    transparent = false,
   } = options;
 
   switch (format) {
     case 'png':
-      exportRaster(canvas, artboardWidth, artboardHeight, 'png', quality, multiplier, filename);
+      exportRaster(canvas, artboardWidth, artboardHeight, 'png', quality, multiplier, filename, transparent);
       break;
     case 'jpg':
       exportRaster(canvas, artboardWidth, artboardHeight, 'jpeg', quality, multiplier, filename);
@@ -59,7 +64,11 @@ export function exportCanvas(
       exportSVG(canvas, artboardWidth, artboardHeight, filename);
       break;
     case 'pdf':
-      exportPDF(canvas, artboardWidth, artboardHeight, quality, multiplier, filename);
+      if (options.pageDataUrls && options.pageDataUrls.length > 1) {
+        exportMultiPagePDF(options.pageDataUrls, artboardWidth, artboardHeight, filename);
+      } else {
+        exportPDF(canvas, artboardWidth, artboardHeight, quality, multiplier, filename);
+      }
       break;
   }
 }
@@ -79,6 +88,7 @@ function exportRaster(
   quality: number,
   multiplier: number,
   filename: string,
+  transparent = false,
 ): void {
   // Save current viewport state
   const originalVpt = [...canvas.viewportTransform];
@@ -87,7 +97,7 @@ function exportRaster(
   canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
 
   // Hide infrastructure objects before export
-  const hidden = hideInfrastructure(canvas);
+  const hidden = hideInfrastructure(canvas, transparent);
 
   const dataURL = canvas.toDataURL({
     format: mimeType,
@@ -195,20 +205,55 @@ function exportPDF(
   pdf.save(`${filename}.pdf`);
 }
 
+/**
+ * Export multiple pages as a single multi-page PDF.
+ *
+ * Each page data URL is added as a separate PDF page.
+ * Used when a design has multiple pages.
+ */
+function exportMultiPagePDF(
+  pageDataUrls: string[],
+  artboardWidth: number,
+  artboardHeight: number,
+  filename: string,
+): void {
+  const orientation = artboardWidth >= artboardHeight ? 'landscape' : 'portrait';
+  const pdf = new jsPDF({
+    orientation,
+    unit: 'px',
+    format: [artboardWidth, artboardHeight],
+    hotfixes: ['px_scaling'],
+  });
+
+  for (let i = 0; i < pageDataUrls.length; i++) {
+    if (i > 0) pdf.addPage([artboardWidth, artboardHeight], orientation);
+    pdf.addImage(pageDataUrls[i], 'PNG', 0, 0, artboardWidth, artboardHeight);
+  }
+
+  pdf.save(`${filename}.pdf`);
+}
+
 // ─── Helpers ───────────────────────────────────────────────────────
 
 /**
  * Hide infrastructure objects (artboard, grid, guides) before export.
  * Returns the list of hidden objects so they can be restored.
  */
-function hideInfrastructure(canvas: FabricCanvas): { obj: TaggedObject; wasVisible: boolean }[] {
+function hideInfrastructure(canvas: FabricCanvas, transparent = false): { obj: TaggedObject; wasVisible: boolean }[] {
   const hidden: { obj: TaggedObject; wasVisible: boolean }[] = [];
 
   for (const obj of canvas.getObjects()) {
     const tagged = obj as TaggedObject;
-    if (tagged.__isArtboard || tagged.__isGridLine || tagged.__isGuide || tagged.__isBgImage) {
+    // Always hide grid, guides, bg image; hide artboard only when NOT transparent
+    // (normally artboard is un-hidden for export, but if transparent=true we hide it entirely)
+    const isInfra = tagged.__isGridLine || tagged.__isGuide || tagged.__isBgImage || tagged.__isPenPreview || tagged.__isCropOverlay;
+    const isArtboard = !!tagged.__isArtboard;
+    if (isInfra || (isArtboard && transparent)) {
       hidden.push({ obj: tagged, wasVisible: tagged.visible ?? true });
       tagged.set('visible', false);
+    } else if (isArtboard && !transparent) {
+      // Keep artboard visible for normal export (shows background)
+      // But still track it so hideInfrastructure/show round-trips work
     }
   }
 

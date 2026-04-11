@@ -9,8 +9,9 @@
  * When they pick a blank canvas, we resize the artboard and clear everything.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ARTBOARD_PRESETS } from '@monet/shared';
+import { FocusTrap } from './A11y';
 import type { ArtboardPreset } from '@monet/shared';
 import { TEMPLATE_REGISTRY, getTemplateCategories } from '@monet/templates';
 import type { Template } from '@monet/templates';
@@ -79,28 +80,30 @@ export function TemplateBrowser({ isOpen, onClose }: TemplateBrowserProps) {
   };
 
   /** User picks a template — load its DesignDocument onto the canvas */
-  const handleTemplateSelect = (template: Template) => {
+  const handleTemplateSelect = useCallback((template: Template) => {
     setArtboardDimensions(template.dimensions.width, template.dimensions.height);
     engine.fromJSON(template.document);
+    addRecentTemplate(template.name);
     onClose();
-  };
+  }, [setArtboardDimensions, onClose]);
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       role="dialog"
       aria-modal="true"
       aria-label="Template browser"
     >
-      <div className="flex h-[85vh] w-[90vw] max-w-5xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-gray-800">
+      <FocusTrap>
+      <div className="animate-scale-up flex h-[85vh] w-[90vw] max-w-5xl flex-col overflow-hidden rounded-lg bg-overlay shadow-xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 dark:border-gray-700 py-4">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">New Design</h2>
+        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+          <h2 className="text-xl font-semibold text-text-primary">New Design</h2>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-text-tertiary hover:bg-wash hover:text-text-secondary"
             aria-label="Close"
           >
             ✕
@@ -108,7 +111,7 @@ export function TemplateBrowser({ isOpen, onClose }: TemplateBrowserProps) {
         </div>
 
         {/* Tab bar */}
-        <div className="flex border-b border-gray-200 px-6 dark:border-gray-700">
+        <div className="flex border-b border-border px-6">
           <TabButton active={activeTab === 'templates'} onClick={() => setActiveTab('templates')}>
             Templates
           </TabButton>
@@ -138,25 +141,25 @@ export function TemplateBrowser({ isOpen, onClose }: TemplateBrowserProps) {
               {/* User-saved templates */}
               {userTemplates.length > 0 && (
                 <div className="mb-6">
-                  <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  <h3 className="mb-3 text-sm font-semibold text-text-primary">
                     My Templates
                   </h3>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                     {userTemplates.map((ut) => (
                       <div key={ut.id} className="group relative">
                         <button type="button" onClick={() => handleUserTemplateSelect(ut)}
-                          className="w-full overflow-hidden rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-md dark:border-gray-700 dark:hover:border-blue-500">
-                          <div className="flex h-24 items-center justify-center text-xs text-gray-400"
-                            style={{ backgroundColor: ut.document.background?.value || '#f3f4f6' }}>
+                          className="w-full overflow-hidden rounded-lg border border-border hover:border-accent hover:shadow-md">
+                          <div className="flex h-24 items-center justify-center text-xs text-text-tertiary"
+                            style={{ backgroundColor: ut.document.background?.value || '#f5f0eb' }}>
                             {ut.dimensions.width} &times; {ut.dimensions.height}
                           </div>
                           <div className="px-2 py-1.5">
-                            <p className="truncate text-xs font-medium text-gray-700 dark:text-gray-200">{ut.name}</p>
-                            <p className="truncate text-[10px] text-gray-400">{ut.category}</p>
+                            <p className="truncate text-xs font-medium text-text-primary">{ut.name}</p>
+                            <p className="truncate text-[10px] text-text-tertiary">{ut.category}</p>
                           </div>
                         </button>
                         <button type="button" onClick={(e) => handleDeleteUserTemplate(ut.id, e)}
-                          className="absolute right-1 top-1 hidden rounded bg-red-500 px-1.5 py-0.5 text-[9px] text-white group-hover:block"
+                          className="absolute right-1 top-1 hidden rounded bg-danger-subtle0 px-1.5 py-0.5 text-[9px] text-accent-fg group-hover:block"
                           title="Delete template">
                           &times;
                         </button>
@@ -165,6 +168,35 @@ export function TemplateBrowser({ isOpen, onClose }: TemplateBrowserProps) {
                   </div>
                 </div>
               )}
+
+              {/* Recently used templates */}
+              {(() => {
+                const recentNames = getRecentTemplates();
+                const recentTemplates = recentNames
+                  .map((name) => TEMPLATE_REGISTRY.find((t) => t.name === name))
+                  .filter((t): t is Template => !!t);
+                if (recentTemplates.length === 0) return null;
+                return (
+                  <div className="mb-6">
+                    <h3 className="mb-3 text-sm font-semibold text-text-primary">Recent</h3>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                      {recentTemplates.map((t) => (
+                        <button key={t.name} type="button" onClick={() => handleTemplateSelect(t)}
+                          className="overflow-hidden rounded-lg border border-border text-left hover:border-accent hover:shadow-md">
+                          <div className="flex h-24 items-center justify-center text-xs text-text-tertiary"
+                            style={{ backgroundColor: t.document.background?.value || '#f5f0eb' }}>
+                            {t.dimensions.width} &times; {t.dimensions.height}
+                          </div>
+                          <div className="px-2 py-1.5">
+                            <p className="truncate text-xs font-medium text-text-primary">{t.name}</p>
+                            <p className="truncate text-[10px] text-text-tertiary">{t.category}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Built-in templates */}
               <TemplatesSection
@@ -176,13 +208,13 @@ export function TemplateBrowser({ isOpen, onClose }: TemplateBrowserProps) {
 
           {activeTab === 'ai' && (
             <div className="flex flex-col items-center justify-center py-8">
-              <p className="mb-4 text-center text-sm text-gray-500 dark:text-gray-400">
+              <p className="mb-4 text-center text-sm text-text-secondary">
                 Describe the design you want and AI will create it for you.
               </p>
               <button
                 type="button"
                 onClick={() => setShowAIDialog(true)}
-                className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white shadow hover:bg-blue-700"
+                className="rounded-lg bg-accent px-6 py-3 text-sm font-medium text-accent-fg shadow hover:bg-accent-hover"
               >
                 Open AI Generator
               </button>
@@ -195,6 +227,7 @@ export function TemplateBrowser({ isOpen, onClose }: TemplateBrowserProps) {
           <AIGenerateDialog onClose={() => { setShowAIDialog(false); onClose(); }} />
         )}
       </div>
+      </FocusTrap>
     </div>
   );
 }
@@ -223,27 +256,27 @@ function BlankCanvasSection({
     <div>
       {/* Custom dimensions */}
       <div className="mb-8">
-        <h3 className="mb-3 text-sm font-semibold text-gray-600">Custom Size</h3>
+        <h3 className="mb-3 text-sm font-semibold text-text-secondary">Custom Size</h3>
         <div className="flex items-end gap-3">
           <div>
-            <label className="mb-1 block text-xs text-gray-400">Width (px)</label>
+            <label className="mb-1 block text-xs text-text-tertiary">Width (px)</label>
             <input
               type="number" min={100} max={5000} value={customWidth}
               onChange={(e) => onCustomWidthChange(Number(e.target.value))}
-              className="w-24 rounded border border-gray-300 px-2 py-1.5 text-sm"
+              className="w-24 rounded border border-border-strong px-2 py-1.5 text-sm"
             />
           </div>
-          <span className="pb-2 text-gray-400">×</span>
+          <span className="pb-2 text-text-tertiary">×</span>
           <div>
-            <label className="mb-1 block text-xs text-gray-400">Height (px)</label>
+            <label className="mb-1 block text-xs text-text-tertiary">Height (px)</label>
             <input
               type="number" min={100} max={5000} value={customHeight}
               onChange={(e) => onCustomHeightChange(Number(e.target.value))}
-              className="w-24 rounded border border-gray-300 px-2 py-1.5 text-sm"
+              className="w-24 rounded border border-border-strong px-2 py-1.5 text-sm"
             />
           </div>
           <button type="button" onClick={onCustomCreate}
-            className="rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
+            className="rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-accent-fg hover:bg-accent-hover">
             Create
           </button>
         </div>
@@ -252,19 +285,19 @@ function BlankCanvasSection({
       {/* Preset categories */}
       {Object.entries(presetsByCategory).map(([category, presets]) => (
         <div key={category} className="mb-6">
-          <h3 className="mb-3 text-sm font-semibold text-gray-600">{category}</h3>
+          <h3 className="mb-3 text-sm font-semibold text-text-secondary">{category}</h3>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {presets.map((preset) => (
               <button
                 key={preset.name}
                 type="button"
                 onClick={() => onPresetSelect(preset)}
-                className="flex flex-col items-center gap-2 rounded-lg border border-gray-200 p-4 text-center hover:border-blue-400 hover:bg-blue-50"
+                className="flex flex-col items-center gap-2 rounded-lg border border-border p-4 text-center hover:border-accent hover:bg-accent-subtle"
               >
                 {/* Mini preview showing aspect ratio */}
                 <PresetPreview width={preset.width} height={preset.height} />
-                <span className="text-xs font-medium text-gray-700">{preset.name}</span>
-                <span className="text-[10px] text-gray-400">
+                <span className="text-xs font-medium text-text-primary">{preset.name}</span>
+                <span className="text-[10px] text-text-tertiary">
                   {preset.width} × {preset.height}
                 </span>
               </button>
@@ -285,7 +318,7 @@ function PresetPreview({ width, height }: { width: number; height: number }) {
 
   return (
     <div
-      className="rounded border border-gray-300 bg-white"
+      className="rounded border border-border-strong bg-surface"
       style={{ width: `${w}px`, height: `${h}px` }}
     />
   );
@@ -305,7 +338,7 @@ function TemplatesSection({
         const templates = TEMPLATE_REGISTRY.filter((t) => t.category === category);
         return (
           <div key={category} className="mb-8">
-            <h3 className="mb-3 text-sm font-semibold text-gray-600">{category}</h3>
+            <h3 className="mb-3 text-sm font-semibold text-text-secondary">{category}</h3>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
               {templates.map((template) => (
                 <TemplateCard
@@ -326,29 +359,29 @@ function TemplateCard({ template, onSelect }: { template: Template; onSelect: ()
   // Determine background color from the template for the preview card
   const bgColor = template.document.background.type === 'solid'
     ? template.document.background.value
-    : '#f3f4f6';
+    : '#f5f0eb';
 
   return (
     <button
       type="button"
       onClick={onSelect}
-      className="group flex flex-col overflow-hidden rounded-lg border border-gray-200 text-left hover:border-blue-400 hover:shadow-md"
+      className="group flex flex-col overflow-hidden rounded-lg border border-border text-left hover:border-accent hover:shadow-md"
     >
       {/* Color preview area */}
       <div
         className="flex h-32 items-center justify-center"
         style={{ backgroundColor: bgColor }}
       >
-        <span className="text-xs font-medium text-white/80 drop-shadow">
+        <span className="text-xs font-medium text-accent-fg/80 drop-shadow">
           {template.dimensions.width} × {template.dimensions.height}
         </span>
       </div>
       {/* Info */}
       <div className="p-3">
-        <p className="text-sm font-medium text-gray-800 group-hover:text-blue-600">
+        <p className="text-sm font-medium text-text-primary group-hover:text-accent">
           {template.name}
         </p>
-        <p className="mt-0.5 text-xs text-gray-400">
+        <p className="mt-0.5 text-xs text-text-tertiary">
           {template.subcategory || template.category}
         </p>
       </div>
@@ -357,6 +390,27 @@ function TemplateCard({ template, onSelect }: { template: Template; onSelect: ()
 }
 
 // ─── Tab Button ────────────────────────────────────────────────────
+
+// ─── Recently Used Templates ──────────────────────────────────────
+
+const RECENT_TEMPLATES_KEY = 'monet-recent-templates';
+const MAX_RECENT_TEMPLATES = 5;
+
+function getRecentTemplates(): string[] {
+  try {
+    const stored = localStorage.getItem(RECENT_TEMPLATES_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch { return []; }
+}
+
+function addRecentTemplate(name: string): void {
+  const recent = getRecentTemplates().filter((n) => n !== name);
+  recent.unshift(name);
+  if (recent.length > MAX_RECENT_TEMPLATES) recent.pop();
+  localStorage.setItem(RECENT_TEMPLATES_KEY, JSON.stringify(recent));
+}
+
+// ─── Sub-components ───────────────────────────────────────────────
 
 function TabButton({ active, onClick, children }: {
   active: boolean; onClick: () => void; children: React.ReactNode;
@@ -367,8 +421,8 @@ function TabButton({ active, onClick, children }: {
       onClick={onClick}
       className={`border-b-2 px-4 py-2 text-sm font-medium ${
         active
-          ? 'border-blue-600 text-blue-600'
-          : 'border-transparent text-gray-500 hover:text-gray-700'
+          ? 'border-accent text-accent'
+          : 'border-transparent text-text-secondary hover:text-text-primary'
       }`}
     >
       {children}

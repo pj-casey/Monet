@@ -16,9 +16,9 @@ import { Textbox, type FabricObject } from 'fabric';
 import type { TextOptions } from '@monet/shared';
 
 /** Default text properties */
-const DEFAULT_FONT_FAMILY = 'Inter';
+const DEFAULT_FONT_FAMILY = 'DM Sans';
 const DEFAULT_FONT_SIZE = 32;
-const DEFAULT_FILL = '#333333';
+const DEFAULT_FILL = '#2d2a26'; // warm near-black — matches --text-primary
 const DEFAULT_TEXT = 'Type something';
 const DEFAULT_WIDTH = 300;
 
@@ -136,6 +136,7 @@ export async function updateTextProps(
     await loadGoogleFont(props.fontFamily);
   }
 
+  if (props.text !== undefined) textbox.set('text', props.text);
   if (props.fontFamily !== undefined) textbox.set('fontFamily', props.fontFamily);
   if (props.fontSize !== undefined) textbox.set('fontSize', props.fontSize);
   if (props.fontWeight !== undefined) textbox.set('fontWeight', props.fontWeight);

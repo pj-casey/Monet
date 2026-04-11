@@ -12,7 +12,7 @@ import { Canvas as FabricCanvas, Line, type FabricObject } from 'fabric';
 const DEFAULT_GRID_SIZE = 20;
 
 /** Color of grid lines */
-const GRID_COLOR = 'rgba(0, 0, 0, 0.08)';
+const GRID_COLOR = 'oklch(0.30 0.02 60 / 0.08)'; // warm-tinted grid lines
 
 /**
  * Draw grid lines on the artboard.

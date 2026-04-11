@@ -16,12 +16,12 @@ import { useEffect, useRef } from 'react';
 import { engine } from './Canvas';
 import { useEditorStore } from '../stores/editor-store';
 
-/** Colors */
-const BG = '#f1f5f9';         // slate-100
-const BG_DARK = '#1e293b';    // slate-800
-const TICK_COLOR = '#94a3b8';  // slate-400
-const TEXT_COLOR = '#64748b';  // slate-500
-const ARTBOARD_BAND = 'rgba(59, 130, 246, 0.12)'; // blue highlight
+/** Colors — warm tones matching DESIGN.md tokens (can't use CSS vars in canvas 2D) */
+const BG = '#f5f0eb';         // warm cream (matches --bg-surface light)
+const BG_DARK = '#2d2a26';    // warm dark (matches --bg-surface dark)
+const TICK_COLOR = '#9a9088';  // warm gray (matches --text-tertiary)
+const TEXT_COLOR = '#7a7068';  // warm mid (matches --text-secondary)
+const ARTBOARD_BAND = 'rgba(196, 112, 74, 0.12)'; // accent band (warm sienna)
 
 export function Rulers() {
   const hRef = useRef<HTMLCanvasElement>(null);
@@ -91,7 +91,7 @@ export function Rulers() {
       />
       {/* Corner square */}
       <div
-        className="absolute left-0 top-0 z-10 h-[22px] w-[22px] bg-slate-100 border-b border-r border-slate-200 dark:bg-slate-800 dark:border-slate-700"
+        className="absolute left-0 top-0 z-10 h-[22px] w-[22px] bg-surface border-b border-r border-border"
         style={{ pointerEvents: 'none' }}
       />
     </>
@@ -172,7 +172,7 @@ function drawHorizontal(canvas: HTMLCanvasElement, zoom: number, panX: number, a
   }
 
   // Bottom border
-  ctx.strokeStyle = isDark ? '#334155' : '#e2e8f0';
+  ctx.strokeStyle = isDark ? '#3d3830' : '#e5ddd5';
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(0, cssH - 0.5);
@@ -240,7 +240,7 @@ function drawVertical(canvas: HTMLCanvasElement, zoom: number, panY: number, art
   }
 
   // Right border
-  ctx.strokeStyle = isDark ? '#334155' : '#e2e8f0';
+  ctx.strokeStyle = isDark ? '#3d3830' : '#e5ddd5';
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(cssW - 0.5, 0);

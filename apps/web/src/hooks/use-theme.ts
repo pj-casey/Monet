@@ -1,28 +1,31 @@
 /**
- * useTheme — manages dark/light mode with localStorage persistence.
+ * useTheme — manages dark/light mode.
  *
- * How it works:
- * 1. On first load, checks localStorage for a saved preference
- * 2. If none, respects the system preference (prefers-color-scheme)
- * 3. Adds/removes the "dark" class on <html>, which Tailwind uses
- *    to activate dark: variant classes
- * 4. Saves the preference to localStorage when toggled
+ * ARCHITECTURE (final, bullet-proof):
+ * - <html class="dark"> is baked into index.html. That's the default. Period.
+ * - This hook reads the class on mount and toggles it in memory.
+ * - NO localStorage. No persistence. No migration. No stale values.
+ * - Every page load starts dark. Toggle works within the session.
+ * - Nothing else in the codebase can accidentally override the theme.
+ *
+ * Why no persistence? Because every previous attempt to persist the theme
+ * via localStorage was defeated by: migration scripts re-writing the key,
+ * useEffect firing on mount and persisting transient states, HMR glitches,
+ * and race conditions. The only way to guarantee dark-by-default is to
+ * not store the preference at all. If we ever need persistence, it should
+ * go through the server/account settings, not localStorage.
  */
 
 import { useState, useEffect, useCallback } from 'react';
 
-const STORAGE_KEY = 'monet-theme';
-
-function getInitialTheme(): 'light' | 'dark' {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === 'dark' || stored === 'light') return stored;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+function readThemeFromDOM(): 'light' | 'dark' {
+  return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 }
 
 export function useTheme() {
-  const [theme, setThemeState] = useState<'light' | 'dark'>(getInitialTheme);
+  const [theme, setThemeState] = useState<'light' | 'dark'>(readThemeFromDOM);
 
-  // Apply the dark class to <html> whenever theme changes
+  // Sync <html> class whenever theme changes
   useEffect(() => {
     const root = document.documentElement;
     if (theme === 'dark') {
@@ -30,7 +33,6 @@ export function useTheme() {
     } else {
       root.classList.remove('dark');
     }
-    localStorage.setItem(STORAGE_KEY, theme);
   }, [theme]);
 
   const toggleTheme = useCallback(() => {

@@ -1,27 +1,37 @@
 /**
  * App — the root layout of the Monet editor.
  *
+ * Two modes:
+ * 1. **Welcome Screen**: shown when no design is loaded (first visit or after
+ *    clicking "back to home"). Displays category cards for new users or a
+ *    saved-designs dashboard for returning users.
+ * 2. **Editor**: the full canvas editor with simplified toolbar, wide left
+ *    sidebar (Design | Elements | Text | Upload | AI tabs), and contextual
+ *    right sidebar (only appears when an object is selected).
+ *
  * Features:
  * - Auto-save to IndexedDB (debounced 2s, immediate on blur/unload)
- * - My Designs dashboard, .monet file import/export
- * - Dark mode, responsive sidebars, shortcut sheet
- * - Modals: TemplateBrowser, ExportDialog, ShortcutSheet, MyDesigns
+ * - Dark mode, responsive layout
+ * - Modals: TemplateBrowser, ExportDialog, ShortcutSheet, ResizeDialog, etc.
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import type { SelectedObjectProps, LayerInfo } from '@monet/shared';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import type { SelectedObjectProps, LayerInfo, ArtboardPreset } from '@monet/shared';
 import { Canvas, onSelectionChange, onLayersChange, engine } from './components/Canvas';
 import { Toolbar } from './components/Toolbar';
 import { BottomBar } from './components/BottomBar';
+import { PageNavigator } from './components/PageNavigator';
 import { LeftSidebar } from './components/LeftSidebar';
-import { PropertiesPanel } from './components/PropertiesPanel';
-import { LayerPanel } from './components/LayerPanel';
+import { RightSidebar } from './components/RightSidebar';
+import { WelcomeScreen } from './components/WelcomeScreen';
+import { CanvasHints } from './components/CanvasHints';
+import { ContextMenu } from './components/ContextMenu';
 import { TemplateBrowser } from './components/TemplateBrowser';
 import { ExportDialog } from './components/ExportDialog';
 import { ShortcutSheet } from './components/ShortcutSheet';
 import { MyDesigns } from './components/MyDesigns';
 import { ResizeDialog } from './components/ResizeDialog';
-import { AuthModal, checkAuth, logout, type AuthUser } from './components/AuthModal';
+import { AuthModal, checkAuth, logout as doLogout, type AuthUser } from './components/AuthModal';
 import { pullAndMerge, pushAllLocal } from './lib/sync';
 import { useCollaboration } from './hooks/use-collaboration';
 import { CollabToolbar } from './components/CollabToolbar';
@@ -34,6 +44,9 @@ import { pluginManager } from './lib/plugin-manager';
 import { CommentsPanel } from './components/CommentsPanel';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Onboarding } from './components/Onboarding';
+import { CommandPalette } from './components/CommandPalette';
+import { ContextualAI } from './components/ContextualAI';
+import { TabSuggest } from './components/TabSuggest';
 import { SkipLink, LiveRegion } from './components/A11y';
 import { migrateFromOpenCanvas } from './lib/migrate-storage';
 import { useTheme } from './hooks/use-theme';
@@ -41,8 +54,13 @@ import { useAutosave } from './hooks/use-autosave';
 import { getCurrentDesignId, getDesign } from './lib/db';
 import { exportDesignFile, importDesignFile } from './lib/file-io';
 import { useEditorStore } from './stores/editor-store';
+import type { Template } from '@monet/templates';
+
+/** Tracks whether we're on the welcome screen or in the editor */
+type AppView = 'welcome' | 'editor';
 
 function App() {
+  const [view, setView] = useState<AppView>('welcome');
   const [selection, setSelection] = useState<SelectedObjectProps | null>(null);
   const [layers, setLayers] = useState<LayerInfo[]>([]);
   const [templateBrowserOpen, setTemplateBrowserOpen] = useState(false);
@@ -54,10 +72,10 @@ function App() {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [publishOpen, setPublishOpen] = useState(false);
   const [marketplaceOpen, setMarketplaceOpen] = useState(false);
-  const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
   const { isDark, toggleTheme } = useTheme();
   const autosave = useAutosave(!!authUser);
@@ -82,24 +100,27 @@ function App() {
   useEffect(() => { return onSelectionChange(setSelection); }, []);
   useEffect(() => { return onLayersChange(setLayers); }, []);
 
-  // Auto-load the last design on startup
+  // Auto-load the last design on startup — if found, go straight to editor
   useEffect(() => {
     if (initialized) return;
     const loadLast = async () => {
-      // Wait a tick for the canvas engine to initialize
-      await new Promise((r) => setTimeout(r, 100));
-      if (!engine.isInitialized()) return;
-
+      // Check if there's a saved design to restore
       const lastId = getCurrentDesignId();
       if (lastId) {
         const saved = await getDesign(lastId);
         if (saved) {
+          // We have a saved design — switch to editor view.
+          // The Canvas component will mount and initialize the engine.
+          // The pendingDoc effect will load the design once the engine is ready.
           autosave.loadDesign(saved);
           setArtboardDimensions(saved.document.dimensions.width, saved.document.dimensions.height);
+          pendingDoc.current = saved.document;
+          setView('editor');
           setInitialized(true);
           return;
         }
       }
+      // No saved design — show welcome screen (no engine needed)
       setInitialized(true);
     };
     loadLast();
@@ -123,6 +144,17 @@ function App() {
         e.preventDefault();
         setShortcutSheetOpen((prev) => !prev);
       }
+      // "/" or Cmd+K = command palette (not in inputs, not during text editing)
+      if (
+        (e.key === '/' && !e.ctrlKey && !e.metaKey && !isInput) ||
+        ((e.ctrlKey || e.metaKey) && e.key === 'k')
+      ) {
+        // Don't open if a text object is being edited on canvas
+        const active = engine.getFabricCanvas()?.getActiveObject();
+        if (active && (active as any).isEditing) return;
+        e.preventDefault();
+        setCommandPaletteOpen(true);
+      }
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
@@ -137,17 +169,64 @@ function App() {
     return fabricCanvas.getObjects().indexOf(active);
   }, [selection]);
 
-  /** Handle opening a design from My Designs */
+  /** Handle opening a design from My Designs or Welcome Screen */
   const handleOpenDesign = useCallback((saved: import('./lib/db').SavedDesign) => {
     autosave.loadDesign(saved);
     setArtboardDimensions(saved.document.dimensions.width, saved.document.dimensions.height);
+    setView('editor');
+    setMyDesignsOpen(false);
   }, [autosave, setArtboardDimensions]);
 
-  /** Handle creating a new design (from template browser) */
+  /** Handle creating a new design — go to editor and show template browser */
   const handleNewDesign = useCallback(() => {
     autosave.newDesign();
+    setView('editor');
     setTemplateBrowserOpen(true);
   }, [autosave]);
+
+  // Pending document to load after canvas mounts (used by welcome screen flows)
+  const pendingDoc = useRef<import('@monet/shared').DesignDocument | null>(null);
+
+  // When the view switches to editor, load the pending document once Canvas mounts
+  useEffect(() => {
+    if (view !== 'editor' || !pendingDoc.current) return;
+    const doc = pendingDoc.current;
+    pendingDoc.current = null;
+    // Wait for Canvas component to mount and initialize the engine
+    const tryLoad = () => {
+      if (engine.isInitialized()) {
+        engine.fromJSON(doc);
+      } else {
+        setTimeout(tryLoad, 50);
+      }
+    };
+    setTimeout(tryLoad, 50);
+  }, [view]);
+
+  /** Start from a template (from welcome screen category grid) */
+  const handleStartFromTemplate = useCallback((template: Template) => {
+    autosave.newDesign();
+    autosave.setDesignName(template.name);
+    setArtboardDimensions(template.dimensions.width, template.dimensions.height);
+    // Defer fromJSON until Canvas mounts
+    pendingDoc.current = template.document;
+    setView('editor');
+  }, [autosave, setArtboardDimensions]);
+
+  /** Start from a blank preset (from welcome screen) */
+  const handleStartBlank = useCallback((preset: ArtboardPreset) => {
+    autosave.newDesign();
+    setArtboardDimensions(preset.width, preset.height);
+    // Defer fromJSON until Canvas mounts
+    pendingDoc.current = {
+      version: 1, id: '', name: 'Untitled Design',
+      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+      dimensions: { width: preset.width, height: preset.height },
+      background: { type: 'solid', value: '#ffffff' },
+      objects: [], metadata: {},
+    };
+    setView('editor');
+  }, [autosave, setArtboardDimensions]);
 
   /** Open a resized design on the canvas (from Magic Resize) */
   const handleOpenResized = useCallback((doc: import('@monet/shared').DesignDocument) => {
@@ -163,6 +242,7 @@ function App() {
     autosave.setDesignName(doc.name || 'From Marketplace');
     setArtboardDimensions(doc.dimensions.width, doc.dimensions.height);
     engine.fromJSON(doc);
+    setView('editor');
   }, [autosave, setArtboardDimensions]);
 
   /** Export current design as .monet file */
@@ -179,43 +259,51 @@ function App() {
       autosave.setDesignName(doc.name);
       setArtboardDimensions(doc.dimensions.width, doc.dimensions.height);
       engine.fromJSON(doc);
+      setView('editor');
     }
   }, [autosave, setArtboardDimensions]);
 
+  // ─── Welcome Screen ─────────────────────────────────────────────
+  // No wrapper div needed — <html class="dark"> handles theme globally
+  if (view === 'welcome' && initialized) {
+    return (
+      <div className="editor-shell">
+        <WelcomeScreen
+          onOpenDesign={handleOpenDesign}
+          onNewDesign={handleNewDesign}
+          onStartFromTemplate={handleStartFromTemplate}
+          onStartBlank={handleStartBlank}
+          isDark={isDark}
+          onToggleTheme={toggleTheme}
+        />
+      </div>
+    );
+  }
+
+  // ─── Editor ─────────────────────────────────────────────────────
   return (
-    <div className="flex h-screen w-screen flex-col bg-gray-50 dark:bg-gray-950">
+    <div className="editor-shell flex h-screen w-screen flex-col bg-canvas">
       <SkipLink />
       <LiveRegion message={autosave.status === 'saved' ? 'Design saved' : autosave.status === 'saving' ? 'Saving design' : ''} />
       <ErrorBoundary name="Toolbar">
       <Toolbar
-        onNewDesign={handleNewDesign}
         onExport={() => setExportDialogOpen(true)}
-        onSave={autosave.saveNow}
         onMyDesigns={() => setMyDesignsOpen(true)}
-        onResize={() => setResizeDialogOpen(true)}
         onSaveFile={handleExportFile}
         onOpenFile={handleImportFile}
-        onPublish={() => setPublishOpen(true)}
-        onMarketplace={() => setMarketplaceOpen(true)}
-        onSaveAsTemplate={() => setSaveTemplateOpen(true)}
-        userName={authUser?.name || authUser?.email || null}
-        onLogin={() => setAuthModalOpen(true)}
-        onLogout={async () => { await logout(); setAuthUser(null); }}
         saveStatus={autosave.status}
         isDark={isDark}
         onToggleTheme={toggleTheme}
-        leftSidebarOpen={leftSidebarOpen}
-        onToggleLeftSidebar={() => setLeftSidebarOpen((p) => !p)}
-        rightSidebarOpen={rightSidebarOpen}
-        onToggleRightSidebar={() => setRightSidebarOpen((p) => !p)}
         onShowShortcuts={() => setShortcutSheetOpen(true)}
+        userName={authUser?.name || authUser?.email || null}
+        onLogin={() => setAuthModalOpen(true)}
+        onLogout={async () => { await doLogout(); setAuthUser(null); }}
       />
-
-      {/* Collaboration toolbar — shows when collab session is active */}
       </ErrorBoundary>
 
+      {/* Collaboration toolbar — shows when collab session is active */}
       {collab.connected && (
-        <div className="flex items-center justify-center gap-2 border-b border-gray-200 bg-gray-50 px-3 py-1 dark:border-gray-700 dark:bg-gray-900">
+        <div className="flex items-center justify-center gap-2 border-b border-border bg-canvas px-3 py-1">
           <CollabToolbar
             users={collab.collabUsers}
             designId={autosave.currentId}
@@ -224,44 +312,68 @@ function App() {
             onFollow={collab.setFollowingUserId}
           />
           <button type="button" onClick={() => collab.setCommentsOpen((p) => !p)}
-            className="rounded-md border border-gray-300 px-2 py-0.5 text-[10px] text-gray-500 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-800">
+            className="rounded-md border border-border px-2 py-0.5 text-[10px] text-text-secondary hover:bg-wash">
             Comments ({collab.comments.length})
           </button>
         </div>
       )}
 
       <main id="canvas-area" className="relative flex flex-1 overflow-hidden">
-        {leftSidebarOpen && (
-          <ErrorBoundary name="Left Sidebar">
+        {/* Left sidebar — always visible in editor */}
+        <ErrorBoundary name="Left Sidebar">
           <div className="z-20 flex-shrink-0 max-lg:absolute max-lg:inset-y-0 max-lg:left-0 max-lg:shadow-xl">
-            <LeftSidebar />
+            <LeftSidebar
+              onOpenTemplates={() => setTemplateBrowserOpen(true)}
+              onOpenResize={() => setResizeDialogOpen(true)}
+              onSaveAsTemplate={() => setSaveTemplateOpen(true)}
+            />
           </div>
-          </ErrorBoundary>
-        )}
-
-        <ErrorBoundary name="Canvas">
-        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
-          <Canvas />
-          <CursorOverlay cursors={collab.cursors} />
-        </div>
         </ErrorBoundary>
 
-        {rightSidebarOpen && (
-          <ErrorBoundary name="Right Sidebar">
-          <div className="z-20 flex w-64 flex-shrink-0 flex-col overflow-hidden border-l border-gray-200 dark:border-gray-700 max-lg:absolute max-lg:inset-y-0 max-lg:right-0 max-lg:bg-white max-lg:shadow-xl max-lg:dark:bg-gray-900">
-            <div className="flex-1 overflow-y-auto">
-              <PropertiesPanel selection={selection} />
-            </div>
-            <LayerPanel layers={layers} selectedIndex={getSelectedLayerIndex()} />
+        {/* Canvas */}
+        <ErrorBoundary name="Canvas">
+          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden"
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setContextMenu({ x: e.clientX, y: e.clientY });
+            }}
+          >
+            <Canvas />
+            <CursorOverlay cursors={collab.cursors} />
+            <CanvasHints
+              hasObjects={layers.length > 0}
+              onGenerateAI={() => setTemplateBrowserOpen(true)}
+              onBrowseTemplates={() => setTemplateBrowserOpen(true)}
+            />
+            {contextMenu && (
+              <ContextMenu
+                x={contextMenu.x}
+                y={contextMenu.y}
+                hasSelection={selection !== null}
+                isMultiSelect={selection?.objectType === 'activeselection'}
+                isLocked={(() => { const c = engine.getFabricCanvas(); const a = c?.getActiveObject(); return a ? !a.selectable : false; })()}
+                onClose={() => setContextMenu(null)}
+              />
+            )}
           </div>
-          </ErrorBoundary>
-        )}
+        </ErrorBoundary>
+
+        {/* Right sidebar — contextual, only visible when object selected */}
+        <ErrorBoundary name="Right Sidebar">
+          <RightSidebar
+            selection={selection}
+            layers={layers}
+            selectedIndex={getSelectedLayerIndex()}
+          />
+        </ErrorBoundary>
       </main>
 
       <CommentsPanel comments={collab.comments} isOpen={collab.commentsOpen} onClose={() => collab.setCommentsOpen(false)} />
 
+      <PageNavigator />
       <BottomBar />
 
+      {/* Modals */}
       <TemplateBrowser isOpen={templateBrowserOpen} onClose={() => setTemplateBrowserOpen(false)} />
       <ExportDialog isOpen={exportDialogOpen} onClose={() => setExportDialogOpen(false)} />
       <ShortcutSheet isOpen={shortcutSheetOpen} onClose={() => setShortcutSheetOpen(false)} />
@@ -282,6 +394,26 @@ function App() {
           }
         }} />
       <Onboarding />
+
+      {/* Command Palette — opens on / or Cmd+K */}
+      <CommandPalette
+        isOpen={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        onExport={() => { setCommandPaletteOpen(false); setExportDialogOpen(true); }}
+        onResize={() => { setCommandPaletteOpen(false); setResizeDialogOpen(true); }}
+        onMyDesigns={() => { setCommandPaletteOpen(false); setMyDesignsOpen(true); }}
+        onShortcuts={() => { setCommandPaletteOpen(false); setShortcutSheetOpen(true); }}
+        onTemplates={() => { setCommandPaletteOpen(false); setTemplateBrowserOpen(true); }}
+        onNew={() => { setCommandPaletteOpen(false); autosave.newDesign(); }}
+        isDark={isDark}
+        onToggleTheme={toggleTheme}
+      />
+
+      {/* Contextual AI actions — floating buttons near selected objects */}
+      <ContextualAI />
+
+      {/* Tab-to-suggest — AI copy suggestions on empty text objects */}
+      <TabSuggest />
     </div>
   );
 }

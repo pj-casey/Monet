@@ -11,9 +11,28 @@
  */
 
 import { create } from 'zustand';
+import type { DesignPage } from '@monet/shared';
 
 /** The tools a user can pick from the toolbar */
 export type EditorTool = 'select' | 'text' | 'shape' | 'image' | 'draw' | 'pen' | 'pan' | 'assets' | 'brand' | 'plugins' | 'ai';
+
+/** Visual style that can be copied and pasted between objects */
+export interface CopiedStyle {
+  fill?: string;
+  stroke?: string;
+  strokeWidth?: number;
+  opacity?: number;
+  shadow?: { color: string; blur: number; offsetX: number; offsetY: number } | null;
+  blendMode?: string;
+  // Text-specific
+  fontFamily?: string;
+  fontSize?: number;
+  fontWeight?: string;
+  fontStyle?: string;
+  charSpacing?: number;
+  lineHeight?: number;
+  textAlign?: string;
+}
 
 interface EditorState {
   /** Which tool is currently active (e.g., "select" for the pointer tool) */
@@ -36,6 +55,11 @@ interface EditorState {
   /** Whether aspect ratio is locked during resize */
   lockAspectRatio: boolean;
 
+  /** Multi-page state */
+  pages: DesignPage[];
+  currentPageIndex: number;
+  pageCount: number;
+
   /** Switch to a different tool */
   setActiveTool: (tool: EditorTool) => void;
   /** Set the zoom level (called by canvas engine when zoom changes) */
@@ -54,6 +78,13 @@ interface EditorState {
   toggleRulers: () => void;
   /** Toggle aspect ratio lock */
   toggleLockAspectRatio: () => void;
+  /** Update pages state from engine callback */
+  setPagesState: (pages: DesignPage[], currentIndex: number) => void;
+
+  /** Copied visual style for paste-style */
+  copiedStyle: CopiedStyle | null;
+  /** Store a copied style */
+  setCopiedStyle: (style: CopiedStyle | null) => void;
 }
 
 export const useEditorStore = create<EditorState>((set) => ({
@@ -67,6 +98,9 @@ export const useEditorStore = create<EditorState>((set) => ({
   artboardHeight: 1080,
   rulersVisible: false,
   lockAspectRatio: false,
+  pages: [{ id: 'default', name: 'Page 1', objects: [] }],
+  currentPageIndex: 0,
+  pageCount: 1,
 
   setActiveTool: (tool) => set({ activeTool: tool }),
   setZoom: (zoom) => set({ zoom }),
@@ -83,4 +117,9 @@ export const useEditorStore = create<EditorState>((set) => ({
     set((state) => ({ rulersVisible: !state.rulersVisible })),
   toggleLockAspectRatio: () =>
     set((state) => ({ lockAspectRatio: !state.lockAspectRatio })),
+  setPagesState: (pages, currentIndex) =>
+    set({ pages, currentPageIndex: currentIndex, pageCount: pages.length }),
+
+  copiedStyle: null,
+  setCopiedStyle: (style) => set({ copiedStyle: style }),
 }));

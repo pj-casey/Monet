@@ -1,12 +1,36 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Monet</title>
+    <title>Monet — Free Open-Source Design Tool</title>
+    <meta name="description" content="The open-source design tool that replaces your Canva subscription. 50+ templates, 1,900+ fonts, AI-powered, self-hostable. Free forever." />
+    <meta property="og:title" content="Monet — Free Open-Source Design Tool" />
+    <meta property="og:description" content="Design anything. Free forever. No account required, no watermarks, no limits. Built with Claude by Anthropic." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:image:width" content="1080" />
+    <meta property="og:image:height" content="1080" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="/og-image.png" />
+    <!-- Design system fonts: DM Sans (UI) + Fraunces (display/hero) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap" rel="stylesheet" />
   </head>
   <body>
+    <script>
+      // Clean up ALL theme-related localStorage keys from previous versions.
+      // Theme is now session-only (always starts dark, no persistence).
+      // This prevents stale 'light' values from any source — old migrations,
+      // buggy useEffect writes, HMR glitches — from ever affecting startup.
+      try {
+        localStorage.removeItem('monet-theme');
+        localStorage.removeItem('monet-theme-v');
+        localStorage.removeItem('opencanvas-theme');
+      } catch(e) {}
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

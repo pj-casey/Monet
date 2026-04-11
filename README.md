@@ -1,4 +1,4 @@
-# 🎨 Monet
+# Monet
 
 **The free, open-source design tool for everyone.**
 
@@ -8,21 +8,25 @@ Create professional social media graphics, presentations, posters, business card
 
 ---
 
+<p align="center">
+  <img src="apps/web/public/hero-screenshot.png" alt="Monet editor" width="720" />
+</p>
+
 ## Why Monet?
 
 Design tools shouldn't cost $120/year for features that should be free. Monet gives you what others put behind a paywall:
 
 | Feature | Canva Free | Canva Pro ($120/yr) | **Monet (Free)** |
 |---|---|---|---|
-| Templates | ✓ (limited) | ✓ | **✓ 50+ built-in** |
-| Brand Kit | ✗ | ✓ | **✓ Unlimited** |
-| Background Remover | ✗ | ✓ | **✓ Runs in-browser** |
-| Magic Resize | ✗ | ✓ | **✓ + Batch Export** |
-| Custom Fonts | ✗ | ✓ | **✓ 1,900+ Google Fonts** |
-| Real-time Collaboration | ✗ | ✓ | **✓** |
-| Self-hostable | ✗ | ✗ | **✓** |
-| AI Design Assistant | ✗ | Paid add-on | **✓ BYOK** |
-| Your data stays yours | ✗ | ✗ | **✓ Always** |
+| Templates | Limited | 610,000+ | **50+ built-in** |
+| Brand Kit | No | Yes | **Unlimited** |
+| Background Remover | No | Yes | **Runs in-browser** |
+| Magic Resize | No | Yes | **+ Batch Export** |
+| Custom Fonts | No | Yes | **1,900+ Google Fonts** |
+| Real-time Collaboration | No | Yes | **Yes** |
+| Self-hostable | No | No | **Yes** |
+| AI Design Assistant | No | Paid add-on | **BYOK** |
+| Your data stays yours | No | No | **Always** |
 
 ## Features
 
@@ -57,8 +61,8 @@ Design tools shouldn't cost $120/year for features that should be free. Monet gi
 ## Quick Start
 
 ```bash
-git clone https://github.com/your-org/monet.git
-cd monet
+git clone https://github.com/pj-casey/Monet.git
+cd Monet
 pnpm install
 pnpm dev
 ```
@@ -104,7 +108,7 @@ Full guide: [SELF-HOSTING.md](SELF-HOSTING.md)
 |---|---|
 | Canvas | [Fabric.js](http://fabricjs.com/) v7 |
 | Frontend | React 18 + TypeScript + [Vite](https://vitejs.dev/) |
-| Styling | [Tailwind CSS](https://tailwindcss.com/) v4 |
+| Styling | [Tailwind CSS](https://tailwindcss.com/) v4 + custom design tokens (OKLCH) |
 | State | [Zustand](https://zustand-demo.pmnd.rs/) |
 | Backend | [Hono](https://hono.dev/) + SQLite via sql.js |
 | Collaboration | Socket.io + [Yjs](https://yjs.dev/) CRDT |
@@ -128,15 +132,15 @@ monet/
 
 Monet welcomes contributions of all kinds. You don't need to write code to help.
 
-**🎨 Designers** — [Create and submit templates](docs/TEMPLATE_GUIDE.md). No code required — templates are JSON with shapes and text.
+**Designers** — [Create and submit templates](docs/TEMPLATE_GUIDE.md). No code required — templates are JSON with shapes and text.
 
-**🌍 Translators** — Help make Monet accessible worldwide. Translation files are in `apps/web/src/i18n/`.
+**Translators** — Help make Monet accessible worldwide. Translation files are in `apps/web/src/i18n/`.
 
-**🐛 Bug Reports** — Found something broken? [Open an issue](../../issues).
+**Bug Reports** — Found something broken? [Open an issue](../../issues).
 
-**💻 Developers** — See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, architecture, and coding guidelines.
+**Developers** — See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, architecture, and coding guidelines.
 
-**📖 Documentation** — Improve guides, write tutorials, or fix typos.
+**Documentation** — Improve guides, write tutorials, or fix typos.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
@@ -146,10 +150,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 |---|---|
 | Undo / Redo | `Ctrl+Z` / `Ctrl+Y` |
 | Copy / Paste / Duplicate | `Ctrl+C` / `Ctrl+V` / `Ctrl+D` |
+| Copy / Paste Style | `Alt+Shift+C` / `Alt+Shift+V` |
 | Delete | `Delete` / `Backspace` |
 | Group / Ungroup | `Ctrl+G` / `Ctrl+Shift+G` |
 | Save | `Ctrl+S` |
 | Nudge / Big Nudge | `Arrow Keys` / `Shift+Arrow` |
+| Alt+Drag | Duplicate and drag |
 | Zoom In / Out | `Scroll Wheel` |
 | Pan | `Space + Drag` |
 | All Shortcuts | `?` |
@@ -158,17 +164,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 [AGPLv3](LICENSE) — Free to use, modify, and self-host. If you distribute a modified version, you must open-source your changes.
 
-All bundled assets (icons, illustrations, fonts) use permissive licenses (MIT, Apache 2.0, CC0).
-
-## Acknowledgments
-
-Built with [Fabric.js](http://fabricjs.com/), [Lucide Icons](https://lucide.dev/), [Google Fonts](https://fonts.google.com/), and the open-source community.
-
-Named after [Claude Monet](https://en.wikipedia.org/wiki/Claude_Monet) — who proved that anyone can see the world differently.
-
 ---
 
-<p align="center">
-  <strong>Monet is free forever.</strong><br>
-  If it's useful to you, give it a ⭐ — it helps others find it.
-</p>
+<sub>Built with [Claude](https://claude.ai) by [Anthropic](https://anthropic.com)</sub>

@@ -24,6 +24,19 @@ export interface CanvasObject {
   opacity: number;
 }
 
+/** A single page within a design (each page has its own objects and background) */
+export interface DesignPage {
+  id: string;
+  name: string;
+  /**
+   * Fabric.js serialized objects. Each entry is the output of
+   * fabricObject.toObject() — a plain JSON-friendly object.
+   */
+  objects: Record<string, unknown>[];
+  /** Per-page background (defaults to document-level background if not set) */
+  background?: BackgroundOptions;
+}
+
 /** The complete serializable design document */
 export interface DesignDocument {
   version: number;
@@ -37,12 +50,13 @@ export interface DesignDocument {
   };
   background: BackgroundOptions;
   /**
-   * Fabric.js serialized objects. Each entry is the output of
-   * fabricObject.toObject() — a plain JSON-friendly object.
-   * We use Record<string, unknown>[] instead of CanvasObject[]
-   * so we can roundtrip any Fabric.js object type faithfully.
+   * @deprecated Use `pages` instead. Kept for backward compatibility —
+   * old single-page designs have this field instead of `pages`.
+   * The engine auto-wraps it into a single page on load.
    */
   objects: Record<string, unknown>[];
+  /** Multi-page support: array of pages, each with its own objects */
+  pages?: DesignPage[];
   metadata: {
     templateId?: string;
     tags?: string[];

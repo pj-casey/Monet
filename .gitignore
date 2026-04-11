@@ -26,3 +26,10 @@ Thumbs.db
 
 # pnpm
 .pnpm-store/
+
+# Claude / AI development artifacts
+CLAUDE.md
+docs/SESSION_LOG.md
+.claude/
+.cursor/
+.cursorrules

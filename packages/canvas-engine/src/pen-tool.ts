@@ -48,9 +48,9 @@ interface PenPreviewObject extends FabricObject {
 const ANCHOR_RADIUS = 4;
 const HANDLE_RADIUS = 3;
 const CLOSE_THRESHOLD = 12; // px — distance to snap to starting point
-const PREVIEW_STROKE = '#2563EB'; // blue-600
-const HANDLE_STROKE = '#9333EA'; // purple-600
-const HANDLE_LINE_STROKE = '#C084FC'; // purple-400
+const PREVIEW_STROKE = 'oklch(0.65 0.15 45)'; // --accent (warm sienna)
+const HANDLE_STROKE = 'oklch(0.55 0.18 45)';  // --accent-active (deeper sienna)
+const HANDLE_LINE_STROKE = 'oklch(0.65 0.15 45 / 0.5)'; // --accent at 50%
 
 // ─── PenTool class ──────────────────────────────────────────────
 
@@ -259,7 +259,7 @@ export class PenTool {
     const pathString = this.buildPathString(closed);
     const path = new Path(pathString, {
       fill: closed ? 'rgba(59, 130, 246, 0.15)' : 'none',
-      stroke: '#333333',
+      stroke: '#2d2a26',
       strokeWidth: 2,
       strokeLineCap: 'round',
       strokeLineJoin: 'round',

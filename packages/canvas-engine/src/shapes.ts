@@ -20,6 +20,7 @@ import {
   Triangle,
   Line,
   Polygon,
+  Path,
   Group,
   Gradient,
   type FabricObject,
@@ -28,7 +29,7 @@ import type { ShapeOptions } from '@monet/shared';
 
 /** Default sizes when the user doesn't specify */
 const DEFAULT_SIZE = 150;
-const DEFAULT_FILL = '#4A90D9';
+const DEFAULT_FILL = '#C4704A'; // warm sienna — matches --accent
 const DEFAULT_STROKE = '';
 const DEFAULT_STROKE_WIDTH = 0;
 const DEFAULT_OPACITY = 1;
@@ -60,11 +61,27 @@ export function createShape(
     case 'triangle':
       return createTriangle(options, fill, stroke, strokeWidth, opacity, centerX, centerY);
     case 'line':
-      return createLine(options, stroke || '#333333', strokeWidth || 2, opacity, centerX, centerY);
+      return createLine(options, stroke || '#2d2a26', strokeWidth || 2, opacity, centerX, centerY);
     case 'arrow':
-      return createArrow(options, stroke || '#333333', strokeWidth || 2, opacity, centerX, centerY);
+      return createArrow(options, stroke || '#2d2a26', strokeWidth || 2, opacity, centerX, centerY);
     case 'star':
       return createStar(options, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'rounded-rect':
+      return createRectangle({ ...options, cornerRadius: 20 }, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'diamond':
+      return createRegularPolygon(4, fill, stroke, strokeWidth, opacity, centerX, centerY, 45);
+    case 'pentagon':
+      return createRegularPolygon(5, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'hexagon':
+      return createRegularPolygon(6, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'heart':
+      return createPathShape(HEART_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'arrow-right':
+      return createPathShape(ARROW_RIGHT_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'speech-bubble':
+      return createPathShape(SPEECH_BUBBLE_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    default:
+      throw new Error(`Unknown shape type: ${options.type}`);
   }
 }
 
@@ -318,4 +335,73 @@ function parseGradient(
       { offset: 1, color: c2 },
     ],
   });
+}
+
+// ─── New Shape Presets ────────────────────────────────────────────
+
+/** Create a regular polygon (diamond=4, pentagon=5, hexagon=6) */
+function createRegularPolygon(
+  sides: number,
+  fill: string | Gradient<'linear'> | Gradient<'radial'>,
+  stroke: string,
+  strokeWidth: number,
+  opacity: number,
+  cx: number,
+  cy: number,
+  rotationDeg = 0,
+): FabricObject {
+  const radius = DEFAULT_SIZE / 2;
+  const points: Array<{ x: number; y: number }> = [];
+  const rotRad = (rotationDeg * Math.PI) / 180;
+  for (let i = 0; i < sides; i++) {
+    const angle = (2 * Math.PI * i) / sides - Math.PI / 2 + rotRad;
+    points.push({
+      x: radius + radius * Math.cos(angle),
+      y: radius + radius * Math.sin(angle),
+    });
+  }
+  return new Polygon(points, {
+    left: cx - radius,
+    top: cy - radius,
+    fill,
+    stroke,
+    strokeWidth,
+    opacity,
+  });
+}
+
+/** SVG path data for preset shapes (scaled to ~150x150 viewbox) */
+const HEART_PATH = 'M75 30 C75 30 60 0 37.5 0 C15 0 0 18 0 40 C0 75 75 120 75 150 C75 120 150 75 150 40 C150 18 135 0 112.5 0 C90 0 75 30 75 30 Z';
+
+const ARROW_RIGHT_PATH = 'M0 30 L0 120 L90 120 L90 150 L150 75 L90 0 L90 30 Z';
+
+const SPEECH_BUBBLE_PATH = 'M10 0 L140 0 Q150 0 150 10 L150 100 Q150 110 140 110 L50 110 L20 140 L30 110 L10 110 Q0 110 0 100 L0 10 Q0 0 10 0 Z';
+
+/** Create a shape from an SVG path string */
+function createPathShape(
+  pathData: string,
+  fill: string | Gradient<'linear'> | Gradient<'radial'>,
+  stroke: string,
+  strokeWidth: number,
+  opacity: number,
+  cx: number,
+  cy: number,
+): FabricObject {
+  const path = new Path(pathData, {
+    fill,
+    stroke,
+    strokeWidth,
+    opacity,
+  });
+  // Scale to DEFAULT_SIZE and center
+  const pathW = path.width ?? 150;
+  const pathH = path.height ?? 150;
+  const scale = DEFAULT_SIZE / Math.max(pathW, pathH);
+  path.set({
+    scaleX: scale,
+    scaleY: scale,
+    left: cx - (pathW * scale) / 2,
+    top: cy - (pathH * scale) / 2,
+  });
+  return path;
 }

@@ -28,10 +28,10 @@ interface LayerPanelProps {
 
 export function LayerPanel({ layers, selectedIndex }: LayerPanelProps) {
   return (
-    <div className="flex flex-col border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+    <div className="flex flex-col bg-surface">
       {/* Header with group/ungroup buttons */}
-      <div className="flex items-center justify-between border-b border-gray-100 px-3 py-1.5 dark:border-gray-800">
-        <span className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+      <div className="flex items-center justify-between border-b border-border px-3 py-1.5">
+        <span className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
           Layers
         </span>
         <div className="flex gap-1">
@@ -45,7 +45,7 @@ export function LayerPanel({ layers, selectedIndex }: LayerPanelProps) {
       </div>
 
       {/* Auto-layout: align + distribute */}
-      <div className="flex items-center justify-between border-b border-gray-100 px-3 py-1 dark:border-gray-800">
+      <div className="flex items-center justify-between border-b border-border px-3 py-1">
         <div className="flex gap-0.5" title="Align selected objects">
           <SmallButton label="Align left" onClick={() => engine.alignSelected('left')}>
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M1 1v10"/><rect x="3" y="2" width="7" height="3" rx="0.5"/><rect x="3" y="7" width="5" height="3" rx="0.5"/></svg>
@@ -77,11 +77,17 @@ export function LayerPanel({ layers, selectedIndex }: LayerPanelProps) {
       </div>
 
       {/* Layer list */}
-      <div className="max-h-60 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto">
         {layers.length === 0 && (
-          <p className="p-3 text-center text-xs text-gray-400">
-            No objects on the canvas yet
-          </p>
+          <div className="flex flex-col items-center px-4 py-8 text-center">
+            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-wash">
+              <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" className="text-text-tertiary">
+                <rect x="2" y="2" width="12" height="4" rx="1"/><rect x="2" y="8" width="12" height="4" rx="1" opacity="0.5"/>
+              </svg>
+            </div>
+            <p className="text-xs font-medium text-text-secondary">No layers yet</p>
+            <p className="mt-0.5 text-[10px] text-text-tertiary">Add shapes, text, or images to get started.</p>
+          </div>
         )}
         {layers.map((layer) => (
           <LayerRow
@@ -143,8 +149,8 @@ function LayerRow({ layer, isSelected }: { layer: LayerInfo; isSelected: boolean
   return (
     <div
       onClick={handleSelect}
-      className={`group flex items-center gap-1 border-b border-gray-50 px-2 py-1.5 text-xs cursor-pointer dark:border-gray-800 ${
-        isSelected ? 'bg-blue-50 dark:bg-blue-900/30' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+      className={`group flex items-center gap-1 border-b border-border px-2 py-1.5 text-xs cursor-pointer ${
+        isSelected ? 'bg-accent-subtle' : 'hover:bg-canvas'
       } ${!layer.visible ? 'opacity-40' : ''}`}
       role="button"
       tabIndex={0}
@@ -152,12 +158,12 @@ function LayerRow({ layer, isSelected }: { layer: LayerInfo; isSelected: boolean
       onKeyDown={(e) => { if (e.key === 'Enter') handleSelect(); }}
     >
       {/* Type icon */}
-      <span className="w-4 text-center text-gray-400">
+      <span className="w-4 text-center text-text-tertiary">
         <TypeIcon type={layer.objectType} />
       </span>
 
       {/* Name */}
-      <span className="flex-1 truncate text-gray-700">{layer.name}</span>
+      <span className="flex-1 truncate text-text-primary">{layer.name}</span>
 
       {/* Action buttons — visible on hover or when selected */}
       <div className={`flex items-center gap-0.5 ${isSelected ? 'visible' : 'invisible group-hover:visible'}`}>
@@ -172,7 +178,7 @@ function LayerRow({ layer, isSelected }: { layer: LayerInfo; isSelected: boolean
         type="button"
         onClick={handleToggleLock}
         className={`flex h-5 w-5 items-center justify-center rounded ${
-          layer.locked ? 'text-red-400' : 'text-gray-300 hover:text-gray-500'
+          layer.locked ? 'text-danger' : 'text-text-tertiary hover:text-text-secondary'
         }`}
         aria-label={layer.locked ? 'Unlock layer' : 'Lock layer'}
         title={layer.locked ? 'Unlock' : 'Lock'}
@@ -185,7 +191,7 @@ function LayerRow({ layer, isSelected }: { layer: LayerInfo; isSelected: boolean
         type="button"
         onClick={handleToggleVisibility}
         className={`flex h-5 w-5 items-center justify-center rounded ${
-          layer.visible ? 'text-gray-400 hover:text-gray-600' : 'text-gray-300'
+          layer.visible ? 'text-text-tertiary hover:text-text-secondary' : 'text-text-tertiary'
         }`}
         aria-label={layer.visible ? 'Hide layer' : 'Show layer'}
         title={layer.visible ? 'Hide' : 'Show'}
@@ -201,7 +207,7 @@ function LayerRow({ layer, isSelected }: { layer: LayerInfo; isSelected: boolean
 function SmallButton({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
   return (
     <button type="button" aria-label={label} title={label} onClick={onClick}
-      className="flex h-6 w-6 items-center justify-center rounded text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+      className="flex h-6 w-6 items-center justify-center rounded text-text-tertiary hover:bg-wash hover:text-text-secondary">
       {children}
     </button>
   );
@@ -210,7 +216,7 @@ function SmallButton({ label, onClick, children }: { label: string; onClick: () 
 function TinyButton({ label, onClick, children }: { label: string; onClick: (e: React.MouseEvent) => void; children: React.ReactNode }) {
   return (
     <button type="button" aria-label={label} title={label} onClick={onClick}
-      className="flex h-4 w-4 items-center justify-center rounded text-[8px] text-gray-400 hover:text-gray-600">
+      className="flex h-4 w-4 items-center justify-center rounded text-[8px] text-text-tertiary hover:text-text-secondary">
       {children}
     </button>
   );

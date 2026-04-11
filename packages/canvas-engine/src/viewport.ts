@@ -93,15 +93,17 @@ export function setupPanning(canvas: FabricCanvas): void {
   document.addEventListener('keydown', onKeyDown);
   document.addEventListener('keyup', onKeyUp);
 
-  // When space is held and mouse is pressed, start panning
+  // When space is held and mouse is pressed, OR middle mouse button, start panning
   canvas.on('mouse:down', (opt) => {
-    if (spaceHeld) {
+    const evt = opt.e as MouseEvent;
+    if (spaceHeld || evt.button === 1) {
+      // Middle-click (button 1) or space+click
       isPanning = true;
-      const evt = opt.e as MouseEvent;
       lastX = evt.clientX;
       lastY = evt.clientY;
       const el = canvas.getSelectionElement();
       if (el) el.style.cursor = 'grabbing';
+      evt.preventDefault(); // prevent middle-click auto-scroll
     }
   });
 
@@ -119,11 +121,10 @@ export function setupPanning(canvas: FabricCanvas): void {
 
   // Stop panning when mouse is released
   canvas.on('mouse:up', () => {
+    if (!isPanning) return;
     isPanning = false;
-    if (spaceHeld) {
-      const el = canvas.getSelectionElement();
-      if (el) el.style.cursor = 'grab';
-    }
+    const el = canvas.getSelectionElement();
+    if (el) el.style.cursor = spaceHeld ? 'grab' : 'default';
   });
 
   // Store cleanup function on the canvas for later disposal

@@ -16,4 +16,7 @@ export interface TaggedObject extends FabricObject {
   __isGuide?: boolean;
   __isBgImage?: boolean;
   __isPenPreview?: boolean;
+  __isCropOverlay?: boolean;
+  /** Saved evented state during crop mode */
+  __cropPrevEvented?: boolean;
 }

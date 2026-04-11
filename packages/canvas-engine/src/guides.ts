@@ -18,8 +18,8 @@ import type { TaggedObject } from './tagged-object';
 /** How close (in pixels) an object needs to be to trigger a guide */
 const SNAP_THRESHOLD = 5;
 
-/** Guide line appearance */
-const GUIDE_COLOR = '#ff00ff'; // Magenta — easy to see against any background
+/** Guide line appearance — uses accent color from design system */
+const GUIDE_COLOR = 'oklch(0.65 0.15 45)'; // --accent (warm sienna)
 const GUIDE_STROKE_WIDTH = 1;
 
 /** Currently displayed guide lines (so we can remove them later) */
@@ -86,7 +86,8 @@ export function setupSmartGuides(
         obj !== target &&
         !(obj as TaggedObject).__isGridLine &&
         !(obj as TaggedObject).__isArtboard &&
-        !(obj as TaggedObject).__isPenPreview,
+        !(obj as TaggedObject).__isPenPreview &&
+        !(obj as TaggedObject).__isCropOverlay,
     );
 
     if (others.length === 0) return;

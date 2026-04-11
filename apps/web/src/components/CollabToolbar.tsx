@@ -32,8 +32,8 @@ export function CollabToolbar({ users, designId, isConnected, followingUserId, o
             type="button"
             title={`${user.name} (${user.role})`}
             onClick={() => onFollow(followingUserId === user.id ? null : user.id)}
-            className={`flex h-6 w-6 items-center justify-center rounded-full border-2 border-white text-[9px] font-bold text-white dark:border-gray-900 ${
-              followingUserId === user.id ? 'ring-2 ring-blue-400' : ''
+            className={`flex h-6 w-6 items-center justify-center rounded-full border-2 border-surface text-[9px] font-semibold text-accent-fg ${
+              followingUserId === user.id ? 'ring-2 ring-accent' : ''
             }`}
             style={{ backgroundColor: user.color }}
           >
@@ -41,7 +41,7 @@ export function CollabToolbar({ users, designId, isConnected, followingUserId, o
           </button>
         ))}
         {users.length > 5 && (
-          <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-gray-400 text-[9px] font-bold text-white dark:border-gray-900">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-surface bg-text-tertiary text-[9px] font-semibold text-accent-fg">
             +{users.length - 5}
           </span>
         )}
@@ -50,16 +50,16 @@ export function CollabToolbar({ users, designId, isConnected, followingUserId, o
       {/* Invite button */}
       <div className="relative">
         <button type="button" onClick={() => setShowInvite(!showInvite)}
-          className="rounded-md border border-gray-300 px-2 py-0.5 text-[10px] text-gray-500 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-800">
+          className="rounded-md border border-border-strong px-2 py-0.5 text-[10px] text-text-secondary hover:bg-wash">
           Invite
         </button>
         {showInvite && (
-          <div className="absolute right-0 top-full z-40 mt-1 w-64 rounded-lg border border-gray-200 bg-white p-3 shadow-lg dark:border-gray-700 dark:bg-gray-900">
-            <p className="mb-2 text-xs font-medium text-gray-600 dark:text-gray-300">Share invite link:</p>
+          <div className="absolute right-0 top-full z-40 mt-1 w-64 rounded-lg border border-border bg-surface p-3 shadow-lg">
+            <p className="mb-2 text-xs font-medium text-text-secondary">Share invite link:</p>
             <InviteLinkRow label="Editor" link={getInviteLink(designId, 'editor')} />
             <InviteLinkRow label="Viewer" link={getInviteLink(designId, 'viewer')} />
             <button type="button" onClick={() => setShowInvite(false)}
-              className="mt-2 text-[10px] text-gray-400 hover:underline">Close</button>
+              className="mt-2 text-[10px] text-text-tertiary hover:underline">Close</button>
           </div>
         )}
       </div>
@@ -78,11 +78,11 @@ function InviteLinkRow({ label, link }: { label: string; link: string }) {
 
   return (
     <div className="mb-1 flex items-center gap-1">
-      <span className="w-12 text-[10px] text-gray-400">{label}:</span>
+      <span className="w-12 text-[10px] text-text-tertiary">{label}:</span>
       <input type="text" readOnly value={link}
-        className="flex-1 rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[9px] dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300" />
+        className="flex-1 rounded border border-border bg-canvas px-1.5 py-0.5 text-[9px]" />
       <button type="button" onClick={handleCopy}
-        className="rounded bg-blue-600 px-1.5 py-0.5 text-[9px] text-white hover:bg-blue-700">
+        className="rounded bg-accent px-1.5 py-0.5 text-[9px] text-accent-fg hover:bg-accent-hover">
         {copied ? 'Copied!' : 'Copy'}
       </button>
     </div>

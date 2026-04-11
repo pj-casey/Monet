@@ -1,19 +1,18 @@
 /**
- * Template Registry — the catalog of all built-in starter templates.
+ * Template Registry — 50 world-class built-in templates.
  *
- * 50 templates across 16 categories:
- * - Instagram Post (5)
- * - Instagram Story (3)
- * - Facebook Post (3)
- * - YouTube Thumbnail (3)
- * - Presentation (2)
- * - Business Card (2)
+ * Organized into 8 categories:
+ * - Social Media (10): Podcast, Instagram, YouTube, LinkedIn, Twitter, Pinterest, TikTok, Facebook, Discord
+ * - Business (9): Business Card, Invoice, One-Pager, Email Signature, Proposal, Certificate, Meeting Notes, Name Badge, Resume
+ * - Marketing (7): Product Launch, Real Estate, Coupon, Testimonial, Newsletter, App Promo
+ * - Events (7): Wedding, Birthday, Concert, Conference, Gala, Music Festival
+ * - Education (3): Workshop, Flashcard, Study Guide
+ * - Creative (6): Book Cover, Movie Poster, Magazine Cover, Exhibition, Portfolio, Album Cover
+ * - Food & Lifestyle (6): Restaurant Menu, Café Menu, Recipe Card, Cocktail Card, Fitness Plan, Wellness
+ * - Seasonal (4): Valentine, Halloween, Holiday Card, New Year
  *
- * Every template is self-contained — shapes, text, and colors only, no
- * external images. All use bold colors and clean layouts.
- *
- * Thumbnail generation requires a browser/canvas environment and is
- * deferred — the template browser uses background color as a visual proxy.
+ * Every template uses realistic content and at least 2 advanced features:
+ * gradient fills, opacity shapes, multiple font weights, accent color, shadows, text stroke.
  */
 
 import type { Template } from './types';
@@ -55,685 +54,937 @@ function tpl(
 
 export const TEMPLATE_REGISTRY: Template[] = [
 
-  // ─── INSTAGRAM POST (5) — 1080×1080 ──────────────────────────────
 
-  tpl('ig-bold-announce', 'Bold Announcement', 'Eye-catching announcement with bold typography',
-    'Social Media', 'Instagram Post', ['instagram', 'announcement', 'bold'],
-    1080, 1080, 'solid', '#1a1a2e', [
-      { type: 'rect', left: 60, top: 60, width: 960, height: 960, fill: 'rgba(0,0,0,0)', stroke: '#e94560', strokeWidth: 4, strokeUniform: true },
-      { type: 'textbox', left: 120, top: 340, width: 840, text: 'BIG NEWS', fontFamily: 'Inter', fontSize: 120, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 120, top: 520, width: 840, text: 'Something amazing is coming soon. Stay tuned.', fontFamily: 'Inter', fontSize: 32, fill: '#a0a0b0', textAlign: 'center', lineHeight: 1.4 },
-      { type: 'rect', left: 380, top: 700, width: 320, height: 60, fill: '#e94560', rx: 30, ry: 30 },
-      { type: 'textbox', left: 380, top: 712, width: 320, text: 'Learn More', fontFamily: 'Inter', fontSize: 22, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
+  // ─── BATCH 1: Social Media + Business (1-17) ─────────────────────
+
+// Batch 1: Social Media + Business (templates 1-17)
+// Paste these entries into the TEMPLATE_REGISTRY array in registry.ts.
+// Requires the tpl() helper defined at the top of that file.
+
+  // ─── SOCIAL MEDIA — PODCAST / QUOTES / STORIES / THUMBNAILS ──────
+
+  // 1. Podcast Cover — gradient on EP button, shadow+charSpacing on heading
+  tpl('podcast-cover', 'The Night Owl Show', 'Podcast cover with radial gradient and mic motif',
+    'Social Media', 'Podcast', ['podcast', 'cover', 'audio', 'show'],
+    1080, 1080, 'gradient', 'linear:to-bottom:#0f172a:#1e1b4b', [
+      { type: 'circle', left: 440, top: 280, radius: 80, fill: '#C4704A', opacity: 0.25 },
+      { type: 'circle', left: 490, top: 400, radius: 30, fill: '#C4704A' },
+      { type: 'rect', left: 510, top: 430, width: 20, height: 120, fill: '#C4704A', rx: 10, ry: 10 },
+      { type: 'textbox', left: 100, top: 600, width: 880, text: 'THE NIGHT OWL\nSHOW', fontFamily: 'Montserrat', fontSize: 82, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', lineHeight: 1.05, charSpacing: 80, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 100, top: 820, width: 880, text: 'with Marcus Rivera', fontFamily: 'DM Sans', fontSize: 28, fill: 'rgba(255,255,255,0.6)', textAlign: 'center' },
+      { type: 'rect', left: 420, top: 910, width: 240, height: 48, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 240, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] }, rx: 24, ry: 24 },
+      { type: 'textbox', left: 420, top: 920, width: 240, text: 'EP. 47', fontFamily: 'Montserrat', fontSize: 22, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
     ]),
 
-  tpl('ig-quote-minimal', 'Minimal Quote', 'Clean quote card with warm tones',
-    'Social Media', 'Instagram Post', ['instagram', 'quote', 'minimal'],
+  // 2. Instagram Quote — gradient on divider rect, shadow+charSpacing on heading
+  tpl('ig-quote-believe', 'She Believed She Could', 'Inspirational quote with peach gradient',
+    'Social Media', 'Instagram Post', ['instagram', 'quote', 'inspirational', 'women'],
+    1080, 1080, 'gradient', 'linear:to-bottom-right:#fcd5ce:#f8b4b4', [
+      { type: 'textbox', left: 60, top: 120, width: 300, text: '\u201C', fontFamily: 'Playfair Display', fontSize: 280, fill: '#c2857a', textAlign: 'left', opacity: 0.2 },
+      { type: 'textbox', left: 120, top: 340, width: 840, text: 'She believed she could,\nso she did.', fontFamily: 'Playfair Display', fontSize: 56, fontStyle: 'italic', fill: '#4a2c2a', textAlign: 'center', lineHeight: 1.5, charSpacing: 50, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 460, top: 640, width: 160, height: 2, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 160, y2: 0 }, colorStops: [{ offset: 0, color: '#c2857a' }, { offset: 1, color: '#e8956d' }] } },
+      { type: 'textbox', left: 120, top: 680, width: 840, text: '\u2014 R.S. Grey', fontFamily: 'DM Sans', fontSize: 22, fill: '#7a5550', textAlign: 'center' },
+      { type: 'textbox', left: 680, top: 120, width: 300, text: '\u201D', fontFamily: 'Playfair Display', fontSize: 280, fill: '#c2857a', textAlign: 'right', opacity: 0.2 },
+    ]),
+
+  // 3. Instagram Story Sale — gradient on CTA button, shadow on heading (already has charSpacing)
+  tpl('ig-story-sale', 'Summer Collection Sale', 'Story with bold sale text and CTA',
+    'Social Media', 'Instagram Story', ['instagram', 'story', 'sale', 'summer', 'fashion'],
+    1080, 1920, 'gradient', 'linear:to-bottom-right:#C4704A:#e76f51', [
+      { type: 'circle', left: -60, top: 100, radius: 200, fill: 'rgba(255,255,255,0.08)' },
+      { type: 'circle', left: 800, top: 1400, radius: 260, fill: 'rgba(255,255,255,0.06)' },
+      { type: 'textbox', left: 100, top: 520, width: 880, text: 'SUMMER COLLECTION', fontFamily: 'Montserrat', fontSize: 28, fontWeight: 'bold', fill: 'rgba(255,255,255,0.85)', textAlign: 'center', charSpacing: 400 },
+      { type: 'textbox', left: 100, top: 620, width: 880, text: '40% OFF', fontFamily: 'Montserrat', fontSize: 140, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', charSpacing: 100, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 100, top: 820, width: 880, text: 'USE CODE: SUN40', fontFamily: 'DM Sans', fontSize: 26, fill: 'rgba(255,255,255,0.75)', textAlign: 'center', charSpacing: 200 },
+      { type: 'rect', left: 340, top: 960, width: 400, height: 64, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 400, y2: 0 }, colorStops: [{ offset: 0, color: '#ffffff' }, { offset: 1, color: '#f0e6df' }] }, rx: 32, ry: 32 },
+      { type: 'textbox', left: 340, top: 975, width: 400, text: 'Shop Now \u2192', fontFamily: 'Montserrat', fontSize: 22, fontWeight: 'bold', fill: '#C4704A', textAlign: 'center' },
+    ]),
+
+  // 4. YouTube Thumbnail — gradient on accent line, shadow on heading (already has stroke)
+  tpl('yt-thumb-mistakes', '5 Design Mistakes', 'YouTube thumbnail with bold warning text',
+    'Social Media', 'YouTube Thumbnail', ['youtube', 'thumbnail', 'design', 'mistakes'],
+    1280, 720, 'solid', '#0f0f0f', [
+      { type: 'circle', left: 800, top: 180, radius: 180, fill: '#2a2a2a' },
+      { type: 'textbox', left: 830, top: 310, width: 300, text: '?', fontFamily: 'Inter', fontSize: 120, fontWeight: 'bold', fill: '#444444', textAlign: 'center' },
+      { type: 'circle', left: 1080, top: 40, radius: 48, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 96, y2: 96 }, colorStops: [{ offset: 0, color: '#dc2626' }, { offset: 1, color: '#ef4444' }] } },
+      { type: 'textbox', left: 1080, top: 52, width: 96, text: '!', fontFamily: 'Inter', fontSize: 48, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
+      { type: 'textbox', left: 60, top: 180, width: 720, text: '5 DESIGN\nMISTAKES', fontFamily: 'Montserrat', fontSize: 96, fontWeight: 'bold', fill: '#ffffff', lineHeight: 1.0, stroke: '#C4704A', strokeWidth: 2, charSpacing: 80, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 60, top: 460, width: 720, text: 'that ruin your brand', fontFamily: 'DM Sans', fontSize: 36, fill: '#C4704A' },
+      { type: 'rect', left: 60, top: 560, width: 200, height: 4, fill: '#C4704A' },
+    ]),
+
+  // 5. LinkedIn Carousel — gradient on accent bar, shadow+charSpacing on heading (already has shadow on card)
+  tpl('li-carousel-cover', '2026 Marketing Trends', 'LinkedIn carousel cover with accent bar',
+    'Social Media', 'LinkedIn Post', ['linkedin', 'carousel', 'marketing', 'trends'],
+    1080, 1080, 'solid', '#faf8f5', [
+      { type: 'rect', left: 0, top: 0, width: 8, height: 1080, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 0, y2: 1080 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] } },
+      { type: 'rect', left: 60, top: 200, width: 700, height: 560, fill: '#ffffff', rx: 8, ry: 8, shadow: { color: 'rgba(0,0,0,0.08)', blur: 24, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 110, top: 260, width: 600, text: '2026\nMarketing\nTrends', fontFamily: 'Playfair Display', fontSize: 80, fontWeight: 'bold', fill: '#1a1520', lineHeight: 1.15, charSpacing: 50, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 110, top: 590, width: 60, height: 4, fill: '#C4704A' },
+      { type: 'textbox', left: 110, top: 620, width: 600, text: 'A comprehensive guide for\nmodern marketers', fontFamily: 'DM Sans', fontSize: 24, fill: '#6b6b6b', lineHeight: 1.5 },
+      { type: 'textbox', left: 110, top: 720, width: 200, text: '1 / 10', fontFamily: 'DM Sans', fontSize: 18, fill: '#C4704A', fontWeight: 'bold' },
+    ]),
+
+  // 6. Twitter Banner — gradient on accent line, shadow+charSpacing on heading (already has charSpacing)
+  tpl('tw-banner-studio', 'Creative Studio', 'Minimal Twitter banner with gradient line',
+    'Social Media', 'Twitter Header', ['twitter', 'banner', 'minimal', 'studio'],
+    1500, 500, 'solid', '#ffffff', [
+      { type: 'textbox', left: 100, top: 170, width: 800, text: 'CREATIVE STUDIO', fontFamily: 'Inter', fontSize: 52, fontWeight: 'bold', fill: '#1a1a1a', charSpacing: 600, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 100, top: 260, width: 400, height: 3, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 400, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] } },
+      { type: 'rect', left: 500, top: 260, width: 400, height: 3, fill: '#C4704A', opacity: 0.3 },
+      { type: 'textbox', left: 100, top: 290, width: 600, text: '@studio.creative', fontFamily: 'DM Sans', fontSize: 20, fill: '#999999' },
+      { type: 'circle', left: 1260, top: 180, radius: 60, fill: 'rgba(196,112,74,0.1)' },
+      { type: 'circle', left: 1300, top: 220, radius: 35, fill: 'rgba(196,112,74,0.18)' },
+    ]),
+
+  // 7. Pinterest Pin — gradient on accent line, shadow+charSpacing on heading
+  tpl('pin-home-office', 'Minimalist Home Office', 'Pinterest pin with photo placeholder',
+    'Social Media', 'Pinterest Pin', ['pinterest', 'pin', 'home', 'office', 'minimal'],
+    1000, 1500, 'solid', '#f5f0eb', [
+      { type: 'rect', left: 80, top: 80, width: 840, height: 600, fill: '#e0d8cf', rx: 12, ry: 12 },
+      { type: 'textbox', left: 340, top: 330, width: 320, text: 'YOUR PHOTO', fontFamily: 'DM Sans', fontSize: 20, fill: '#b0a89e', textAlign: 'center' },
+      { type: 'textbox', left: 80, top: 750, width: 840, text: 'Minimalist\nHome Office', fontFamily: 'Playfair Display', fontSize: 64, fontWeight: 'bold', fill: '#2d2520', lineHeight: 1.2, charSpacing: 50, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 80, top: 960, width: 50, height: 3, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 50, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] } },
+      { type: 'textbox', left: 80, top: 990, width: 840, text: '12 essentials for your workspace', fontFamily: 'DM Sans', fontSize: 24, fill: '#7a6e64', lineHeight: 1.4 },
+      { type: 'circle', left: 450, top: 1360, radius: 28, fill: 'rgba(0,0,0,0)', stroke: '#C4704A', strokeWidth: 2, strokeUniform: true },
+      { type: 'textbox', left: 448, top: 1365, width: 60, text: '\u2193', fontFamily: 'Inter', fontSize: 24, fill: '#C4704A', textAlign: 'center' },
+    ]),
+
+  // 8. TikTok Cover — gradient on accent line, shadow on heading (already has stroke+charSpacing not present, add charSpacing)
+  tpl('tiktok-cover-watch', 'Watch This!', 'TikTok cover with bold angled typography',
+    'Social Media', 'TikTok Cover', ['tiktok', 'cover', 'bold', 'creative'],
+    1080, 1920, 'solid', '#0a0a0a', [
+      { type: 'rect', left: 200, top: 300, width: 400, height: 400, fill: '#C4704A', opacity: 0.1, angle: 25 },
+      { type: 'rect', left: 500, top: 800, width: 300, height: 300, fill: '#C4704A', opacity: 0.2, angle: -15 },
+      { type: 'rect', left: 100, top: 1100, width: 200, height: 200, fill: '#C4704A', opacity: 0.3, angle: 40 },
+      { type: 'textbox', left: 80, top: 700, width: 920, text: 'WATCH\nTHIS!', fontFamily: 'Montserrat', fontSize: 160, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', lineHeight: 0.95, stroke: '#C4704A', strokeWidth: 3, charSpacing: 80, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 340, top: 1100, width: 400, height: 6, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 400, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] } },
+      { type: 'textbox', left: 100, top: 1700, width: 880, text: '@creativedaily', fontFamily: 'DM Sans', fontSize: 24, fill: 'rgba(255,255,255,0.4)', textAlign: 'center' },
+    ]),
+
+  // 9. Facebook Event — gradient on accent line, shadow+charSpacing on heading
+  tpl('fb-event-jazz', 'Jazz in the Park', 'Facebook event cover with warm palette',
+    'Social Media', 'Facebook Event', ['facebook', 'event', 'jazz', 'music', 'concert'],
+    1200, 628, 'gradient', 'linear:to-bottom:#2d1810:#0a0a0a', [
+      { type: 'circle', left: 900, top: 80, radius: 50, fill: '#C4704A', opacity: 0.25 },
+      { type: 'circle', left: 1000, top: 200, radius: 30, fill: '#C4704A', opacity: 0.15 },
+      { type: 'circle', left: 850, top: 250, radius: 20, fill: '#C4704A', opacity: 0.2 },
+      { type: 'rect', left: 80, top: 120, width: 60, height: 3, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 60, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] } },
+      { type: 'textbox', left: 80, top: 150, width: 700, text: 'JAZZ IN\nTHE PARK', fontFamily: 'Playfair Display', fontSize: 80, fontWeight: 'bold', fill: '#ffffff', lineHeight: 1.05, charSpacing: 80, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 80, top: 380, width: 700, text: 'Saturday, July 19 \u00b7 7 PM', fontFamily: 'DM Sans', fontSize: 22, fontWeight: 'bold', fill: '#C4704A' },
+      { type: 'textbox', left: 80, top: 420, width: 700, text: 'Riverside Amphitheater \u00b7 Free Admission', fontFamily: 'DM Sans', fontSize: 18, fill: 'rgba(255,255,255,0.5)' },
+    ]),
+
+  // 10. Discord Banner — already has shadow on heading; add gradient on accent line, charSpacing on heading
+  tpl('discord-banner', 'Pixel Collective', 'Discord server banner with tech aesthetic',
+    'Social Media', 'Discord Banner', ['discord', 'banner', 'gaming', 'tech', 'community'],
+    960, 540, 'solid', '#111111', [
+      { type: 'rect', left: 60, top: 60, width: 120, height: 120, fill: 'rgba(255,255,255,0.03)', rx: 4, ry: 4 },
+      { type: 'rect', left: 200, top: 60, width: 120, height: 120, fill: 'rgba(255,255,255,0.05)', rx: 4, ry: 4 },
+      { type: 'rect', left: 60, top: 200, width: 120, height: 120, fill: 'rgba(255,255,255,0.05)', rx: 4, ry: 4 },
+      { type: 'rect', left: 200, top: 200, width: 120, height: 120, fill: 'rgba(255,255,255,0.03)', rx: 4, ry: 4 },
+      { type: 'textbox', left: 400, top: 160, width: 500, text: 'PIXEL COLLECTIVE', fontFamily: 'Montserrat', fontSize: 48, fontWeight: 'bold', fill: '#22d3ee', textAlign: 'left', charSpacing: 100, shadow: { color: 'rgba(34,211,238,0.4)', blur: 20, offsetX: 0, offsetY: 0 } },
+      { type: 'textbox', left: 400, top: 240, width: 500, text: 'Design \u00b7 Code \u00b7 Create', fontFamily: 'DM Sans', fontSize: 22, fill: 'rgba(255,255,255,0.45)' },
+      { type: 'rect', left: 400, top: 300, width: 160, height: 3, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 160, y2: 0 }, colorStops: [{ offset: 0, color: '#22d3ee' }, { offset: 1, color: '#667eea' }] }, opacity: 0.5 },
+    ]),
+
+  // ─── BUSINESS — CARDS / INVOICES / PROPOSALS / CERTIFICATES ──────
+
+  // 11. Business Card — gradient on accent line, shadow+charSpacing on heading (already has charSpacing)
+  tpl('biz-card-elena', 'Elena Vasquez, Architect', 'Minimal business card with warm accent',
+    'Business', 'Business Card', ['business card', 'architect', 'minimal', 'professional'],
+    1050, 600, 'solid', '#faf8f5', [
+      { type: 'textbox', left: 80, top: 100, width: 600, text: 'ELENA VASQUEZ', fontFamily: 'Montserrat', fontSize: 28, fontWeight: 'bold', fill: '#1a1520', charSpacing: 200, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 80, top: 150, width: 600, text: 'Senior Architect', fontFamily: 'DM Sans', fontSize: 18, fill: '#8a8078' },
+      { type: 'rect', left: 80, top: 200, width: 50, height: 2, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 50, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] } },
+      { type: 'textbox', left: 80, top: 360, width: 500, text: 'elena@meridianstudio.com\n(312) 555-0198\nmeridianstudio.com', fontFamily: 'DM Sans', fontSize: 14, fill: '#6b6260', lineHeight: 1.8 },
+      { type: 'textbox', left: 750, top: 480, width: 250, text: 'MERIDIAN\nSTUDIO', fontFamily: 'Montserrat', fontSize: 14, fontWeight: 'bold', fill: '#C4704A', textAlign: 'right', lineHeight: 1.3, charSpacing: 300 },
+    ]),
+
+  // 12. Invoice — gradient on header bar, shadow+charSpacing on INVOICE heading
+  tpl('invoice-studio', 'Studio Monet Invoice', 'Clean invoice template with accent header',
+    'Business', 'Invoice', ['invoice', 'billing', 'freelance', 'studio'],
+    2550, 3300, 'solid', '#ffffff', [
+      { type: 'rect', left: 0, top: 0, width: 2550, height: 12, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 2550, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] } },
+      { type: 'textbox', left: 160, top: 100, width: 600, text: 'Studio Monet', fontFamily: 'Playfair Display', fontSize: 40, fontWeight: 'bold', fill: '#1a1520' },
+      { type: 'textbox', left: 1700, top: 100, width: 700, text: 'INVOICE', fontFamily: 'Montserrat', fontSize: 56, fontWeight: 'bold', fill: '#C4704A', textAlign: 'right', charSpacing: 200, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 1700, top: 180, width: 700, text: 'Invoice #1024\nDate: March 15, 2026\nDue: April 14, 2026', fontFamily: 'DM Sans', fontSize: 18, fill: '#6b6b6b', textAlign: 'right', lineHeight: 1.8 },
+      { type: 'rect', left: 160, top: 600, width: 2230, height: 60, fill: '#C4704A', rx: 4, ry: 4 },
+      { type: 'textbox', left: 180, top: 612, width: 2200, text: 'Description                                                                           Qty       Rate           Amount', fontFamily: 'DM Sans', fontSize: 17, fontWeight: 'bold', fill: '#ffffff' },
+      { type: 'textbox', left: 160, top: 720, width: 2230, text: 'Brand Identity Design                                                                  1       $4,500         $4,500\nWebsite UI/UX Design                                                                   1       $6,200         $6,200\nSocial Media Templates (12)                                                         12        $150          $1,800', fontFamily: 'DM Sans', fontSize: 16, fill: '#2d2a26', lineHeight: 2.4 },
+    ]),
+
+  // 13. One-Pager — gradient on stat highlight area, shadow on heading (already has charSpacing)
+  tpl('one-pager-apex', 'Apex Consulting', 'Company one-pager with gradient header',
+    'Business', 'One-Pager', ['one-pager', 'consulting', 'company', 'corporate'],
+    2550, 3300, 'gradient', 'linear:to-bottom:#C4704A:#2d1810', [
+      { type: 'rect', left: 0, top: 800, width: 2550, height: 2500, fill: '#ffffff' },
+      { type: 'textbox', left: 200, top: 200, width: 2150, text: 'APEX CONSULTING', fontFamily: 'Montserrat', fontSize: 64, fontWeight: 'bold', fill: '#ffffff', charSpacing: 400, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 200, top: 320, width: 2150, text: 'Strategy \u00b7 Growth \u00b7 Impact', fontFamily: 'DM Sans', fontSize: 26, fill: 'rgba(255,255,255,0.7)' },
+      { type: 'rect', left: 200, top: 500, width: 600, height: 180, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 600, y2: 0 }, colorStops: [{ offset: 0, color: 'rgba(255,255,255,0.15)' }, { offset: 1, color: 'rgba(255,255,255,0.05)' }] }, rx: 8, ry: 8 },
+      { type: 'textbox', left: 200, top: 520, width: 600, text: '150+\nClients Served', fontFamily: 'Montserrat', fontSize: 36, fontWeight: 'bold', fill: '#ffffff', lineHeight: 1.3 },
+      { type: 'textbox', left: 900, top: 520, width: 600, text: '$2.4B\nRevenue Generated', fontFamily: 'Montserrat', fontSize: 36, fontWeight: 'bold', fill: '#ffffff', lineHeight: 1.3 },
+      { type: 'textbox', left: 1600, top: 520, width: 600, text: '98%\nClient Retention', fontFamily: 'Montserrat', fontSize: 36, fontWeight: 'bold', fill: '#ffffff', lineHeight: 1.3 },
+      { type: 'textbox', left: 200, top: 920, width: 2150, text: 'We help mid-market companies unlock their next stage of growth through data-driven strategy, operational excellence, and leadership development. Founded in 2014, Apex has offices in Chicago, Austin, and London.', fontFamily: 'DM Sans', fontSize: 22, fill: '#444444', lineHeight: 1.7 },
+    ]),
+
+  // 14. Email Signature — gradient on accent line, shadow+charSpacing on name
+  tpl('email-sig-david', 'David Chen', 'Compact professional email signature',
+    'Business', 'Email Signature', ['email', 'signature', 'professional', 'tech'],
+    600, 200, 'solid', '#ffffff', [
+      { type: 'textbox', left: 20, top: 24, width: 360, text: 'David Chen', fontFamily: 'Montserrat', fontSize: 22, fontWeight: 'bold', fill: '#C4704A', charSpacing: 100, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 20, top: 58, width: 400, text: 'Product Lead, Wavefront Labs', fontFamily: 'DM Sans', fontSize: 13, fill: '#555555' },
+      { type: 'rect', left: 20, top: 90, width: 40, height: 2, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 40, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] } },
+      { type: 'textbox', left: 20, top: 108, width: 560, text: 'david@wavefront.io \u00b7 (415) 555-0142', fontFamily: 'DM Sans', fontSize: 12, fill: '#888888' },
+      { type: 'textbox', left: 20, top: 140, width: 560, text: 'wavefrontlabs.com \u00b7 LinkedIn: /in/davidchen', fontFamily: 'DM Sans', fontSize: 11, fill: '#aaaaaa' },
+    ]),
+
+  // 15. Proposal Cover — gradient on decorative circle, shadow on heading (already has charSpacing)
+  tpl('proposal-cover', 'Brand Strategy 2026', 'Proposal cover page with gradient and serif type',
+    'Business', 'Proposal', ['proposal', 'cover', 'strategy', 'branding'],
+    2550, 3300, 'gradient', 'linear:to-bottom:#1a1520:#C4704A', [
+      { type: 'circle', left: 1125, top: 700, radius: 120, fill: 'rgba(255,255,255,0.06)' },
+      { type: 'textbox', left: 400, top: 1100, width: 1750, text: 'BRAND\nSTRATEGY\n2026', fontFamily: 'Playfair Display', fontSize: 120, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', lineHeight: 1.15, charSpacing: 200, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 1075, top: 1560, width: 400, height: 3, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 400, y2: 0 }, colorStops: [{ offset: 0, color: 'rgba(255,255,255,0.1)' }, { offset: 1, color: 'rgba(255,255,255,0.5)' }] } },
+      { type: 'textbox', left: 400, top: 1610, width: 1750, text: 'Prepared for Luminary Brands', fontFamily: 'DM Sans', fontSize: 24, fill: 'rgba(255,255,255,0.6)', textAlign: 'center' },
+      { type: 'circle', left: 1200, top: 2200, radius: 50, fill: 'rgba(255,255,255,0.08)', stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1, strokeUniform: true },
+      { type: 'textbox', left: 400, top: 3000, width: 1750, text: 'Confidential', fontFamily: 'DM Sans', fontSize: 16, fill: 'rgba(255,255,255,0.3)', textAlign: 'center', charSpacing: 300 },
+    ]),
+
+  // 16. Certificate — gradient on accent line, shadow on heading (already has charSpacing)
+  tpl('certificate-excellence', 'Certificate of Excellence', 'Formal award certificate with ornamental border',
+    'Business', 'Certificate', ['certificate', 'award', 'excellence', 'formal'],
+    3300, 2550, 'solid', '#faf8f5', [
+      { type: 'rect', left: 80, top: 80, width: 3140, height: 2390, fill: 'rgba(0,0,0,0)', stroke: '#C4704A', strokeWidth: 3, strokeUniform: true, rx: 8, ry: 8 },
+      { type: 'rect', left: 110, top: 110, width: 3080, height: 2330, fill: 'rgba(0,0,0,0)', stroke: '#C4704A', strokeWidth: 1, strokeUniform: true, rx: 4, ry: 4 },
+      { type: 'textbox', left: 400, top: 350, width: 2500, text: 'CERTIFICATE OF EXCELLENCE', fontFamily: 'Playfair Display', fontSize: 72, fontWeight: 'bold', fill: '#1a1520', textAlign: 'center', charSpacing: 200, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 1400, top: 490, width: 500, height: 2, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 500, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#d4a574' }] } },
+      { type: 'textbox', left: 400, top: 600, width: 2500, text: 'Awarded to', fontFamily: 'DM Sans', fontSize: 22, fill: '#8a8078', textAlign: 'center' },
+      { type: 'textbox', left: 400, top: 700, width: 2500, text: 'Maya Chen', fontFamily: 'Playfair Display', fontSize: 64, fontStyle: 'italic', fill: '#C4704A', textAlign: 'center' },
+      { type: 'textbox', left: 400, top: 880, width: 2500, text: 'For outstanding contribution to design innovation\nand creative leadership within the organization.', fontFamily: 'DM Sans', fontSize: 24, fill: '#555555', textAlign: 'center', lineHeight: 1.6 },
+      { type: 'circle', left: 2900, top: 1900, radius: 80, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 160, y2: 160 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#d4a574' }] } },
+      { type: 'textbox', left: 2900, top: 1930, width: 160, text: '\u2605', fontFamily: 'Inter', fontSize: 60, fill: '#ffffff', textAlign: 'center' },
+    ]),
+
+  // 17. Meeting Notes — gradient on accent line, shadow+charSpacing on heading (already has charSpacing)
+  tpl('meeting-notes', 'Weekly Standup Notes', 'Structured meeting notes template',
+    'Business', 'Meeting Notes', ['meeting', 'notes', 'standup', 'agenda', 'team'],
+    2550, 3300, 'solid', '#ffffff', [
+      { type: 'textbox', left: 160, top: 140, width: 1200, text: 'WEEKLY STANDUP', fontFamily: 'Montserrat', fontSize: 42, fontWeight: 'bold', fill: '#1a1520', charSpacing: 200, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 160, top: 210, width: 100, height: 4, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 100, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] } },
+      { type: 'textbox', left: 160, top: 250, width: 2000, text: 'March 18, 2026 \u00b7 10:00 AM \u00b7 Engineering Team', fontFamily: 'DM Sans', fontSize: 18, fill: '#888888' },
+      { type: 'circle', left: 160, top: 420, radius: 10, fill: '#22c55e' },
+      { type: 'textbox', left: 200, top: 408, width: 800, text: 'Completed', fontFamily: 'Montserrat', fontSize: 26, fontWeight: 'bold', fill: '#1a1520' },
+      { type: 'textbox', left: 200, top: 460, width: 2100, text: '\u2022  Shipped auth flow to production (v2.4.1)\n\u2022  Closed 14 QA tickets from sprint review\n\u2022  Deployed updated design tokens to staging', fontFamily: 'DM Sans', fontSize: 18, fill: '#555555', lineHeight: 2.0 },
+      { type: 'circle', left: 160, top: 700, radius: 10, fill: '#C4704A' },
+      { type: 'textbox', left: 200, top: 688, width: 800, text: 'In Progress', fontFamily: 'Montserrat', fontSize: 26, fontWeight: 'bold', fill: '#1a1520' },
+      { type: 'textbox', left: 200, top: 740, width: 2100, text: '\u2022  Dashboard redesign \u2014 60% complete (ETA Friday)\n\u2022  API rate-limiting implementation\n\u2022  User onboarding flow A/B test setup', fontFamily: 'DM Sans', fontSize: 18, fill: '#555555', lineHeight: 2.0 },
+      { type: 'circle', left: 160, top: 980, radius: 10, fill: '#dc2626' },
+      { type: 'textbox', left: 200, top: 968, width: 800, text: 'Blockers', fontFamily: 'Montserrat', fontSize: 26, fontWeight: 'bold', fill: '#1a1520' },
+      { type: 'textbox', left: 200, top: 1020, width: 2100, text: '\u2022  Waiting on legal review for Terms of Service update\n\u2022  CI pipeline flaky on integration tests \u2014 needs DevOps support', fontFamily: 'DM Sans', fontSize: 18, fill: '#555555', lineHeight: 2.0 },
+    ]),
+
+  // ─── BATCH 2: Business + Marketing + Events + Education + Creative (18-34) ──
+
+  // ─── NAME BADGE — 1050×750 ──────────────────────────────────────
+
+  // 18. Name Badge — gradient on header bar, shadow on heading (already has charSpacing)
+  tpl('name-badge', 'Sarah Mitchell, Speaker', 'Conference badge with gradient header and speaker details',
+    'Business', 'Name Badge', ['badge', 'conference', 'speaker', 'event'],
+    1050, 750, 'solid', '#ffffff', [
+      { type: 'rect', left: 0, top: 0, width: 1050, height: 180, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 1050, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] } },
+      { type: 'rect', left: 0, top: 0, width: 1050, height: 180, fill: 'rgba(232,149,109,0.45)', opacity: 0.6 },
+      { type: 'textbox', left: 60, top: 40, width: 930, text: 'SARAH MITCHELL', fontFamily: 'Montserrat', fontSize: 52, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', charSpacing: 200, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 60, top: 115, width: 930, text: 'Keynote Speaker', fontFamily: 'DM Sans', fontSize: 24, fill: 'rgba(255,255,255,0.85)', textAlign: 'center' },
+      { type: 'circle', left: 495, top: 300, radius: 70, fill: '#f5f0eb', stroke: '#C4704A', strokeWidth: 3 },
+      { type: 'textbox', left: 60, top: 480, width: 930, text: 'Creative Director · Luminary Studio', fontFamily: 'DM Sans', fontSize: 22, fill: '#555555', textAlign: 'center' },
+      { type: 'textbox', left: 60, top: 640, width: 930, text: 'DESIGNCON 2026', fontFamily: 'Montserrat', fontSize: 28, fontWeight: 'bold', fill: '#C4704A', textAlign: 'center', charSpacing: 300 },
+    ]),
+
+  // ─── PRODUCT LAUNCH — 2550×3300 ────────────────────────────────
+
+  // 19. Product Launch — gradient on CTA button, shadow+charSpacing on heading
+  tpl('product-launch', 'Introducing AuraSound', 'Product launch announcement with dark gradient and feature highlights',
+    'Marketing', 'Product Launch', ['product', 'launch', 'tech', 'audio'],
+    2550, 3300, 'gradient', 'linear:to-bottom:#1a1a2e:#0a0a14', [
+      { type: 'circle', left: 875, top: 600, radius: 320, fill: 'rgba(196,112,74,0.12)' },
+      { type: 'circle', left: 975, top: 700, radius: 220, fill: 'rgba(196,112,74,0.08)', stroke: '#C4704A', strokeWidth: 1 },
+      { type: 'textbox', left: 200, top: 450, width: 2150, text: 'INTRODUCING', fontFamily: 'Montserrat', fontSize: 28, fontWeight: 'bold', fill: '#C4704A', textAlign: 'center', charSpacing: 600 },
+      { type: 'textbox', left: 200, top: 1200, width: 2150, text: 'AuraSound', fontFamily: 'Playfair Display', fontSize: 140, fill: '#ffffff', textAlign: 'center', charSpacing: 100, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 200, top: 1420, width: 2150, text: 'Immersive spatial audio. Crafted for the way you listen.', fontFamily: 'DM Sans', fontSize: 36, fill: 'rgba(255,255,255,0.6)', textAlign: 'center' },
+      { type: 'rect', left: 1175, top: 1550, width: 200, height: 2, fill: 'rgba(196,112,74,0.5)' },
+      { type: 'circle', left: 550, top: 1700, radius: 8, fill: '#C4704A' },
+      { type: 'textbox', left: 590, top: 1688, width: 1600, text: '360° Spatial Audio  ·  40-Hour Battery  ·  Active Noise Cancellation', fontFamily: 'DM Sans', fontSize: 28, fill: 'rgba(255,255,255,0.5)' },
+      { type: 'rect', left: 900, top: 2000, width: 750, height: 90, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 750, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] }, rx: 45, ry: 45 },
+      { type: 'textbox', left: 900, top: 2020, width: 750, text: 'Pre-order · $199', fontFamily: 'Montserrat', fontSize: 32, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
+    ]),
+
+  // ─── RESTAURANT MENU — 2550×3300 ───────────────────────────────
+
+  // 20. Restaurant Menu — gradient on divider line, shadow+charSpacing on heading (already has charSpacing)
+  tpl('menu-golden-fork', 'The Golden Fork', 'Elegant dark restaurant menu with gold accents',
+    'Food & Lifestyle', 'Restaurant Menu', ['menu', 'restaurant', 'dining', 'elegant'],
+    2550, 3300, 'solid', '#1a1510', [
+      { type: 'rect', left: 150, top: 150, width: 2250, height: 3000, fill: 'rgba(0,0,0,0)', stroke: 'rgba(196,112,74,0.3)', strokeWidth: 1 },
+      { type: 'textbox', left: 200, top: 250, width: 2150, text: 'THE GOLDEN FORK', fontFamily: 'Playfair Display', fontSize: 72, fill: '#C4704A', textAlign: 'center', charSpacing: 300, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 1075, top: 380, width: 400, height: 2, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 400, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#d4a574' }] } },
+      { type: 'textbox', left: 300, top: 500, width: 1950, text: 'STARTERS', fontFamily: 'Montserrat', fontSize: 24, fontWeight: 'bold', fill: '#C4704A', charSpacing: 400 },
+      { type: 'textbox', left: 300, top: 580, width: 1600, text: 'Burrata & Heirloom Tomato\nwith basil oil and aged balsamic', fontFamily: 'Playfair Display', fontSize: 28, fill: '#e8dcc8', lineHeight: 1.6 },
+      { type: 'textbox', left: 1950, top: 580, width: 300, text: '$16', fontFamily: 'DM Sans', fontSize: 28, fill: '#C4704A', textAlign: 'right' },
+      { type: 'textbox', left: 300, top: 740, width: 1600, text: 'Pan-Seared Scallops\nwith cauliflower purée and brown butter', fontFamily: 'Playfair Display', fontSize: 28, fill: '#e8dcc8', lineHeight: 1.6 },
+      { type: 'textbox', left: 1950, top: 740, width: 300, text: '$22', fontFamily: 'DM Sans', fontSize: 28, fill: '#C4704A', textAlign: 'right' },
+      { type: 'rect', left: 300, top: 900, width: 1950, height: 1, fill: 'rgba(196,112,74,0.2)' },
+      { type: 'textbox', left: 300, top: 960, width: 1950, text: 'MAINS', fontFamily: 'Montserrat', fontSize: 24, fontWeight: 'bold', fill: '#C4704A', charSpacing: 400 },
+      { type: 'textbox', left: 300, top: 1040, width: 1600, text: 'Grilled Lamb Chops\nwith rosemary jus and roasted vegetables', fontFamily: 'Playfair Display', fontSize: 28, fill: '#e8dcc8', lineHeight: 1.6 },
+      { type: 'textbox', left: 1950, top: 1040, width: 300, text: '$38', fontFamily: 'DM Sans', fontSize: 28, fill: '#C4704A', textAlign: 'right' },
+      { type: 'textbox', left: 300, top: 1200, width: 1600, text: 'Wild Salmon\nwith lemon caper sauce and asparagus', fontFamily: 'Playfair Display', fontSize: 28, fill: '#e8dcc8', lineHeight: 1.6 },
+      { type: 'textbox', left: 1950, top: 1200, width: 300, text: '$34', fontFamily: 'DM Sans', fontSize: 28, fill: '#C4704A', textAlign: 'right' },
+    ]),
+
+  // ─── REAL ESTATE — 1080×1080 ───────────────────────────────────
+
+  // 21. Real Estate — gradient on price badge, shadow+charSpacing on heading
+  tpl('real-estate', 'Modern Loft $425,000', 'Real estate listing card with price badge and property details',
+    'Marketing', 'Real Estate', ['real estate', 'listing', 'property', 'home'],
     1080, 1080, 'solid', '#f5f0eb', [
-      { type: 'textbox', left: 120, top: 200, width: 840, text: '\u201C', fontFamily: 'Playfair Display', fontSize: 200, fill: '#d4a574', textAlign: 'left', opacity: 0.4 },
-      { type: 'textbox', left: 120, top: 360, width: 840, text: 'Design is not just what it looks like. Design is how it works.', fontFamily: 'Playfair Display', fontSize: 48, fontStyle: 'italic', fill: '#2d2d2d', lineHeight: 1.5 },
-      { type: 'rect', left: 120, top: 650, width: 80, height: 3, fill: '#d4a574' },
-      { type: 'textbox', left: 120, top: 680, width: 840, text: '— Steve Jobs', fontFamily: 'Inter', fontSize: 24, fill: '#888888' },
+      { type: 'rect', left: 60, top: 60, width: 960, height: 480, fill: '#d6cdc4', rx: 8, ry: 8 },
+      { type: 'textbox', left: 260, top: 260, width: 560, text: 'PROPERTY PHOTO', fontFamily: 'DM Sans', fontSize: 22, fill: 'rgba(100,80,60,0.3)', textAlign: 'center' },
+      { type: 'rect', left: 60, top: 490, width: 280, height: 60, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 280, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] }, rx: 4, ry: 4 },
+      { type: 'textbox', left: 70, top: 502, width: 260, text: '$425,000', fontFamily: 'Montserrat', fontSize: 28, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
+      { type: 'textbox', left: 60, top: 600, width: 960, text: 'Modern Downtown Loft', fontFamily: 'Playfair Display', fontSize: 44, fill: '#1a1510', charSpacing: 50, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 60, top: 670, width: 960, text: '3 bed  ·  2 bath  ·  1,840 sqft', fontFamily: 'DM Sans', fontSize: 22, fill: '#888070' },
+      { type: 'rect', left: 60, top: 760, width: 960, height: 2, fill: 'rgba(196,112,74,0.3)' },
+      { type: 'textbox', left: 60, top: 790, width: 960, text: 'Listed by Maria Chen  ·  Compass Realty', fontFamily: 'DM Sans', fontSize: 18, fill: '#aaa090' },
+      { type: 'rect', left: 0, top: 1050, width: 1080, height: 30, fill: '#C4704A', opacity: 0.8 },
     ]),
 
-  tpl('ig-promo-gradient', 'Gradient Promo', 'Vibrant gradient with central text',
-    'Social Media', 'Instagram Post', ['instagram', 'promo', 'gradient'],
-    1080, 1080, 'gradient', 'linear:to-bottom-right:#f093fb:#f5576c', [
-      { type: 'circle', left: 100, top: 100, radius: 60, fill: 'rgba(255,255,255,0.15)', stroke: '', strokeWidth: 0 },
-      { type: 'circle', left: 820, top: 780, radius: 90, fill: 'rgba(255,255,255,0.1)', stroke: '', strokeWidth: 0 },
-      { type: 'textbox', left: 120, top: 380, width: 840, text: 'NEW\nCOLLECTION', fontFamily: 'Inter', fontSize: 96, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', lineHeight: 1.1 },
-      { type: 'textbox', left: 120, top: 640, width: 840, text: 'Discover the latest styles for spring', fontFamily: 'Inter', fontSize: 26, fill: 'rgba(255,255,255,0.85)', textAlign: 'center' },
-      { type: 'rect', left: 390, top: 740, width: 300, height: 56, fill: '#ffffff', rx: 28, ry: 28 },
-      { type: 'textbox', left: 390, top: 752, width: 300, text: 'Shop Now', fontFamily: 'Inter', fontSize: 20, fontWeight: 'bold', fill: '#f5576c', textAlign: 'center' },
+  // ─── COUPON — 1800×750 ─────────────────────────────────────────
+
+  // 22. Coupon — gradient on brand area bg, shadow+charSpacing on heading
+  tpl('coupon-twenty', '20% OFF Your Order', 'Discount coupon with dashed border and bold typography',
+    'Marketing', 'Coupon', ['coupon', 'discount', 'sale', 'promo'],
+    1800, 750, 'solid', '#ffffff', [
+      { type: 'rect', left: 30, top: 30, width: 1740, height: 690, fill: 'rgba(0,0,0,0)', stroke: '#C4704A', strokeWidth: 3, strokeDashArray: [12, 8] },
+      { type: 'textbox', left: 100, top: 120, width: 800, text: '20% OFF', fontFamily: 'Montserrat', fontSize: 140, fontWeight: 'bold', fill: '#C4704A', charSpacing: 80, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 100, top: 310, width: 800, text: 'YOUR NEXT ORDER', fontFamily: 'Montserrat', fontSize: 36, fontWeight: 'bold', fill: '#1a1510', charSpacing: 200 },
+      { type: 'rect', left: 100, top: 400, width: 600, height: 2, fill: '#e8dcc8' },
+      { type: 'textbox', left: 100, top: 430, width: 800, text: 'Use code SAVE20  ·  Expires Dec 31, 2026', fontFamily: 'DM Sans', fontSize: 22, fill: '#888070' },
+      { type: 'rect', left: 1100, top: 120, width: 580, height: 510, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 0, y2: 510 }, colorStops: [{ offset: 0, color: 'rgba(196,112,74,0.1)' }, { offset: 1, color: 'rgba(196,112,74,0.02)' }] }, rx: 12, ry: 12 },
+      { type: 'textbox', left: 1100, top: 300, width: 580, text: 'ARTISAN\nGOODS CO.', fontFamily: 'Playfair Display', fontSize: 42, fill: '#C4704A', textAlign: 'center', lineHeight: 1.3 },
     ]),
 
-  tpl('ig-tips-carousel', 'Tips Card', 'Numbered tips with clean layout',
-    'Social Media', 'Instagram Post', ['instagram', 'tips', 'educational'],
-    1080, 1080, 'solid', '#ffffff', [
-      { type: 'rect', left: 0, top: 0, width: 1080, height: 200, fill: '#111827' },
-      { type: 'textbox', left: 80, top: 60, width: 920, text: '5 DESIGN TIPS', fontFamily: 'Inter', fontSize: 56, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 80, top: 140, width: 920, text: 'you need to know', fontFamily: 'Inter', fontSize: 22, fill: 'rgba(255,255,255,0.6)', textAlign: 'center' },
-      { type: 'circle', left: 80, top: 280, radius: 28, fill: '#6366f1' },
-      { type: 'textbox', left: 84, top: 290, width: 52, text: '1', fontFamily: 'Inter', fontSize: 24, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 160, top: 288, width: 840, text: 'Use consistent spacing throughout', fontFamily: 'Inter', fontSize: 24, fill: '#374151' },
-      { type: 'circle', left: 80, top: 380, radius: 28, fill: '#6366f1' },
-      { type: 'textbox', left: 84, top: 390, width: 52, text: '2', fontFamily: 'Inter', fontSize: 24, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 160, top: 388, width: 840, text: 'Limit your color palette to 3 colors', fontFamily: 'Inter', fontSize: 24, fill: '#374151' },
-      { type: 'circle', left: 80, top: 480, radius: 28, fill: '#6366f1' },
-      { type: 'textbox', left: 84, top: 490, width: 52, text: '3', fontFamily: 'Inter', fontSize: 24, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 160, top: 488, width: 840, text: 'Choose typography that matches your brand', fontFamily: 'Inter', fontSize: 24, fill: '#374151' },
-      { type: 'circle', left: 80, top: 580, radius: 28, fill: '#6366f1' },
-      { type: 'textbox', left: 84, top: 590, width: 52, text: '4', fontFamily: 'Inter', fontSize: 24, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 160, top: 588, width: 840, text: 'White space is your friend', fontFamily: 'Inter', fontSize: 24, fill: '#374151' },
-      { type: 'circle', left: 80, top: 680, radius: 28, fill: '#6366f1' },
-      { type: 'textbox', left: 84, top: 690, width: 52, text: '5', fontFamily: 'Inter', fontSize: 24, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 160, top: 688, width: 840, text: 'Align everything to a grid', fontFamily: 'Inter', fontSize: 24, fill: '#374151' },
-      { type: 'textbox', left: 80, top: 840, width: 920, text: '@yourusername', fontFamily: 'Inter', fontSize: 18, fill: '#9ca3af', textAlign: 'center' },
+  // ─── TESTIMONIAL CARD — 1080×1080 ──────────────────────────────
+
+  // 23. Testimonial — gradient on accent line, shadow+charSpacing on quote
+  tpl('testimonial-card', 'This Changed Everything', 'Customer testimonial card with quote marks and star rating',
+    'Marketing', 'Testimonial', ['testimonial', 'review', 'social proof', 'quote'],
+    1080, 1080, 'solid', '#faf8f5', [
+      { type: 'textbox', left: 60, top: 80, width: 400, text: '\u201C', fontFamily: 'Playfair Display', fontSize: 300, fill: '#C4704A', opacity: 0.12 },
+      { type: 'textbox', left: 120, top: 300, width: 840, text: '\u201CThis product completely changed how we approach design. Our conversion rate doubled in the first month.\u201D', fontFamily: 'Playfair Display', fontSize: 36, fill: '#2d2520', lineHeight: 1.6, fontStyle: 'italic', charSpacing: 50, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 120, top: 620, width: 840, text: '\u2605\u2605\u2605\u2605\u2605', fontFamily: 'Inter', fontSize: 28, fill: '#C4704A' },
+      { type: 'rect', left: 120, top: 700, width: 60, height: 3, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 60, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] } },
+      { type: 'circle', left: 120, top: 750, radius: 32, fill: '#e8dcc8' },
+      { type: 'textbox', left: 200, top: 745, width: 700, text: 'Rachel Torres', fontFamily: 'Montserrat', fontSize: 20, fontWeight: 'bold', fill: '#1a1510' },
+      { type: 'textbox', left: 200, top: 780, width: 700, text: 'Founder, Drift Studio', fontFamily: 'DM Sans', fontSize: 16, fill: '#888070' },
     ]),
 
-  tpl('ig-product-showcase', 'Product Showcase', 'Split-tone layout for showcasing a product',
-    'Social Media', 'Instagram Post', ['instagram', 'product', 'ecommerce'],
-    1080, 1080, 'solid', '#f8fafc', [
-      { type: 'rect', left: 0, top: 0, width: 1080, height: 540, fill: '#0ea5e9' },
-      { type: 'circle', left: 340, top: 170, radius: 200, fill: 'rgba(255,255,255,0.15)' },
-      { type: 'textbox', left: 340, top: 300, width: 400, text: 'YOUR\nPRODUCT', fontFamily: 'Inter', fontSize: 48, fontWeight: 'bold', fill: 'rgba(255,255,255,0.4)', textAlign: 'center', lineHeight: 1.1 },
-      { type: 'textbox', left: 80, top: 600, width: 920, text: 'Product Name', fontFamily: 'Inter', fontSize: 48, fontWeight: 'bold', fill: '#0f172a', textAlign: 'center' },
-      { type: 'textbox', left: 80, top: 680, width: 920, text: 'A brief tagline that sells the value', fontFamily: 'Inter', fontSize: 22, fill: '#64748b', textAlign: 'center' },
-      { type: 'textbox', left: 370, top: 780, width: 340, text: '$49.99', fontFamily: 'Inter', fontSize: 52, fontWeight: 'bold', fill: '#0ea5e9', textAlign: 'center' },
-      { type: 'rect', left: 380, top: 870, width: 320, height: 56, fill: '#0ea5e9', rx: 28, ry: 28 },
-      { type: 'textbox', left: 380, top: 882, width: 320, text: 'Buy Now', fontFamily: 'Inter', fontSize: 20, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
+  // ─── NEWSLETTER HEADER — 1200×400 ──────────────────────────────
+
+  // 24. Newsletter Header — gradient on accent line, shadow on heading (already has charSpacing)
+  tpl('newsletter-header', 'The Weekly Brief #47', 'Newsletter header banner with gradient and decorative elements',
+    'Marketing', 'Newsletter', ['newsletter', 'email', 'header', 'weekly'],
+    1200, 400, 'gradient', 'linear:to-bottom-right:#C4704A:#e8956d', [
+      { type: 'circle', left: 950, top: 30, radius: 120, fill: 'rgba(255,255,255,0.08)' },
+      { type: 'circle', left: 1050, top: 200, radius: 80, fill: 'rgba(255,255,255,0.06)' },
+      { type: 'circle', left: 50, top: 280, radius: 60, fill: 'rgba(255,255,255,0.05)' },
+      { type: 'textbox', left: 80, top: 100, width: 800, text: 'THE WEEKLY BRIEF', fontFamily: 'Montserrat', fontSize: 56, fontWeight: 'bold', fill: '#ffffff', charSpacing: 200, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 80, top: 190, width: 800, text: '#47  ·  March 2026', fontFamily: 'DM Sans', fontSize: 24, fill: 'rgba(255,255,255,0.75)' },
+      { type: 'rect', left: 80, top: 260, width: 100, height: 3, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 100, y2: 0 }, colorStops: [{ offset: 0, color: 'rgba(255,255,255,0.8)' }, { offset: 1, color: 'rgba(255,255,255,0.3)' }] } },
+      { type: 'textbox', left: 80, top: 290, width: 800, text: 'Your weekly dose of design insights and industry news', fontFamily: 'DM Sans', fontSize: 18, fill: 'rgba(255,255,255,0.6)' },
     ]),
 
-  // ─── INSTAGRAM STORY (3) — 1080×1920 ─────────────────────────────
+  // ─── APP PROMO STORY — 1080×1920 ───────────────────────────────
 
-  tpl('ig-story-gradient', 'Gradient Story', 'Vibrant gradient with swipe-up prompt',
-    'Social Media', 'Instagram Story', ['instagram', 'story', 'gradient'],
+  // 25. App Promo — gradient on CTA button, shadow+charSpacing on heading
+  tpl('app-promo-taskflow', 'Download TaskFlow', 'App promo story with device frame and feature list',
+    'Marketing', 'App Promo', ['app', 'promo', 'mobile', 'download', 'story'],
     1080, 1920, 'gradient', 'linear:to-bottom:#667eea:#764ba2', [
-      { type: 'textbox', left: 100, top: 700, width: 880, text: 'SWIPE UP', fontFamily: 'Inter', fontSize: 64, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 800, width: 880, text: 'to discover something new', fontFamily: 'Inter', fontSize: 28, fill: 'rgba(255,255,255,0.8)', textAlign: 'center' },
-      { type: 'circle', left: 490, top: 1400, radius: 40, fill: 'rgba(0,0,0,0)', stroke: '#ffffff', strokeWidth: 2 },
-      { type: 'triangle', left: 504, top: 1412, width: 16, height: 16, fill: '#ffffff', angle: 180 },
+      { type: 'rect', left: 300, top: 280, width: 480, height: 850, fill: '#ffffff', rx: 32, ry: 32 },
+      { type: 'rect', left: 320, top: 320, width: 440, height: 770, fill: '#f0f0f8', rx: 8, ry: 8 },
+      { type: 'textbox', left: 360, top: 420, width: 360, text: 'TaskFlow', fontFamily: 'Montserrat', fontSize: 36, fontWeight: 'bold', fill: '#667eea', textAlign: 'center' },
+      { type: 'textbox', left: 100, top: 1220, width: 880, text: 'Organize your life.', fontFamily: 'Playfair Display', fontSize: 48, fill: '#ffffff', textAlign: 'center', charSpacing: 80, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 140, top: 1340, width: 800, text: '\u2713  Smart task prioritization\n\u2713  Calendar sync across devices\n\u2713  Team collaboration built in', fontFamily: 'DM Sans', fontSize: 26, fill: 'rgba(255,255,255,0.8)', lineHeight: 2.0 },
+      { type: 'rect', left: 300, top: 1640, width: 480, height: 72, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 480, y2: 0 }, colorStops: [{ offset: 0, color: '#ffffff' }, { offset: 1, color: '#e8e0f8' }] }, rx: 36, ry: 36 },
+      { type: 'textbox', left: 300, top: 1656, width: 480, text: 'Download Free', fontFamily: 'Montserrat', fontSize: 24, fontWeight: 'bold', fill: '#667eea', textAlign: 'center' },
     ]),
 
-  tpl('ig-story-poll', 'Poll Story', 'Engaging poll story with this-or-that layout',
-    'Social Media', 'Instagram Story', ['instagram', 'story', 'poll', 'interactive'],
-    1080, 1920, 'solid', '#18181b', [
-      { type: 'textbox', left: 100, top: 200, width: 880, text: 'THIS OR THAT?', fontFamily: 'Inter', fontSize: 52, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'rect', left: 80, top: 400, width: 420, height: 500, fill: '#f43f5e', rx: 24, ry: 24 },
-      { type: 'textbox', left: 100, top: 580, width: 380, text: 'OPTION\nONE', fontFamily: 'Inter', fontSize: 48, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', lineHeight: 1.1 },
-      { type: 'rect', left: 580, top: 400, width: 420, height: 500, fill: '#3b82f6', rx: 24, ry: 24 },
-      { type: 'textbox', left: 600, top: 580, width: 380, text: 'OPTION\nTWO', fontFamily: 'Inter', fontSize: 48, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', lineHeight: 1.1 },
-      { type: 'textbox', left: 100, top: 1050, width: 880, text: 'Vote in the poll above!', fontFamily: 'Inter', fontSize: 22, fill: '#a1a1aa', textAlign: 'center' },
+  // ─── WEDDING INVITATION — 1500×2100 ────────────────────────────
+
+  // 26. Wedding — gradient on divider line, shadow+charSpacing on heading
+  tpl('wedding-emma-james', 'Emma & James', 'Elegant wedding invitation with floral accents and serif typography',
+    'Events', 'Wedding', ['wedding', 'invitation', 'elegant', 'romantic'],
+    1500, 2100, 'solid', '#faf8f5', [
+      { type: 'rect', left: 60, top: 60, width: 1380, height: 1980, fill: 'rgba(0,0,0,0)', stroke: '#C4704A', strokeWidth: 1 },
+      { type: 'circle', left: 80, top: 80, radius: 50, fill: '#C4704A', opacity: 0.06 },
+      { type: 'circle', left: 1320, top: 80, radius: 40, fill: '#C4704A', opacity: 0.08 },
+      { type: 'circle', left: 1300, top: 1900, radius: 55, fill: '#C4704A', opacity: 0.06 },
+      { type: 'circle', left: 100, top: 1880, radius: 45, fill: '#C4704A', opacity: 0.07 },
+      { type: 'textbox', left: 150, top: 400, width: 1200, text: 'Emma & James', fontFamily: 'Playfair Display', fontSize: 80, fill: '#2d2520', textAlign: 'center', charSpacing: 80, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 650, top: 520, width: 200, height: 2, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 200, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#d4a574' }] } },
+      { type: 'textbox', left: 150, top: 580, width: 1200, text: 'request the pleasure of your company\nat the celebration of their marriage', fontFamily: 'DM Sans', fontSize: 22, fill: '#888070', textAlign: 'center', lineHeight: 1.8 },
+      { type: 'textbox', left: 150, top: 780, width: 1200, text: 'Saturday, the fourteenth of June\nTwo thousand twenty-six\nat half past four in the afternoon', fontFamily: 'Playfair Display', fontSize: 28, fill: '#2d2520', textAlign: 'center', lineHeight: 1.8 },
+      { type: 'textbox', left: 150, top: 1040, width: 1200, text: 'The Willows Estate, Sonoma', fontFamily: 'DM Sans', fontSize: 20, fill: '#C4704A', textAlign: 'center', charSpacing: 200 },
+      { type: 'textbox', left: 150, top: 1200, width: 1200, text: 'Dinner & Dancing to Follow', fontFamily: 'DM Sans', fontSize: 18, fill: '#aaa090', textAlign: 'center' },
+      { type: 'textbox', left: 150, top: 1700, width: 1200, text: 'RSVP by May 1, 2026', fontFamily: 'Montserrat', fontSize: 16, fill: '#aaa090', textAlign: 'center', charSpacing: 200 },
     ]),
 
-  tpl('ig-story-countdown', 'Countdown Story', 'Event countdown with bold date',
-    'Social Media', 'Instagram Story', ['instagram', 'story', 'countdown', 'event'],
-    1080, 1920, 'gradient', 'linear:to-bottom:#0f0c29:#302b63', [
-      { type: 'textbox', left: 100, top: 400, width: 880, text: 'COMING SOON', fontFamily: 'Inter', fontSize: 28, fontWeight: 'bold', fill: '#a78bfa', textAlign: 'center', charSpacing: 400 },
-      { type: 'textbox', left: 100, top: 520, width: 880, text: 'APRIL 20', fontFamily: 'Inter', fontSize: 120, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'rect', left: 340, top: 700, width: 400, height: 4, fill: '#a78bfa' },
-      { type: 'textbox', left: 100, top: 760, width: 880, text: 'The wait is almost over.\nMark your calendar.', fontFamily: 'Inter', fontSize: 26, fill: 'rgba(255,255,255,0.7)', textAlign: 'center', lineHeight: 1.5 },
-      { type: 'rect', left: 340, top: 920, width: 400, height: 56, fill: '#a78bfa', rx: 28, ry: 28 },
-      { type: 'textbox', left: 340, top: 932, width: 400, text: 'Set Reminder', fontFamily: 'Inter', fontSize: 20, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
+  // ─── BIRTHDAY INVITE — 1080×1080 ───────────────────────────────
+
+  // 27. Birthday — gradient on divider line, shadow+charSpacing on heading
+  tpl('birthday-mia', 'Mia Turns 7!', 'Colorful birthday party invitation with confetti and playful typography',
+    'Events', 'Birthday', ['birthday', 'party', 'kids', 'celebration', 'invitation'],
+    1080, 1080, 'gradient', 'linear:to-bottom-right:#fbbf24:#f472b6', [
+      { type: 'circle', left: 120, top: 80, radius: 18, fill: '#ffffff', opacity: 0.25 },
+      { type: 'rect', left: 800, top: 120, width: 24, height: 24, fill: '#ffffff', opacity: 0.2, angle: 30 },
+      { type: 'circle', left: 900, top: 300, radius: 12, fill: '#ffffff', opacity: 0.3 },
+      { type: 'rect', left: 180, top: 750, width: 20, height: 20, fill: '#ffffff', opacity: 0.15, angle: 45 },
+      { type: 'circle', left: 850, top: 800, radius: 15, fill: '#ffffff', opacity: 0.2 },
+      { type: 'rect', left: 300, top: 200, width: 16, height: 16, fill: '#ffffff', opacity: 0.18, angle: 15 },
+      { type: 'textbox', left: 100, top: 280, width: 880, text: 'MIA TURNS 7!', fontFamily: 'Montserrat', fontSize: 80, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', charSpacing: 100, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 100, top: 420, width: 880, text: 'Join us for cake, games & fun!', fontFamily: 'DM Sans', fontSize: 30, fill: 'rgba(255,255,255,0.9)', textAlign: 'center' },
+      { type: 'rect', left: 390, top: 510, width: 300, height: 3, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 300, y2: 0 }, colorStops: [{ offset: 0, color: 'rgba(255,255,255,0.8)' }, { offset: 1, color: 'rgba(255,255,255,0.3)' }] } },
+      { type: 'textbox', left: 100, top: 560, width: 880, text: 'Saturday, April 12  ·  2 – 5 PM', fontFamily: 'Montserrat', fontSize: 24, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
+      { type: 'textbox', left: 100, top: 640, width: 880, text: 'The Johnson House\n42 Oak Lane, Maplewood', fontFamily: 'DM Sans', fontSize: 20, fill: 'rgba(255,255,255,0.8)', textAlign: 'center', lineHeight: 1.6 },
+      { type: 'textbox', left: 100, top: 820, width: 880, text: 'RSVP to Lisa  ·  (555) 234-5678', fontFamily: 'DM Sans', fontSize: 18, fill: 'rgba(255,255,255,0.65)', textAlign: 'center' },
     ]),
 
-  // ─── FACEBOOK POST (3) — 1200×630 ────────────────────────────────
+  // ─── CONCERT POSTER — 2400×3600 ────────────────────────────────
 
-  tpl('fb-event', 'Event Promo', 'Event banner with date and details',
-    'Social Media', 'Facebook Post', ['facebook', 'event', 'promo'],
-    1200, 630, 'solid', '#0f3460', [
-      { type: 'rect', left: 0, top: 0, width: 400, height: 630, fill: '#e94560' },
-      { type: 'textbox', left: 60, top: 180, width: 280, text: 'JAN', fontFamily: 'Inter', fontSize: 36, fontWeight: 'bold', fill: 'rgba(255,255,255,0.7)', textAlign: 'center' },
-      { type: 'textbox', left: 60, top: 230, width: 280, text: '15', fontFamily: 'Inter', fontSize: 120, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 460, top: 160, width: 680, text: 'Creative Workshop', fontFamily: 'Inter', fontSize: 52, fontWeight: 'bold', fill: '#ffffff' },
-      { type: 'textbox', left: 460, top: 260, width: 680, text: 'Join us for an evening of design, creativity, and networking. Free entry for all members.', fontFamily: 'Inter', fontSize: 22, fill: 'rgba(255,255,255,0.7)', lineHeight: 1.5 },
-      { type: 'textbox', left: 460, top: 420, width: 680, text: '7:00 PM  \u00b7  Downtown Studio  \u00b7  Free', fontFamily: 'Inter', fontSize: 18, fontWeight: 'bold', fill: '#e94560' },
+  // 28. Concert — gradient on CTA button, shadow+charSpacing on heading
+  tpl('concert-midnight', 'Midnight Echo Live', 'Dramatic concert poster with heavy typography and glow effect',
+    'Events', 'Concert', ['concert', 'music', 'poster', 'live', 'event'],
+    2400, 3600, 'solid', '#0a0a0a', [
+      { type: 'rect', left: 0, top: 1400, width: 2400, height: 6, fill: '#C4704A', opacity: 0.6 },
+      { type: 'rect', left: 0, top: 1390, width: 2400, height: 30, fill: '#C4704A', opacity: 0.08 },
+      { type: 'textbox', left: 100, top: 810, width: 2200, text: 'MIDNIGHT', fontFamily: 'Montserrat', fontSize: 200, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', charSpacing: 100, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 103, top: 813, width: 2200, text: 'MIDNIGHT', fontFamily: 'Montserrat', fontSize: 200, fontWeight: 'bold', fill: 'rgba(196,112,74,0.15)', textAlign: 'center' },
+      { type: 'textbox', left: 100, top: 1040, width: 2200, text: 'ECHO', fontFamily: 'Montserrat', fontSize: 200, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
+      { type: 'textbox', left: 100, top: 1500, width: 2200, text: 'LIVE IN CONCERT', fontFamily: 'Montserrat', fontSize: 36, fontWeight: 'bold', fill: '#C4704A', textAlign: 'center', charSpacing: 600 },
+      { type: 'rect', left: 900, top: 1620, width: 600, height: 2, fill: 'rgba(255,255,255,0.15)' },
+      { type: 'textbox', left: 100, top: 1700, width: 2200, text: 'October 18, 2026  ·  Paramount Theater', fontFamily: 'DM Sans', fontSize: 32, fill: 'rgba(255,255,255,0.6)', textAlign: 'center' },
+      { type: 'textbox', left: 100, top: 1800, width: 2200, text: 'Doors 7 PM  ·  Show 9 PM', fontFamily: 'DM Sans', fontSize: 26, fill: 'rgba(255,255,255,0.4)', textAlign: 'center' },
+      { type: 'rect', left: 850, top: 2000, width: 700, height: 80, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 700, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] }, rx: 40, ry: 40 },
+      { type: 'textbox', left: 850, top: 2018, width: 700, text: 'Tickets from $45', fontFamily: 'Montserrat', fontSize: 28, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
     ]),
 
-  tpl('fb-testimonial', 'Customer Testimonial', 'Social proof card with star rating',
-    'Social Media', 'Facebook Post', ['facebook', 'testimonial', 'review'],
-    1200, 630, 'solid', '#f0fdf4', [
-      { type: 'rect', left: 60, top: 60, width: 1080, height: 510, fill: '#ffffff', rx: 16, ry: 16, stroke: '#e5e7eb', strokeWidth: 1 },
-      { type: 'textbox', left: 120, top: 100, width: 960, text: '\u2605 \u2605 \u2605 \u2605 \u2605', fontFamily: 'Inter', fontSize: 32, fill: '#eab308' },
-      { type: 'textbox', left: 120, top: 170, width: 960, text: '"This product completely changed how I work. I can\'t recommend it enough. The team behind it truly cares about quality."', fontFamily: 'Inter', fontSize: 28, fontStyle: 'italic', fill: '#374151', lineHeight: 1.5 },
-      { type: 'rect', left: 120, top: 380, width: 50, height: 3, fill: '#22c55e' },
-      { type: 'textbox', left: 120, top: 400, width: 500, text: 'Alex Johnson', fontFamily: 'Inter', fontSize: 22, fontWeight: 'bold', fill: '#111827' },
-      { type: 'textbox', left: 120, top: 435, width: 500, text: 'Verified Customer', fontFamily: 'Inter', fontSize: 16, fill: '#22c55e' },
+  // ─── CONFERENCE BADGE — 750×1050 ───────────────────────────────
+
+  // 29. Conference Badge — gradient on header bar, shadow on heading (already has charSpacing)
+  tpl('conf-badge', 'TechSummit 2026 Badge', 'Conference attendee badge with dark gradient header',
+    'Events', 'Conference', ['conference', 'badge', 'tech', 'attendee'],
+    750, 1050, 'solid', '#ffffff', [
+      { type: 'rect', left: 0, top: 0, width: 750, height: 250, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 750, y2: 0 }, colorStops: [{ offset: 0, color: '#1a1a2e' }, { offset: 1, color: '#2d1810' }] } },
+      { type: 'rect', left: 0, top: 230, width: 750, height: 40, fill: '#2d2d5e', opacity: 0.6 },
+      { type: 'textbox', left: 50, top: 60, width: 650, text: 'TECHSUMMIT', fontFamily: 'Montserrat', fontSize: 44, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', charSpacing: 300, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 50, top: 130, width: 650, text: '2026', fontFamily: 'Montserrat', fontSize: 36, fill: 'rgba(255,255,255,0.5)', textAlign: 'center', charSpacing: 500 },
+      { type: 'textbox', left: 50, top: 350, width: 650, text: 'Alex Rivera', fontFamily: 'Playfair Display', fontSize: 48, fill: '#1a1a2e', textAlign: 'center' },
+      { type: 'textbox', left: 50, top: 430, width: 650, text: 'Senior Engineer  ·  Stripe', fontFamily: 'DM Sans', fontSize: 22, fill: '#888888', textAlign: 'center' },
+      { type: 'rect', left: 275, top: 520, width: 200, height: 2, fill: '#C4704A' },
+      { type: 'rect', left: 250, top: 700, width: 250, height: 250, fill: '#f0f0f0', rx: 8, ry: 8 },
+      { type: 'textbox', left: 250, top: 800, width: 250, text: 'QR CODE', fontFamily: 'DM Sans', fontSize: 14, fill: '#cccccc', textAlign: 'center' },
     ]),
 
-  tpl('fb-offer', 'Limited Offer', 'Time-limited special offer banner',
-    'Social Media', 'Facebook Post', ['facebook', 'offer', 'discount'],
-    1200, 630, 'solid', '#1e1b4b', [
-      { type: 'rect', left: 0, top: 0, width: 1200, height: 8, fill: '#f59e0b' },
-      { type: 'textbox', left: 80, top: 80, width: 500, text: 'LIMITED TIME', fontFamily: 'Inter', fontSize: 18, fontWeight: 'bold', fill: '#f59e0b', charSpacing: 300 },
-      { type: 'textbox', left: 80, top: 140, width: 700, text: 'Get 50% Off\nEverything', fontFamily: 'Inter', fontSize: 72, fontWeight: 'bold', fill: '#ffffff', lineHeight: 1.1 },
-      { type: 'textbox', left: 80, top: 360, width: 700, text: 'Use code SAVE50 at checkout. Offer ends Sunday.', fontFamily: 'Inter', fontSize: 22, fill: '#a5b4fc', lineHeight: 1.4 },
-      { type: 'rect', left: 80, top: 470, width: 240, height: 56, fill: '#f59e0b', rx: 8, ry: 8 },
-      { type: 'textbox', left: 80, top: 482, width: 240, text: 'Claim Offer', fontFamily: 'Inter', fontSize: 20, fontWeight: 'bold', fill: '#1e1b4b', textAlign: 'center' },
-      { type: 'circle', left: 950, top: 200, radius: 140, fill: '#f59e0b', opacity: 0.12 },
-      { type: 'textbox', left: 930, top: 290, width: 180, text: '50%', fontFamily: 'Inter', fontSize: 64, fontWeight: 'bold', fill: '#f59e0b', textAlign: 'center' },
+  // ─── CHARITY GALA — 1500×2100 ──────────────────────────────────
+
+  // 30. Gala — gradient on divider line, shadow+charSpacing on heading
+  tpl('gala-evening', 'An Evening of Hope', 'Formal charity gala invitation with gold accents on black',
+    'Events', 'Gala', ['gala', 'charity', 'formal', 'invitation', 'fundraiser'],
+    1500, 2100, 'solid', '#0a0a0a', [
+      { type: 'circle', left: 100, top: 200, radius: 80, fill: '#C4704A', opacity: 0.1 },
+      { type: 'circle', left: 1200, top: 350, radius: 60, fill: '#C4704A', opacity: 0.08 },
+      { type: 'circle', left: 1100, top: 1600, radius: 100, fill: '#C4704A', opacity: 0.06 },
+      { type: 'circle', left: 200, top: 1700, radius: 50, fill: '#C4704A', opacity: 0.12 },
+      { type: 'textbox', left: 150, top: 500, width: 1200, text: 'AN EVENING\nOF HOPE', fontFamily: 'Playfair Display', fontSize: 80, fill: '#C4704A', textAlign: 'center', lineHeight: 1.3, charSpacing: 100, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 600, top: 730, width: 300, height: 2, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 300, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#d4a574' }] } },
+      { type: 'textbox', left: 150, top: 790, width: 1200, text: 'Annual Charity Gala', fontFamily: 'DM Sans', fontSize: 28, fill: 'rgba(255,255,255,0.6)', textAlign: 'center' },
+      { type: 'textbox', left: 150, top: 920, width: 1200, text: 'November 8, 2026  ·  7:00 PM', fontFamily: 'Montserrat', fontSize: 24, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
+      { type: 'textbox', left: 150, top: 1000, width: 1200, text: 'Grand Ballroom, The Langham', fontFamily: 'DM Sans', fontSize: 20, fill: 'rgba(255,255,255,0.5)', textAlign: 'center' },
+      { type: 'rect', left: 600, top: 1100, width: 300, height: 1, fill: 'rgba(196,112,74,0.3)' },
+      { type: 'textbox', left: 150, top: 1160, width: 1200, text: 'Black Tie  ·  RSVP by Oct 15', fontFamily: 'DM Sans', fontSize: 18, fill: 'rgba(255,255,255,0.4)', textAlign: 'center', charSpacing: 200 },
     ]),
 
-  // ─── YOUTUBE THUMBNAIL (3) — 1280×720 ────────────────────────────
+  // ─── WORKSHOP — 2550×3300 ──────────────────────────────────────
 
-  tpl('yt-thumb-bold', 'Bold Thumbnail', 'High-impact split-tone with big text',
-    'Video', 'YouTube Thumbnail', ['youtube', 'thumbnail', 'bold'],
-    1280, 720, 'solid', '#ff6b35', [
-      { type: 'rect', left: 640, top: 0, width: 640, height: 720, fill: '#1a1a2e' },
-      { type: 'textbox', left: 60, top: 200, width: 560, text: 'TOP 10', fontFamily: 'Inter', fontSize: 100, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 60, top: 340, width: 560, text: 'TIPS', fontFamily: 'Inter', fontSize: 80, fontWeight: 'bold', fill: '#1a1a2e', textAlign: 'center' },
-      { type: 'circle', left: 820, top: 240, radius: 100, fill: '#ff6b35' },
-      { type: 'textbox', left: 820, top: 290, width: 200, text: '2026', fontFamily: 'Inter', fontSize: 40, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
+  // 31. Workshop — gradient on header bar, shadow+charSpacing on heading
+  tpl('workshop-watercolor', 'Intro to Watercolor', 'Workshop announcement flyer with session schedule',
+    'Education', 'Workshop', ['workshop', 'art', 'watercolor', 'class', 'education'],
+    2550, 3300, 'solid', '#ffffff', [
+      { type: 'rect', left: 0, top: 0, width: 2550, height: 200, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 2550, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] } },
+      { type: 'textbox', left: 200, top: 50, width: 2150, text: 'WORKSHOP SERIES', fontFamily: 'Montserrat', fontSize: 28, fontWeight: 'bold', fill: 'rgba(255,255,255,0.7)', textAlign: 'center', charSpacing: 400 },
+      { type: 'textbox', left: 200, top: 110, width: 2150, text: 'Spring 2026', fontFamily: 'DM Sans', fontSize: 22, fill: 'rgba(255,255,255,0.5)', textAlign: 'center' },
+      { type: 'textbox', left: 200, top: 350, width: 2150, text: 'INTRO TO\nWATERCOLOR', fontFamily: 'Playfair Display', fontSize: 100, fill: '#1a1510', textAlign: 'center', lineHeight: 1.2, charSpacing: 80, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 200, top: 650, width: 2150, text: 'with artist Maya Lin', fontFamily: 'DM Sans', fontSize: 30, fill: '#888070', textAlign: 'center' },
+      { type: 'rect', left: 1125, top: 750, width: 300, height: 2, fill: '#C4704A' },
+      { type: 'circle', left: 400, top: 900, radius: 8, fill: '#C4704A' },
+      { type: 'textbox', left: 440, top: 886, width: 1700, text: 'Session 1: Color Theory & Mixing  ·  March 4', fontFamily: 'DM Sans', fontSize: 28, fill: '#2d2520' },
+      { type: 'circle', left: 400, top: 990, radius: 8, fill: '#C4704A' },
+      { type: 'textbox', left: 440, top: 976, width: 1700, text: 'Session 2: Wet-on-Wet Techniques  ·  March 11', fontFamily: 'DM Sans', fontSize: 28, fill: '#2d2520' },
+      { type: 'circle', left: 400, top: 1080, radius: 8, fill: '#C4704A' },
+      { type: 'textbox', left: 440, top: 1066, width: 1700, text: 'Session 3: Landscape Composition  ·  March 18', fontFamily: 'DM Sans', fontSize: 28, fill: '#2d2520' },
+      { type: 'rect', left: 200, top: 1180, width: 2150, height: 1, fill: '#e8dcc8' },
+      { type: 'textbox', left: 200, top: 1230, width: 2150, text: 'Materials included  ·  $120 per session', fontFamily: 'Montserrat', fontSize: 24, fontWeight: 'bold', fill: '#C4704A', textAlign: 'center' },
+      { type: 'textbox', left: 200, top: 1310, width: 2150, text: 'Lincoln Arts Center  ·  Studio B  ·  6:00 – 8:30 PM', fontFamily: 'DM Sans', fontSize: 22, fill: '#aaa090', textAlign: 'center' },
     ]),
 
-  tpl('yt-thumb-reaction', 'Reaction Thumbnail', 'Emoji-style reaction with vibrant background',
-    'Video', 'YouTube Thumbnail', ['youtube', 'thumbnail', 'reaction'],
-    1280, 720, 'gradient', 'linear:to-right:#7c3aed:#db2777', [
-      { type: 'textbox', left: 60, top: 120, width: 700, text: 'I TRIED\nTHIS FOR\n30 DAYS', fontFamily: 'Inter', fontSize: 88, fontWeight: 'bold', fill: '#ffffff', lineHeight: 1.0 },
-      { type: 'circle', left: 900, top: 200, radius: 160, fill: 'rgba(255,255,255,0.15)' },
-      { type: 'textbox', left: 920, top: 280, width: 280, text: '!?', fontFamily: 'Inter', fontSize: 120, fontWeight: 'bold', fill: '#fbbf24', textAlign: 'center' },
-      { type: 'rect', left: 60, top: 540, width: 300, height: 56, fill: '#fbbf24', rx: 8, ry: 8 },
-      { type: 'textbox', left: 60, top: 552, width: 300, text: 'WATCH NOW', fontFamily: 'Inter', fontSize: 20, fontWeight: 'bold', fill: '#1e1b4b', textAlign: 'center' },
+  // ─── BOOK COVER — 1600×2560 ────────────────────────────────────
+
+  // 32. Book Cover — gradient on decorative line, shadow on heading (already has charSpacing)
+  tpl('book-cover-quiet', 'The Quiet Architecture of Days', 'Minimalist literary book cover with dark gradient',
+    'Creative', 'Book Cover', ['book', 'cover', 'novel', 'literary', 'minimal'],
+    1600, 2560, 'gradient', 'linear:to-bottom:#1a1520:#2d1810', [
+      { type: 'rect', left: 700, top: 650, width: 200, height: 1, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 200, y2: 0 }, colorStops: [{ offset: 0, color: 'rgba(196,112,74,0.1)' }, { offset: 1, color: 'rgba(196,112,74,0.6)' }] } },
+      { type: 'textbox', left: 150, top: 720, width: 1300, text: 'THE QUIET\nARCHITECTURE\nOF DAYS', fontFamily: 'Playfair Display', fontSize: 88, fill: '#ffffff', textAlign: 'center', lineHeight: 1.4, charSpacing: 100, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 700, top: 1150, width: 200, height: 1, fill: 'rgba(196,112,74,0.4)' },
+      { type: 'textbox', left: 150, top: 1200, width: 1300, text: 'A NOVEL', fontFamily: 'Montserrat', fontSize: 20, fill: 'rgba(255,255,255,0.4)', textAlign: 'center', charSpacing: 600 },
+      { type: 'textbox', left: 150, top: 2100, width: 1300, text: 'ELENA PARK', fontFamily: 'Montserrat', fontSize: 30, fontWeight: 'bold', fill: '#C4704A', textAlign: 'center', charSpacing: 400 },
+      { type: 'circle', left: 760, top: 400, radius: 60, fill: '#C4704A', opacity: 0.08 },
+      { type: 'circle', left: 720, top: 1800, radius: 40, fill: '#C4704A', opacity: 0.06 },
     ]),
 
-  tpl('yt-thumb-tutorial', 'Tutorial Thumbnail', 'Clean tutorial style with step indicator',
-    'Video', 'YouTube Thumbnail', ['youtube', 'thumbnail', 'tutorial', 'howto'],
-    1280, 720, 'solid', '#0f172a', [
-      { type: 'rect', left: 0, top: 0, width: 1280, height: 6, fill: '#22d3ee' },
-      { type: 'textbox', left: 60, top: 100, width: 800, text: 'HOW TO', fontFamily: 'Inter', fontSize: 36, fontWeight: 'bold', fill: '#22d3ee', charSpacing: 200 },
-      { type: 'textbox', left: 60, top: 170, width: 800, text: 'Design Like\na Pro', fontFamily: 'Inter', fontSize: 84, fontWeight: 'bold', fill: '#ffffff', lineHeight: 1.05 },
-      { type: 'textbox', left: 60, top: 420, width: 800, text: 'Step-by-step beginner guide', fontFamily: 'Inter', fontSize: 26, fill: '#94a3b8' },
-      { type: 'rect', left: 1000, top: 200, width: 200, height: 200, fill: '#22d3ee', rx: 20, ry: 20 },
-      { type: 'textbox', left: 1000, top: 240, width: 200, text: 'FREE', fontFamily: 'Inter', fontSize: 48, fontWeight: 'bold', fill: '#0f172a', textAlign: 'center' },
-      { type: 'textbox', left: 1000, top: 310, width: 200, text: 'GUIDE', fontFamily: 'Inter', fontSize: 28, fontWeight: 'bold', fill: '#0f172a', textAlign: 'center' },
+  // ─── FLASHCARD — 1050×750 ──────────────────────────────────────
+
+  // 33. Flashcard — gradient on divider line, shadow+charSpacing on term heading
+  tpl('flashcard-photo', 'Photosynthesis', 'Study flashcard with two-zone layout for term and definition',
+    'Education', 'Flashcard', ['flashcard', 'study', 'biology', 'education', 'science'],
+    1050, 750, 'solid', '#ffffff', [
+      { type: 'rect', left: 0, top: 0, width: 420, height: 750, fill: '#e8f5e9' },
+      { type: 'rect', left: 420, top: 80, width: 3, height: 590, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 0, y2: 590 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: 'rgba(196,112,74,0.1)' }] } },
+      { type: 'textbox', left: 40, top: 280, width: 340, text: 'PHOTO\u00ADSYNTHESIS', fontFamily: 'Montserrat', fontSize: 36, fontWeight: 'bold', fill: '#1a1510', textAlign: 'center', lineHeight: 1.3, charSpacing: 100, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'circle', left: 180, top: 440, radius: 20, fill: '#C4704A', opacity: 0.15 },
+      { type: 'textbox', left: 480, top: 200, width: 520, text: 'The process by which green plants convert sunlight, water, and carbon dioxide into glucose and oxygen.', fontFamily: 'DM Sans', fontSize: 22, fill: '#2d2520', lineHeight: 1.7 },
+      { type: 'textbox', left: 480, top: 480, width: 520, text: '6CO\u2082 + 6H\u2082O \u2192 C\u2086H\u2081\u2082O\u2086 + 6O\u2082', fontFamily: 'Georgia', fontSize: 18, fill: '#C4704A' },
+      { type: 'textbox', left: 480, top: 620, width: 520, text: 'Biology  ·  Chapter 8', fontFamily: 'DM Sans', fontSize: 14, fill: '#aaa090' },
     ]),
 
-  // ─── PRESENTATION (2) — 1920×1080 ────────────────────────────────
+  // ─── RESUME — 2550×3300 ────────────────────────────────────────
 
-  tpl('pres-title-dark', 'Dark Title Slide', 'Professional dark presentation title',
-    'Presentation', 'Presentation (16:9)', ['presentation', 'title', 'dark'],
-    1920, 1080, 'solid', '#0d1117', [
-      { type: 'rect', left: 0, top: 0, width: 8, height: 1080, fill: '#58a6ff' },
-      { type: 'textbox', left: 120, top: 300, width: 1200, text: 'Presentation Title', fontFamily: 'Inter', fontSize: 72, fontWeight: 'bold', fill: '#ffffff' },
-      { type: 'textbox', left: 120, top: 420, width: 1200, text: 'A subtitle that explains the context of this presentation', fontFamily: 'Inter', fontSize: 28, fill: '#8b949e', lineHeight: 1.5 },
-      { type: 'rect', left: 120, top: 530, width: 100, height: 4, fill: '#58a6ff' },
-      { type: 'textbox', left: 120, top: 570, width: 600, text: 'Your Name  \u00b7  April 2026', fontFamily: 'Inter', fontSize: 18, fill: '#484f58' },
+  // 34. Resume — gradient on sidebar, shadow+charSpacing on name heading
+  tpl('resume-alex', 'Alex Rivera, UX Designer', 'Professional two-column resume with dark sidebar and skill bars',
+    'Business', 'Resume', ['resume', 'cv', 'professional', 'career', 'job'],
+    2550, 3300, 'solid', '#ffffff', [
+      { type: 'rect', left: 0, top: 0, width: 700, height: 3300, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 0, y2: 3300 }, colorStops: [{ offset: 0, color: '#1a1a2e' }, { offset: 1, color: '#2d1810' }] } },
+      { type: 'textbox', left: 60, top: 150, width: 580, text: 'ALEX\nRIVERA', fontFamily: 'Montserrat', fontSize: 52, fontWeight: 'bold', fill: '#ffffff', lineHeight: 1.2, charSpacing: 100, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 60, top: 330, width: 580, text: 'UX Designer', fontFamily: 'DM Sans', fontSize: 22, fill: '#C4704A' },
+      { type: 'rect', left: 60, top: 400, width: 100, height: 2, fill: 'rgba(196,112,74,0.5)' },
+      { type: 'textbox', left: 60, top: 460, width: 580, text: 'alex@rivera.design\n+1 (415) 555-7890\nSan Francisco, CA\nrivera.design', fontFamily: 'DM Sans', fontSize: 17, fill: 'rgba(255,255,255,0.6)', lineHeight: 2.0 },
+      { type: 'textbox', left: 60, top: 720, width: 580, text: 'SKILLS', fontFamily: 'Montserrat', fontSize: 16, fontWeight: 'bold', fill: '#C4704A', charSpacing: 300 },
+      { type: 'textbox', left: 60, top: 780, width: 300, text: 'User Research', fontFamily: 'DM Sans', fontSize: 15, fill: 'rgba(255,255,255,0.7)' },
+      { type: 'rect', left: 60, top: 810, width: 580, height: 4, fill: 'rgba(255,255,255,0.1)', rx: 2, ry: 2 },
+      { type: 'rect', left: 60, top: 810, width: 520, height: 4, fill: '#C4704A', rx: 2, ry: 2 },
+      { type: 'textbox', left: 60, top: 840, width: 300, text: 'Prototyping', fontFamily: 'DM Sans', fontSize: 15, fill: 'rgba(255,255,255,0.7)' },
+      { type: 'rect', left: 60, top: 870, width: 580, height: 4, fill: 'rgba(255,255,255,0.1)', rx: 2, ry: 2 },
+      { type: 'rect', left: 60, top: 870, width: 490, height: 4, fill: '#C4704A', rx: 2, ry: 2 },
+      { type: 'textbox', left: 60, top: 900, width: 300, text: 'Design Systems', fontFamily: 'DM Sans', fontSize: 15, fill: 'rgba(255,255,255,0.7)' },
+      { type: 'rect', left: 60, top: 930, width: 580, height: 4, fill: 'rgba(255,255,255,0.1)', rx: 2, ry: 2 },
+      { type: 'rect', left: 60, top: 930, width: 550, height: 4, fill: '#C4704A', rx: 2, ry: 2 },
+      { type: 'textbox', left: 800, top: 150, width: 1600, text: 'EXPERIENCE', fontFamily: 'Montserrat', fontSize: 18, fontWeight: 'bold', fill: '#1a1510', charSpacing: 300 },
+      { type: 'rect', left: 800, top: 190, width: 80, height: 3, fill: '#C4704A' },
+      { type: 'textbox', left: 800, top: 230, width: 1600, text: 'Lead Designer', fontFamily: 'Montserrat', fontSize: 24, fontWeight: 'bold', fill: '#1a1510' },
+      { type: 'textbox', left: 800, top: 270, width: 1600, text: 'Spotify  ·  2023 – Present', fontFamily: 'DM Sans', fontSize: 17, fill: '#C4704A' },
+      { type: 'textbox', left: 800, top: 310, width: 1600, text: 'Led redesign of the mobile listening experience, increasing user engagement by 24%. Managed a team of 5 designers across 3 product areas.', fontFamily: 'DM Sans', fontSize: 17, fill: '#555555', lineHeight: 1.7 },
+      { type: 'textbox', left: 800, top: 450, width: 1600, text: 'Senior UX Designer', fontFamily: 'Montserrat', fontSize: 24, fontWeight: 'bold', fill: '#1a1510' },
+      { type: 'textbox', left: 800, top: 490, width: 1600, text: 'Airbnb  ·  2020 – 2023', fontFamily: 'DM Sans', fontSize: 17, fill: '#C4704A' },
+      { type: 'textbox', left: 800, top: 530, width: 1600, text: 'Designed the host onboarding flow that reduced setup time by 40%. Conducted 120+ user interviews to inform product direction.', fontFamily: 'DM Sans', fontSize: 17, fill: '#555555', lineHeight: 1.7 },
+      { type: 'textbox', left: 800, top: 700, width: 1600, text: 'EDUCATION', fontFamily: 'Montserrat', fontSize: 18, fontWeight: 'bold', fill: '#1a1510', charSpacing: 300 },
+      { type: 'rect', left: 800, top: 740, width: 80, height: 3, fill: '#C4704A' },
+      { type: 'textbox', left: 800, top: 780, width: 1600, text: 'MFA, Interaction Design', fontFamily: 'Montserrat', fontSize: 22, fontWeight: 'bold', fill: '#1a1510' },
+      { type: 'textbox', left: 800, top: 815, width: 1600, text: 'School of Visual Arts, New York  ·  2018 – 2020', fontFamily: 'DM Sans', fontSize: 17, fill: '#888070' },
     ]),
 
-  tpl('pres-title-light', 'Light Title Slide', 'Clean white presentation with accent',
-    'Presentation', 'Presentation (16:9)', ['presentation', 'title', 'light', 'clean'],
-    1920, 1080, 'solid', '#ffffff', [
-      { type: 'rect', left: 0, top: 0, width: 1920, height: 6, fill: '#6366f1' },
-      { type: 'rect', left: 1600, top: 0, width: 320, height: 1080, fill: '#6366f1' },
-      { type: 'textbox', left: 120, top: 320, width: 1400, text: 'Your Big Idea', fontFamily: 'Inter', fontSize: 80, fontWeight: 'bold', fill: '#1e1b4b' },
-      { type: 'textbox', left: 120, top: 450, width: 1400, text: 'A presentation about making things better', fontFamily: 'Inter', fontSize: 30, fill: '#6b7280', lineHeight: 1.4 },
-      { type: 'rect', left: 120, top: 550, width: 80, height: 4, fill: '#6366f1' },
-      { type: 'textbox', left: 120, top: 590, width: 500, text: 'Jane Doe  \u00b7  Product Team', fontFamily: 'Inter', fontSize: 20, fill: '#9ca3af' },
-      { type: 'textbox', left: 1630, top: 480, width: 260, text: '2026', fontFamily: 'Inter', fontSize: 72, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
+  // ─── BATCH 3: Education + Creative + Food & Lifestyle + Seasonal (35-50) ──
+
+
+  // ─── EDUCATION ──────────────────────────────────────────────────────
+
+  // 35. Study Guide — gradient on accent bar, shadow+charSpacing on heading
+  tpl('study-guide-bio', 'Biology Chapter 12', 'Study guide',
+    'Education', 'Study Guide', ['biology', 'study', 'science', 'school'],
+    2550, 3300, 'solid', '#ffffff', [
+      { type: 'textbox', left: 150, top: 120, width: 2250, text: 'BIOLOGY \u00b7 CHAPTER 12', fontFamily: 'Montserrat', fontSize: 28, fontWeight: 'bold', fill: '#6b7280', textAlign: 'left', charSpacing: 300 },
+      { type: 'rect', left: 150, top: 175, width: 300, height: 5, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 300, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] } },
+      { type: 'textbox', left: 150, top: 220, width: 2250, text: 'Cell Division & Mitosis', fontFamily: 'Playfair Display', fontSize: 72, fontWeight: 'bold', fill: '#1a1a1a', charSpacing: 50, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 150, top: 380, width: 2250, height: 4, fill: '#e5e7eb' },
+      { type: 'rect', left: 150, top: 440, width: 8, height: 680, fill: '#C4704A' },
+      { type: 'textbox', left: 190, top: 440, width: 2160, text: 'KEY TERMS', fontFamily: 'Montserrat', fontSize: 26, fontWeight: 'bold', fill: '#C4704A' },
+      { type: 'textbox', left: 190, top: 490, width: 2160, text: 'Mitosis \u2014 the process by which a cell divides its nucleus into two identical daughter nuclei\nInterphase \u2014 the resting phase between successive mitotic divisions\nChromatin \u2014 the material of which chromosomes are composed\nCytokinesis \u2014 the cytoplasmic division of a cell at the end of mitosis\nCentromere \u2014 the point on a chromosome where the spindle fiber is attached', fontFamily: 'DM Sans', fontSize: 22, fill: '#374151', lineHeight: 2.0 },
+      { type: 'rect', left: 150, top: 1160, width: 8, height: 680, fill: '#C4704A' },
+      { type: 'textbox', left: 190, top: 1160, width: 2160, text: 'PROCESS STEPS', fontFamily: 'Montserrat', fontSize: 26, fontWeight: 'bold', fill: '#C4704A' },
+      { type: 'textbox', left: 190, top: 1210, width: 2160, text: '1. Prophase \u2014 Chromatin condenses into visible chromosomes\n2. Prometaphase \u2014 Nuclear envelope breaks down\n3. Metaphase \u2014 Chromosomes align at the cell equator\n4. Anaphase \u2014 Sister chromatids separate and move to poles\n5. Telophase \u2014 Nuclear envelopes reform around each set', fontFamily: 'DM Sans', fontSize: 22, fill: '#374151', lineHeight: 2.0 },
+      { type: 'rect', left: 150, top: 1880, width: 8, height: 500, fill: '#C4704A' },
+      { type: 'textbox', left: 190, top: 1880, width: 2160, text: 'REVIEW QUESTIONS', fontFamily: 'Montserrat', fontSize: 26, fontWeight: 'bold', fill: '#C4704A' },
+      { type: 'textbox', left: 190, top: 1930, width: 2160, text: '1. What is the difference between mitosis and meiosis?\n2. Why is interphase the longest phase of the cell cycle?\n3. Describe the role of the spindle fibers during cell division.\n4. How does cytokinesis differ in plant and animal cells?', fontFamily: 'DM Sans', fontSize: 22, fill: '#374151', lineHeight: 2.0 },
+      { type: 'rect', left: 150, top: 2600, width: 2250, height: 60, fill: '#C4704A', opacity: 0.08 },
+      { type: 'textbox', left: 190, top: 2612, width: 2160, text: 'AP Biology \u00b7 Mrs. Khatri \u00b7 Period 3', fontFamily: 'DM Sans', fontSize: 20, fill: '#9ca3af' },
     ]),
 
-  // ─── BUSINESS CARD (2) — 1050×600 ────────────────────────────────
+  // ─── CREATIVE ───────────────────────────────────────────────────────
 
-  tpl('bcard-modern', 'Modern Card', 'Clean modern business card with blue accent',
-    'Print', 'Business Card', ['business card', 'modern', 'clean'],
-    1050, 600, 'solid', '#ffffff', [
-      { type: 'rect', left: 0, top: 0, width: 1050, height: 8, fill: '#2563eb' },
-      { type: 'textbox', left: 60, top: 80, width: 500, text: 'Jane Doe', fontFamily: 'Inter', fontSize: 36, fontWeight: 'bold', fill: '#111827' },
-      { type: 'textbox', left: 60, top: 135, width: 500, text: 'Senior Designer', fontFamily: 'Inter', fontSize: 18, fill: '#6b7280' },
-      { type: 'rect', left: 60, top: 180, width: 40, height: 3, fill: '#2563eb' },
-      { type: 'textbox', left: 60, top: 220, width: 500, text: 'jane@example.com\n+1 (555) 123-4567\nexample.com', fontFamily: 'Inter', fontSize: 14, fill: '#4b5563', lineHeight: 1.8 },
-      { type: 'circle', left: 850, top: 200, radius: 80, fill: '#2563eb', opacity: 0.08 },
-      { type: 'circle', left: 880, top: 230, radius: 50, fill: '#2563eb', opacity: 0.12 },
+  // 36. Album Cover — gradient on divider line, shadow on heading (already has charSpacing+stroke)
+  tpl('album-velvet', 'Velvet Horizon', 'Album cover art',
+    'Creative', 'Album Cover', ['album', 'music', 'cover art', 'modern'],
+    3000, 3000, 'gradient', 'linear:to-bottom-right:#4a1942:#C4704A', [
+      { type: 'circle', left: 900, top: 800, radius: 600, fill: 'rgba(255,255,255,0.15)', stroke: '', strokeWidth: 0 },
+      { type: 'circle', left: 1050, top: 950, radius: 400, fill: 'rgba(255,255,255,0.08)', stroke: '', strokeWidth: 0 },
+      { type: 'textbox', left: 200, top: 1100, width: 2600, text: 'VELVET HORIZON', fontFamily: 'Montserrat', fontSize: 180, fontWeight: 'bold', fill: 'rgba(0,0,0,0)', stroke: '#ffffff', strokeWidth: 3, textAlign: 'center', charSpacing: 100, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 200, top: 1400, width: 2600, text: 'AURORA SAINTS', fontFamily: 'Inter', fontSize: 48, fontWeight: 'bold', fill: 'rgba(255,255,255,0.85)', textAlign: 'center', charSpacing: 500 },
+      { type: 'rect', left: 1200, top: 1520, width: 600, height: 3, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 600, y2: 0 }, colorStops: [{ offset: 0, color: 'rgba(255,255,255,0.1)' }, { offset: 1, color: 'rgba(255,255,255,0.6)' }] } },
     ]),
 
-  tpl('bcard-bold', 'Bold Card', 'Dark bold business card with gold accent',
-    'Print', 'Business Card', ['business card', 'bold', 'dark'],
-    1050, 600, 'solid', '#1c1917', [
-      { type: 'rect', left: 0, top: 0, width: 12, height: 600, fill: '#d97706' },
-      { type: 'textbox', left: 60, top: 60, width: 500, text: 'JOHN SMITH', fontFamily: 'Inter', fontSize: 32, fontWeight: 'bold', fill: '#ffffff', charSpacing: 200 },
-      { type: 'textbox', left: 60, top: 115, width: 500, text: 'Creative Director', fontFamily: 'Inter', fontSize: 16, fill: '#d97706' },
-      { type: 'rect', left: 60, top: 170, width: 60, height: 2, fill: '#d97706' },
-      { type: 'textbox', left: 60, top: 210, width: 500, text: 'john@studio.co\n+1 (555) 987-6543\nwww.studio.co', fontFamily: 'Inter', fontSize: 14, fill: '#a8a29e', lineHeight: 1.8 },
-      { type: 'rect', left: 700, top: 350, width: 280, height: 180, fill: 'rgba(0,0,0,0)', stroke: '#d97706', strokeWidth: 1, strokeUniform: true },
-      { type: 'textbox', left: 720, top: 410, width: 240, text: 'STUDIO', fontFamily: 'Inter', fontSize: 36, fontWeight: 'bold', fill: '#d97706', textAlign: 'center' },
+  // 37. Movie Poster — gradient on accent line, shadow+charSpacing on heading
+  tpl('movie-poster-signal', 'The Last Signal', 'Cinematic movie poster',
+    'Creative', 'Movie Poster', ['movie', 'poster', 'film', 'cinematic'],
+    2400, 3600, 'solid', '#0a0505', [
+      { type: 'rect', left: 0, top: 0, width: 2400, height: 3600, fill: 'rgba(196,112,74,0.04)' },
+      { type: 'textbox', left: 200, top: 900, width: 2000, text: 'THE LAST\nSIGNAL', fontFamily: 'Playfair Display', fontSize: 220, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', lineHeight: 1.05, charSpacing: 80, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 300, top: 1450, width: 1800, text: 'In a world gone silent, one signal remains.', fontFamily: 'Georgia', fontSize: 42, fontStyle: 'italic', fill: 'rgba(255,255,255,0.65)', textAlign: 'center' },
+      { type: 'rect', left: 300, top: 2800, width: 1800, height: 3, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 1800, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#8b3e2a' }] } },
+      { type: 'textbox', left: 300, top: 2840, width: 1800, text: 'STARRING  DANIEL KIM  \u00b7  SOPHIA REYES  \u00b7  MARCO BIANCHI', fontFamily: 'Inter', fontSize: 24, fill: 'rgba(255,255,255,0.5)', textAlign: 'center', charSpacing: 150 },
+      { type: 'textbox', left: 300, top: 2920, width: 1800, text: 'DIRECTED BY ELENA VASQUEZ  \u00b7  SCREENPLAY BY JAMES OKAFOR  \u00b7  MUSIC BY YUKI TANAKA', fontFamily: 'Inter', fontSize: 14, fill: 'rgba(255,255,255,0.3)', textAlign: 'center', charSpacing: 100 },
+      { type: 'textbox', left: 300, top: 3000, width: 1800, text: 'COMING FALL 2026', fontFamily: 'Montserrat', fontSize: 28, fontWeight: 'bold', fill: '#C4704A', textAlign: 'center', charSpacing: 400 },
     ]),
 
-  // ─── EVENT INVITATIONS (3) — 1080×1080 ──────────────────────────
-
-  tpl('event-wedding', 'Wedding Invitation', 'Elegant wedding invitation with serif fonts',
-    'Event', 'Invitation', ['wedding', 'invitation', 'elegant'],
-    1080, 1080, 'solid', '#faf7f2', [
-      { type: 'rect', left: 60, top: 60, width: 960, height: 960, fill: 'rgba(0,0,0,0)', stroke: '#c9a96e', strokeWidth: 2, strokeUniform: true },
-      { type: 'rect', left: 80, top: 80, width: 920, height: 920, fill: 'rgba(0,0,0,0)', stroke: '#c9a96e', strokeWidth: 1, strokeUniform: true },
-      { type: 'textbox', left: 140, top: 200, width: 800, text: 'Together with their families', fontFamily: 'Lora', fontSize: 20, fill: '#8b7355', textAlign: 'center' },
-      { type: 'textbox', left: 140, top: 300, width: 800, text: 'Emma & James', fontFamily: 'Playfair Display', fontSize: 72, fill: '#2d2215', textAlign: 'center' },
-      { type: 'rect', left: 440, top: 400, width: 200, height: 2, fill: '#c9a96e' },
-      { type: 'textbox', left: 140, top: 440, width: 800, text: 'request the pleasure of your company\nat the celebration of their marriage', fontFamily: 'Lora', fontSize: 22, fill: '#5c4a32', textAlign: 'center', lineHeight: 1.6 },
-      { type: 'textbox', left: 140, top: 580, width: 800, text: 'Saturday, June 15th, 2026\nat four o\u2019clock in the afternoon', fontFamily: 'Lora', fontSize: 24, fontWeight: 'bold', fill: '#2d2215', textAlign: 'center', lineHeight: 1.6 },
-      { type: 'textbox', left: 140, top: 720, width: 800, text: 'The Grand Ballroom\n123 Celebration Ave, New York', fontFamily: 'Lora', fontSize: 18, fill: '#8b7355', textAlign: 'center', lineHeight: 1.6 },
-      { type: 'textbox', left: 140, top: 850, width: 800, text: 'RSVP by May 1st', fontFamily: 'Inter', fontSize: 14, fill: '#c9a96e', textAlign: 'center', charSpacing: 200 },
+  // 38. Magazine Cover — gradient on barcode rect, shadow+charSpacing on heading
+  tpl('magazine-form', 'FORM Issue 23', 'Magazine cover',
+    'Creative', 'Magazine Cover', ['magazine', 'cover', 'editorial', 'design'],
+    2550, 3300, 'solid', '#f0ece4', [
+      { type: 'textbox', left: 150, top: 100, width: 2250, text: 'FORM', fontFamily: 'Playfair Display', fontSize: 200, fontWeight: 'bold', fill: '#1a1a1a', textAlign: 'center', charSpacing: 300, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 150, top: 330, width: 2250, text: 'ISSUE 23 \u00b7 SPRING 2026', fontFamily: 'Inter', fontSize: 22, fill: '#888880', textAlign: 'center', charSpacing: 400 },
+      { type: 'rect', left: 300, top: 480, width: 1950, height: 1600, fill: '#d5d0c8', rx: 4, ry: 4 },
+      { type: 'textbox', left: 300, top: 1140, width: 1950, text: 'PHOTO', fontFamily: 'Inter', fontSize: 60, fill: 'rgba(0,0,0,0.08)', textAlign: 'center' },
+      { type: 'textbox', left: 150, top: 2200, width: 2250, text: 'The Future of\nSustainable Design', fontFamily: 'Playfair Display', fontSize: 72, fill: '#1a1a1a', lineHeight: 1.2 },
+      { type: 'textbox', left: 150, top: 2440, width: 2250, text: 'Interview: Neri Oxman on Material Ecology', fontFamily: 'DM Sans', fontSize: 30, fill: '#C4704A' },
+      { type: 'textbox', left: 150, top: 2520, width: 1500, text: 'Plus: 40 Studios Redefining Craft \u00b7 The Rise of Bio-Materials \u00b7 Tokyo Design Week Report', fontFamily: 'DM Sans', fontSize: 22, fill: '#6b6b60', lineHeight: 1.6 },
+      { type: 'rect', left: 2050, top: 2900, width: 200, height: 260, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 0, y2: 260 }, colorStops: [{ offset: 0, color: '#1a1a1a' }, { offset: 1, color: '#2d1810' }] } },
+      { type: 'textbox', left: 2060, top: 3070, width: 180, text: 'BARCODE', fontFamily: 'Inter', fontSize: 10, fill: '#ffffff', textAlign: 'center' },
     ]),
 
-  tpl('event-birthday', 'Birthday Party', 'Fun colorful birthday party invitation',
-    'Event', 'Invitation', ['birthday', 'party', 'fun', 'colorful'],
-    1080, 1080, 'solid', '#7c3aed', [
-      { type: 'circle', left: -80, top: -80, radius: 200, fill: '#fbbf24', opacity: 0.3 },
-      { type: 'circle', left: 800, top: 700, radius: 250, fill: '#ec4899', opacity: 0.2 },
-      { type: 'textbox', left: 100, top: 150, width: 880, text: 'YOU\'RE INVITED!', fontFamily: 'Anton', fontSize: 80, fill: '#fbbf24', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 280, width: 880, text: 'Sarah\'s 30th\nBirthday Bash', fontFamily: 'Poppins', fontSize: 60, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', lineHeight: 1.3 },
-      { type: 'rect', left: 300, top: 460, width: 480, height: 4, fill: '#fbbf24', rx: 2, ry: 2 },
-      { type: 'textbox', left: 100, top: 510, width: 880, text: 'Saturday, August 20th\n7:00 PM \u2014 Late', fontFamily: 'Poppins', fontSize: 28, fill: '#e9d5ff', textAlign: 'center', lineHeight: 1.5 },
-      { type: 'textbox', left: 100, top: 650, width: 880, text: 'The Rooftop Bar\n456 Party Street', fontFamily: 'Poppins', fontSize: 22, fill: '#c4b5fd', textAlign: 'center', lineHeight: 1.5 },
-      { type: 'rect', left: 300, top: 790, width: 480, height: 60, fill: '#fbbf24', rx: 30, ry: 30 },
-      { type: 'textbox', left: 300, top: 802, width: 480, text: 'RSVP to Sarah', fontFamily: 'Poppins', fontSize: 22, fontWeight: 'bold', fill: '#7c3aed', textAlign: 'center' },
+  // 39. Exhibition — gradient on accent bar, shadow+charSpacing on heading (already has charSpacing)
+  tpl('art-exhibition', 'Fragments', 'Gallery exhibition poster',
+    'Creative', 'Exhibition', ['art', 'gallery', 'exhibition', 'poster', 'minimal'],
+    2400, 3600, 'solid', '#faf8f5', [
+      { type: 'textbox', left: 200, top: 800, width: 2000, text: 'FRAGMENTS', fontFamily: 'Playfair Display', fontSize: 140, fill: '#1a1a1a', textAlign: 'left', charSpacing: 600, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 200, top: 1000, width: 2000, text: 'Works by Yuki Tanaka', fontFamily: 'Georgia', fontSize: 36, fontStyle: 'italic', fill: '#6b6b60' },
+      { type: 'rect', left: 1600, top: 400, width: 40, height: 2400, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 0, y2: 2400 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: 'rgba(196,112,74,0.2)' }] }, opacity: 0.7 },
+      { type: 'textbox', left: 200, top: 2600, width: 1200, text: 'March 1 \u2013 April 30, 2026', fontFamily: 'DM Sans', fontSize: 30, fill: '#1a1a1a' },
+      { type: 'textbox', left: 200, top: 2660, width: 1200, text: 'Opening Reception: March 1, 6\u20139 PM', fontFamily: 'DM Sans', fontSize: 24, fill: '#888880' },
+      { type: 'rect', left: 200, top: 2740, width: 200, height: 2, fill: '#1a1a1a' },
+      { type: 'textbox', left: 200, top: 2780, width: 1200, text: 'Whitespace Gallery \u00b7 Portland', fontFamily: 'Inter', fontSize: 26, fontWeight: 'bold', fill: '#1a1a1a' },
     ]),
 
-  tpl('event-corporate', 'Corporate Event', 'Professional corporate event invitation',
-    'Event', 'Invitation', ['corporate', 'event', 'professional'],
-    1080, 1080, 'solid', '#0f172a', [
-      { type: 'rect', left: 0, top: 0, width: 1080, height: 8, fill: '#3b82f6' },
-      { type: 'textbox', left: 100, top: 120, width: 880, text: 'ANNUAL\nSUMMIT 2026', fontFamily: 'Inter', fontSize: 80, fontWeight: 'bold', fill: '#ffffff', textAlign: 'left', lineHeight: 1.1 },
-      { type: 'rect', left: 100, top: 340, width: 80, height: 4, fill: '#3b82f6' },
-      { type: 'textbox', left: 100, top: 390, width: 880, text: 'Innovation \u00b7 Leadership \u00b7 Growth', fontFamily: 'Inter', fontSize: 24, fill: '#64748b', textAlign: 'left' },
-      { type: 'textbox', left: 100, top: 500, width: 500, text: 'March 15\u201316, 2026\n9:00 AM \u2014 6:00 PM', fontFamily: 'Inter', fontSize: 28, fill: '#e2e8f0', lineHeight: 1.5 },
-      { type: 'textbox', left: 100, top: 640, width: 500, text: 'Convention Center\n789 Business Blvd, San Francisco', fontFamily: 'Inter', fontSize: 20, fill: '#94a3b8', lineHeight: 1.5 },
-      { type: 'rect', left: 100, top: 800, width: 300, height: 56, fill: '#3b82f6', rx: 8, ry: 8 },
-      { type: 'textbox', left: 100, top: 814, width: 300, text: 'Register Now', fontFamily: 'Inter', fontSize: 18, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 920, width: 500, text: 'ACME CORPORATION', fontFamily: 'Inter', fontSize: 14, fill: '#475569', charSpacing: 300 },
+  // 40. Photography Portfolio — gradient on accent line, shadow+charSpacing on name
+  tpl('photo-portfolio', 'Kai Nomura', 'Photography portfolio',
+    'Creative', 'Portfolio', ['photography', 'portfolio', 'minimal', 'grid'],
+    3300, 2550, 'solid', '#ffffff', [
+      { type: 'rect', left: 150, top: 200, width: 920, height: 700, fill: '#e8e5e0' },
+      { type: 'rect', left: 1120, top: 200, width: 920, height: 700, fill: '#d5d0c8' },
+      { type: 'rect', left: 2090, top: 200, width: 920, height: 700, fill: '#c8c2ba' },
+      { type: 'rect', left: 150, top: 960, width: 920, height: 700, fill: '#c8c2ba' },
+      { type: 'rect', left: 1120, top: 960, width: 920, height: 700, fill: '#e8e5e0' },
+      { type: 'rect', left: 2090, top: 960, width: 920, height: 700, fill: '#d5d0c8' },
+      { type: 'textbox', left: 150, top: 1840, width: 1400, text: 'KAI NOMURA', fontFamily: 'Playfair Display', fontSize: 48, fill: '#1a1a1a', charSpacing: 100, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 150, top: 1910, width: 100, height: 3, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 100, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] } },
+      { type: 'textbox', left: 150, top: 1940, width: 1400, text: 'Documentary \u00b7 Portrait \u00b7 Landscape', fontFamily: 'DM Sans', fontSize: 22, fill: '#888880' },
+      { type: 'textbox', left: 2400, top: 1940, width: 610, text: 'kainomura.com', fontFamily: 'DM Sans', fontSize: 22, fill: '#C4704A', textAlign: 'right' },
     ]),
 
-  // ─── RESTAURANT MENUS (2) — 1080×1440 ──────────────────────────
+  // ─── EVENTS ─────────────────────────────────────────────────────────
 
-  tpl('menu-cafe', 'Caf\u00e9 Menu', 'Warm rustic caf\u00e9 menu with earthy tones',
-    'Print', 'Menu', ['restaurant', 'cafe', 'menu', 'food'],
-    1080, 1440, 'solid', '#faf5ef', [
-      { type: 'textbox', left: 100, top: 80, width: 880, text: 'THE DAILY GRIND', fontFamily: 'Playfair Display', fontSize: 48, fill: '#3e2723', textAlign: 'center', charSpacing: 150 },
-      { type: 'rect', left: 440, top: 150, width: 200, height: 2, fill: '#8d6e63' },
-      { type: 'textbox', left: 100, top: 200, width: 880, text: 'COFFEE', fontFamily: 'Inter', fontSize: 20, fill: '#8d6e63', textAlign: 'center', charSpacing: 300 },
-      { type: 'textbox', left: 100, top: 250, width: 600, text: 'Espresso\nCappuccino\nLatte\nCold Brew\nPour Over', fontFamily: 'Lora', fontSize: 22, fill: '#3e2723', lineHeight: 2.0 },
-      { type: 'textbox', left: 750, top: 250, width: 200, text: '$3.50\n$4.50\n$5.00\n$4.50\n$5.50', fontFamily: 'Lora', fontSize: 22, fill: '#8d6e63', textAlign: 'right', lineHeight: 2.0 },
-      { type: 'rect', left: 100, top: 530, width: 880, height: 1, fill: '#d7ccc8' },
-      { type: 'textbox', left: 100, top: 570, width: 880, text: 'PASTRIES', fontFamily: 'Inter', fontSize: 20, fill: '#8d6e63', textAlign: 'center', charSpacing: 300 },
-      { type: 'textbox', left: 100, top: 620, width: 600, text: 'Croissant\nBlueberry Muffin\nBanana Bread\nCinnamon Roll', fontFamily: 'Lora', fontSize: 22, fill: '#3e2723', lineHeight: 2.0 },
-      { type: 'textbox', left: 750, top: 620, width: 200, text: '$3.00\n$3.50\n$4.00\n$4.50', fontFamily: 'Lora', fontSize: 22, fill: '#8d6e63', textAlign: 'right', lineHeight: 2.0 },
-      { type: 'rect', left: 100, top: 860, width: 880, height: 1, fill: '#d7ccc8' },
-      { type: 'textbox', left: 100, top: 900, width: 880, text: 'BRUNCH', fontFamily: 'Inter', fontSize: 20, fill: '#8d6e63', textAlign: 'center', charSpacing: 300 },
-      { type: 'textbox', left: 100, top: 950, width: 600, text: 'Avocado Toast\nAcai Bowl\nEggs Benedict\nPancake Stack', fontFamily: 'Lora', fontSize: 22, fill: '#3e2723', lineHeight: 2.0 },
-      { type: 'textbox', left: 750, top: 950, width: 200, text: '$12.00\n$14.00\n$15.00\n$11.00', fontFamily: 'Lora', fontSize: 22, fill: '#8d6e63', textAlign: 'right', lineHeight: 2.0 },
-      { type: 'textbox', left: 100, top: 1300, width: 880, text: 'Open Daily 7am\u20134pm \u00b7 123 Main Street', fontFamily: 'Inter', fontSize: 14, fill: '#bcaaa4', textAlign: 'center' },
+  // 41. Music Festival — gradient on lineup bg area, shadow+charSpacing on heading
+  tpl('music-festival', 'Solstice Festival 2026', 'Music festival poster',
+    'Events', 'Music Festival', ['music', 'festival', 'concert', 'lineup'],
+    2400, 3600, 'gradient', 'linear:to-bottom:#ff6b35:#C4704A', [
+      { type: 'circle', left: 1600, top: -200, radius: 500, fill: 'rgba(255,255,255,0.1)', stroke: '', strokeWidth: 0 },
+      { type: 'textbox', left: 200, top: 300, width: 2000, text: 'SOLSTICE', fontFamily: 'Montserrat', fontSize: 220, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', charSpacing: 100, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 200, top: 560, width: 2000, text: 'MUSIC FESTIVAL 2026', fontFamily: 'Inter', fontSize: 36, fill: 'rgba(255,255,255,0.8)', textAlign: 'center', charSpacing: 500 },
+      { type: 'rect', left: 800, top: 670, width: 800, height: 3, fill: 'rgba(255,255,255,0.4)' },
+      { type: 'rect', left: 300, top: 780, width: 1800, height: 1600, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 0, y2: 1600 }, colorStops: [{ offset: 0, color: 'rgba(0,0,0,0.3)' }, { offset: 1, color: 'rgba(0,0,0,0.15)' }] }, rx: 16, ry: 16 },
+      { type: 'textbox', left: 400, top: 860, width: 1600, text: 'FRI  \u00b7  The Midnight  \u00b7  Glass Animals  \u00b7  Raveena', fontFamily: 'DM Sans', fontSize: 36, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
+      { type: 'textbox', left: 400, top: 1060, width: 1600, text: 'SAT  \u00b7  Khruangbin  \u00b7  Tame Impala  \u00b7  Wet Leg', fontFamily: 'DM Sans', fontSize: 36, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
+      { type: 'textbox', left: 400, top: 1260, width: 1600, text: 'SUN  \u00b7  Bonobo  \u00b7  Tycho  \u00b7  Floating Points', fontFamily: 'DM Sans', fontSize: 36, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
+      { type: 'rect', left: 600, top: 1500, width: 1200, height: 2, fill: 'rgba(255,255,255,0.3)' },
+      { type: 'textbox', left: 400, top: 1560, width: 1600, text: 'PLUS 30+ MORE ARTISTS', fontFamily: 'Inter', fontSize: 24, fill: 'rgba(255,255,255,0.6)', textAlign: 'center', charSpacing: 300 },
+      { type: 'textbox', left: 200, top: 2600, width: 2000, text: 'JUNE 20\u201322  \u00b7  RED ROCKS AMPHITHEATRE', fontFamily: 'Montserrat', fontSize: 32, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', charSpacing: 200 },
+      { type: 'textbox', left: 200, top: 2700, width: 2000, text: 'solsticefest.com', fontFamily: 'DM Sans', fontSize: 26, fill: 'rgba(255,255,255,0.6)', textAlign: 'center' },
     ]),
 
-  tpl('menu-fine-dining', 'Fine Dining Menu', 'Elegant dark fine dining menu',
-    'Print', 'Menu', ['restaurant', 'fine dining', 'menu', 'elegant'],
-    1080, 1440, 'solid', '#1a1a1a', [
-      { type: 'textbox', left: 100, top: 80, width: 880, text: 'MAISON', fontFamily: 'Playfair Display', fontSize: 56, fill: '#c9a96e', textAlign: 'center', charSpacing: 400 },
-      { type: 'textbox', left: 100, top: 155, width: 880, text: 'TASTING MENU', fontFamily: 'Inter', fontSize: 14, fill: '#666666', textAlign: 'center', charSpacing: 400 },
-      { type: 'rect', left: 490, top: 210, width: 100, height: 1, fill: '#c9a96e' },
-      { type: 'textbox', left: 100, top: 280, width: 880, text: 'AMUSE-BOUCHE', fontFamily: 'Inter', fontSize: 13, fill: '#c9a96e', textAlign: 'center', charSpacing: 200 },
-      { type: 'textbox', left: 100, top: 310, width: 880, text: 'Oyster with champagne foam\nand caviar', fontFamily: 'Lora', fontSize: 22, fill: '#e0e0e0', textAlign: 'center', lineHeight: 1.5 },
-      { type: 'textbox', left: 100, top: 430, width: 880, text: 'ENTR\u00c9E', fontFamily: 'Inter', fontSize: 13, fill: '#c9a96e', textAlign: 'center', charSpacing: 200 },
-      { type: 'textbox', left: 100, top: 460, width: 880, text: 'Seared foie gras with fig compote\nand brioche toast', fontFamily: 'Lora', fontSize: 22, fill: '#e0e0e0', textAlign: 'center', lineHeight: 1.5 },
-      { type: 'textbox', left: 100, top: 580, width: 880, text: 'POISSON', fontFamily: 'Inter', fontSize: 13, fill: '#c9a96e', textAlign: 'center', charSpacing: 200 },
-      { type: 'textbox', left: 100, top: 610, width: 880, text: 'Pan-roasted halibut\nwith beurre blanc and asparagus', fontFamily: 'Lora', fontSize: 22, fill: '#e0e0e0', textAlign: 'center', lineHeight: 1.5 },
-      { type: 'textbox', left: 100, top: 730, width: 880, text: 'VIANDE', fontFamily: 'Inter', fontSize: 13, fill: '#c9a96e', textAlign: 'center', charSpacing: 200 },
-      { type: 'textbox', left: 100, top: 760, width: 880, text: 'Wagyu beef tenderloin\nwith truffle jus and pommes pur\u00e9e', fontFamily: 'Lora', fontSize: 22, fill: '#e0e0e0', textAlign: 'center', lineHeight: 1.5 },
-      { type: 'textbox', left: 100, top: 880, width: 880, text: 'DESSERT', fontFamily: 'Inter', fontSize: 13, fill: '#c9a96e', textAlign: 'center', charSpacing: 200 },
-      { type: 'textbox', left: 100, top: 910, width: 880, text: 'Valrhona chocolate fondant\nwith vanilla ice cream', fontFamily: 'Lora', fontSize: 22, fill: '#e0e0e0', textAlign: 'center', lineHeight: 1.5 },
-      { type: 'rect', left: 490, top: 1050, width: 100, height: 1, fill: '#c9a96e' },
-      { type: 'textbox', left: 100, top: 1100, width: 880, text: '$185 per person\nWine pairing available', fontFamily: 'Inter', fontSize: 16, fill: '#666666', textAlign: 'center', lineHeight: 1.6 },
+  // ─── FOOD & LIFESTYLE ──────────────────────────────────────────────
+
+  // 42. Cafe Menu — gradient on accent line, shadow+charSpacing on heading
+  tpl('cafe-menu', 'Morning Ritual Caf\u00e9', 'Caf\u00e9 menu',
+    'Food & Lifestyle', 'Caf\u00e9 Menu', ['cafe', 'coffee', 'menu', 'food'],
+    2550, 3300, 'solid', '#2d1810', [
+      { type: 'circle', left: 1050, top: 200, radius: 120, fill: '#C4704A', opacity: 0.15 },
+      { type: 'rect', left: 1000, top: 300, width: 100, height: 60, fill: '#C4704A', opacity: 0.15 },
+      { type: 'textbox', left: 200, top: 180, width: 700, text: 'MORNING\nRITUAL', fontFamily: 'Playfair Display', fontSize: 120, fill: '#f5f0e8', lineHeight: 1.05, charSpacing: 80, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 200, top: 460, width: 150, height: 3, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 150, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#d4a574' }] } },
+      { type: 'textbox', left: 200, top: 560, width: 950, text: 'COFFEE', fontFamily: 'Montserrat', fontSize: 22, fontWeight: 'bold', fill: '#C4704A', charSpacing: 400 },
+      { type: 'textbox', left: 200, top: 620, width: 700, text: 'Espresso\nCortado\nOat Latte\nPour Over\nCold Brew', fontFamily: 'DM Sans', fontSize: 28, fill: '#f5f0e8', lineHeight: 2.2 },
+      { type: 'textbox', left: 900, top: 620, width: 250, text: '$4\n$5\n$6\n$5.50\n$5', fontFamily: 'DM Sans', fontSize: 28, fill: '#C4704A', textAlign: 'right', lineHeight: 2.2 },
+      { type: 'rect', left: 200, top: 1020, width: 950, height: 1, fill: 'rgba(245,240,232,0.15)' },
+      { type: 'textbox', left: 200, top: 1080, width: 950, text: 'PASTRIES', fontFamily: 'Montserrat', fontSize: 22, fontWeight: 'bold', fill: '#C4704A', charSpacing: 400 },
+      { type: 'textbox', left: 200, top: 1140, width: 700, text: 'Almond Croissant\nSourdough Toast & Jam\nBanana Walnut Loaf\nCardamom Bun', fontFamily: 'DM Sans', fontSize: 28, fill: '#f5f0e8', lineHeight: 2.2 },
+      { type: 'textbox', left: 900, top: 1140, width: 250, text: '$5.50\n$4\n$5\n$4.50', fontFamily: 'DM Sans', fontSize: 28, fill: '#C4704A', textAlign: 'right', lineHeight: 2.2 },
+      { type: 'rect', left: 1400, top: 560, width: 950, height: 1600, fill: 'rgba(245,240,232,0.04)', rx: 8, ry: 8 },
+      { type: 'textbox', left: 1450, top: 560, width: 850, text: 'BRUNCH', fontFamily: 'Montserrat', fontSize: 22, fontWeight: 'bold', fill: '#C4704A', charSpacing: 400 },
+      { type: 'textbox', left: 1450, top: 620, width: 600, text: 'Avocado Toast\nShakshuka\nGranola Bowl\nEggs Benedict\nFrench Toast', fontFamily: 'DM Sans', fontSize: 28, fill: '#f5f0e8', lineHeight: 2.2 },
+      { type: 'textbox', left: 2100, top: 620, width: 200, text: '$14\n$16\n$13\n$17\n$15', fontFamily: 'DM Sans', fontSize: 28, fill: '#C4704A', textAlign: 'right', lineHeight: 2.2 },
+      { type: 'textbox', left: 200, top: 2900, width: 2150, text: 'Open daily 7 AM \u2013 3 PM \u00b7 2847 NE Alberta St \u00b7 Portland, OR', fontFamily: 'DM Sans', fontSize: 20, fill: 'rgba(245,240,232,0.4)', textAlign: 'center' },
     ]),
 
-  // ─── RESUMES (3) — 1748×2480 ────────────────────────────────────
-
-  tpl('resume-modern', 'Modern Resume', 'Clean two-column resume with blue accent',
-    'Print', 'Resume', ['resume', 'cv', 'modern', 'professional'],
-    1748, 2480, 'solid', '#ffffff', [
-      { type: 'rect', left: 0, top: 0, width: 580, height: 2480, fill: '#1e3a5f' },
-      { type: 'textbox', left: 60, top: 100, width: 460, text: 'ALEX\nJOHNSON', fontFamily: 'Inter', fontSize: 52, fontWeight: 'bold', fill: '#ffffff', lineHeight: 1.1 },
-      { type: 'textbox', left: 60, top: 260, width: 460, text: 'Product Designer', fontFamily: 'Inter', fontSize: 20, fill: '#93c5fd' },
-      { type: 'rect', left: 60, top: 320, width: 80, height: 3, fill: '#93c5fd' },
-      { type: 'textbox', left: 60, top: 370, width: 460, text: 'CONTACT', fontFamily: 'Inter', fontSize: 13, fill: '#93c5fd', charSpacing: 200 },
-      { type: 'textbox', left: 60, top: 400, width: 460, text: 'alex@email.com\n+1 (555) 123-4567\nNew York, NY\nlinkedin.com/in/alex', fontFamily: 'Inter', fontSize: 16, fill: '#cbd5e1', lineHeight: 1.8 },
-      { type: 'textbox', left: 60, top: 600, width: 460, text: 'SKILLS', fontFamily: 'Inter', fontSize: 13, fill: '#93c5fd', charSpacing: 200 },
-      { type: 'textbox', left: 60, top: 635, width: 460, text: 'UI/UX Design \u00b7 Figma \u00b7 Sketch\nPrototyping \u00b7 User Research\nDesign Systems \u00b7 HTML/CSS\nReact \u00b7 TypeScript', fontFamily: 'Inter', fontSize: 16, fill: '#cbd5e1', lineHeight: 1.8 },
-      { type: 'textbox', left: 660, top: 100, width: 1000, text: 'EXPERIENCE', fontFamily: 'Inter', fontSize: 13, fill: '#1e3a5f', charSpacing: 200 },
-      { type: 'textbox', left: 660, top: 140, width: 1000, text: 'Senior Product Designer', fontFamily: 'Inter', fontSize: 22, fontWeight: 'bold', fill: '#1e293b' },
-      { type: 'textbox', left: 660, top: 175, width: 1000, text: 'TechCorp Inc. \u00b7 2023\u2013Present', fontFamily: 'Inter', fontSize: 15, fill: '#64748b' },
-      { type: 'textbox', left: 660, top: 210, width: 1000, text: '\u2022 Led redesign of core product, improving conversion by 35%\n\u2022 Built and maintained design system used by 12 teams\n\u2022 Mentored 3 junior designers', fontFamily: 'Inter', fontSize: 15, fill: '#475569', lineHeight: 1.8 },
-      { type: 'textbox', left: 660, top: 380, width: 1000, text: 'Product Designer', fontFamily: 'Inter', fontSize: 22, fontWeight: 'bold', fill: '#1e293b' },
-      { type: 'textbox', left: 660, top: 415, width: 1000, text: 'StartupXYZ \u00b7 2020\u20132023', fontFamily: 'Inter', fontSize: 15, fill: '#64748b' },
-      { type: 'textbox', left: 660, top: 450, width: 1000, text: '\u2022 Designed mobile app from 0 to 1, reaching 100K users\n\u2022 Conducted user research with 200+ participants\n\u2022 Collaborated with engineering on design implementation', fontFamily: 'Inter', fontSize: 15, fill: '#475569', lineHeight: 1.8 },
-      { type: 'rect', left: 660, top: 640, width: 1000, height: 1, fill: '#e2e8f0' },
-      { type: 'textbox', left: 660, top: 680, width: 1000, text: 'EDUCATION', fontFamily: 'Inter', fontSize: 13, fill: '#1e3a5f', charSpacing: 200 },
-      { type: 'textbox', left: 660, top: 720, width: 1000, text: 'B.F.A. in Graphic Design', fontFamily: 'Inter', fontSize: 22, fontWeight: 'bold', fill: '#1e293b' },
-      { type: 'textbox', left: 660, top: 755, width: 1000, text: 'School of Visual Arts \u00b7 2016\u20132020', fontFamily: 'Inter', fontSize: 15, fill: '#64748b' },
+  // 43. Recipe Card — gradient on accent line, shadow+charSpacing on heading
+  tpl('recipe-lemon', 'Lemon Herb Chicken', 'Recipe card',
+    'Food & Lifestyle', 'Recipe Card', ['recipe', 'cooking', 'food', 'chicken'],
+    1500, 2100, 'solid', '#faf8f5', [
+      { type: 'rect', left: 0, top: 0, width: 1500, height: 550, fill: '#e8e2d8' },
+      { type: 'textbox', left: 0, top: 240, width: 1500, text: 'PHOTO', fontFamily: 'Inter', fontSize: 36, fill: 'rgba(0,0,0,0.06)', textAlign: 'center' },
+      { type: 'textbox', left: 100, top: 600, width: 1300, text: 'LEMON HERB CHICKEN', fontFamily: 'Playfair Display', fontSize: 48, fontWeight: 'bold', fill: '#2d2215', charSpacing: 80, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 100, top: 670, width: 100, height: 3, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 100, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] } },
+      { type: 'textbox', left: 100, top: 700, width: 1300, text: 'Serves 4  \u00b7  45 minutes  \u00b7  Easy', fontFamily: 'DM Sans', fontSize: 20, fill: '#C4704A' },
+      { type: 'textbox', left: 100, top: 790, width: 580, text: 'INGREDIENTS', fontFamily: 'Montserrat', fontSize: 18, fontWeight: 'bold', fill: '#2d2215', charSpacing: 300 },
+      { type: 'textbox', left: 100, top: 830, width: 580, text: '4 bone-in chicken thighs\n3 tbsp olive oil\n2 lemons, juiced and zested\n4 cloves garlic, minced\n2 tbsp fresh rosemary\n1 tbsp fresh thyme\nSalt and black pepper', fontFamily: 'DM Sans', fontSize: 18, fill: '#5c4a32', lineHeight: 1.9 },
+      { type: 'rect', left: 730, top: 790, width: 1, height: 700, fill: '#e5e0d8' },
+      { type: 'textbox', left: 780, top: 790, width: 620, text: 'DIRECTIONS', fontFamily: 'Montserrat', fontSize: 18, fontWeight: 'bold', fill: '#2d2215', charSpacing: 300 },
+      { type: 'textbox', left: 780, top: 830, width: 620, text: '1. Preheat oven to 400\u00b0F.\n\n2. Mix olive oil, lemon juice, zest, garlic, rosemary, and thyme.\n\n3. Season chicken generously with salt and pepper. Coat with herb mixture.\n\n4. Roast for 35 minutes until internal temp reaches 165\u00b0F.\n\n5. Rest 5 minutes before serving with pan juices.', fontFamily: 'DM Sans', fontSize: 17, fill: '#5c4a32', lineHeight: 1.6 },
+      { type: 'rect', left: 100, top: 1950, width: 1300, height: 50, fill: '#C4704A', opacity: 0.08 },
+      { type: 'textbox', left: 120, top: 1960, width: 1260, text: 'Pairs well with roasted vegetables or a simple green salad.', fontFamily: 'Georgia', fontSize: 16, fontStyle: 'italic', fill: '#888880' },
     ]),
 
-  tpl('resume-creative', 'Creative Resume', 'Colorful resume with accent sidebar',
-    'Print', 'Resume', ['resume', 'cv', 'creative', 'colorful'],
-    1748, 2480, 'solid', '#ffffff', [
-      { type: 'rect', left: 0, top: 0, width: 1748, height: 200, fill: '#7c3aed' },
-      { type: 'textbox', left: 100, top: 50, width: 1000, text: 'MAYA CHEN', fontFamily: 'Montserrat', fontSize: 56, fontWeight: 'bold', fill: '#ffffff' },
-      { type: 'textbox', left: 100, top: 130, width: 1000, text: 'Graphic Designer & Illustrator', fontFamily: 'Montserrat', fontSize: 22, fill: '#e9d5ff' },
-      { type: 'rect', left: 100, top: 260, width: 60, height: 4, fill: '#7c3aed' },
-      { type: 'textbox', left: 100, top: 290, width: 700, text: 'Creative designer with 5+ years of experience in branding, illustration, and digital design. Passionate about creating visual stories that connect with audiences.', fontFamily: 'Inter', fontSize: 17, fill: '#475569', lineHeight: 1.6 },
-      { type: 'textbox', left: 100, top: 450, width: 700, text: 'EXPERIENCE', fontFamily: 'Inter', fontSize: 13, fill: '#7c3aed', charSpacing: 200 },
-      { type: 'textbox', left: 100, top: 490, width: 700, text: 'Senior Designer \u2014 Creative Agency (2022\u2013Present)\nLead Designer \u2014 BrandStudio (2019\u20132022)\nJunior Designer \u2014 DesignCo (2017\u20132019)', fontFamily: 'Inter', fontSize: 17, fill: '#334155', lineHeight: 2.0 },
-      { type: 'textbox', left: 1000, top: 260, width: 650, text: 'CONTACT', fontFamily: 'Inter', fontSize: 13, fill: '#7c3aed', charSpacing: 200 },
-      { type: 'textbox', left: 1000, top: 295, width: 650, text: 'maya@design.co\n+1 (555) 234-5678\nPortfolio: maya.design', fontFamily: 'Inter', fontSize: 16, fill: '#64748b', lineHeight: 1.8 },
-      { type: 'textbox', left: 1000, top: 450, width: 650, text: 'SKILLS', fontFamily: 'Inter', fontSize: 13, fill: '#7c3aed', charSpacing: 200 },
-      { type: 'textbox', left: 1000, top: 490, width: 650, text: 'Adobe Creative Suite\nFigma & Sketch\nIllustration\nBrand Identity\nMotion Graphics', fontFamily: 'Inter', fontSize: 16, fill: '#64748b', lineHeight: 1.8 },
+  // 44. Cocktail Card — gradient on top bar, shadow+charSpacing on heading
+  tpl('cocktail-paloma', 'The Smoky Paloma', 'Cocktail card',
+    'Food & Lifestyle', 'Cocktail Card', ['cocktail', 'drink', 'recipe', 'mezcal'],
+    1080, 1080, 'solid', '#1a1510', [
+      { type: 'rect', left: 0, top: 0, width: 1080, height: 8, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 1080, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#d4a574' }] } },
+      { type: 'rect', left: 0, top: 8, width: 1080, height: 50, fill: '#C4704A', opacity: 0.15 },
+      { type: 'textbox', left: 100, top: 140, width: 880, text: 'THE SMOKY\nPALOMA', fontFamily: 'Playfair Display', fontSize: 80, fill: '#f5f0e8', lineHeight: 1.1, charSpacing: 80, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 100, top: 350, width: 120, height: 3, fill: '#C4704A' },
+      { type: 'textbox', left: 100, top: 400, width: 880, text: '2 oz mezcal\n3 oz fresh grapefruit juice\n1 oz fresh lime juice\n\u00bd oz agave syrup\nClub soda\nTaj\u00edn rim', fontFamily: 'DM Sans', fontSize: 26, fill: 'rgba(245,240,232,0.75)', lineHeight: 2.0 },
+      { type: 'rect', left: 680, top: 700, width: 200, height: 280, fill: 'rgba(196,112,74,0.12)' },
+      { type: 'triangle', left: 630, top: 580, width: 300, height: 200, fill: 'rgba(196,112,74,0.08)' },
+      { type: 'textbox', left: 100, top: 900, width: 880, text: 'Rim a rocks glass with lime and Taj\u00edn. Build over ice.\nTop with soda. Garnish with a grapefruit wheel.', fontFamily: 'Georgia', fontSize: 18, fontStyle: 'italic', fill: 'rgba(245,240,232,0.45)', lineHeight: 1.7 },
     ]),
 
-  tpl('resume-minimal', 'Minimal Resume', 'Simple and clean minimal resume',
-    'Print', 'Resume', ['resume', 'cv', 'minimal', 'simple'],
-    1748, 2480, 'solid', '#ffffff', [
-      { type: 'textbox', left: 100, top: 100, width: 1548, text: 'Sam Rivera', fontFamily: 'Playfair Display', fontSize: 60, fill: '#111827' },
-      { type: 'textbox', left: 100, top: 185, width: 1548, text: 'Software Engineer', fontFamily: 'Inter', fontSize: 20, fill: '#6b7280' },
-      { type: 'rect', left: 100, top: 240, width: 1548, height: 1, fill: '#d1d5db' },
-      { type: 'textbox', left: 100, top: 280, width: 1548, text: 'sam@email.com  \u00b7  +1 (555) 345-6789  \u00b7  github.com/sam  \u00b7  San Francisco, CA', fontFamily: 'Inter', fontSize: 15, fill: '#9ca3af' },
-      { type: 'textbox', left: 100, top: 360, width: 1548, text: 'Experience', fontFamily: 'Playfair Display', fontSize: 28, fill: '#111827' },
-      { type: 'textbox', left: 100, top: 410, width: 1548, text: 'Staff Engineer \u2014 BigTech (2022\u2013Present)\nSenior Engineer \u2014 Startup (2019\u20132022)\nEngineer \u2014 Agency (2016\u20132019)', fontFamily: 'Inter', fontSize: 17, fill: '#374151', lineHeight: 2.0 },
-      { type: 'rect', left: 100, top: 580, width: 1548, height: 1, fill: '#e5e7eb' },
-      { type: 'textbox', left: 100, top: 620, width: 1548, text: 'Education', fontFamily: 'Playfair Display', fontSize: 28, fill: '#111827' },
-      { type: 'textbox', left: 100, top: 670, width: 1548, text: 'B.S. Computer Science \u2014 MIT (2012\u20132016)', fontFamily: 'Inter', fontSize: 17, fill: '#374151' },
+  // 45. Fitness Plan — gradient on accent bar, shadow+charSpacing on heading
+  tpl('fitness-plan', '4-Week Strength Program', 'Fitness plan',
+    'Food & Lifestyle', 'Fitness Plan', ['fitness', 'workout', 'gym', 'strength'],
+    2550, 3300, 'solid', '#ffffff', [
+      { type: 'textbox', left: 150, top: 140, width: 2250, text: '4-WEEK STRENGTH', fontFamily: 'Montserrat', fontSize: 64, fontWeight: 'bold', fill: '#1a1a1a', charSpacing: 100, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 150, top: 225, width: 400, height: 5, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 400, y2: 0 }, colorStops: [{ offset: 0, color: '#C4704A' }, { offset: 1, color: '#e8956d' }] } },
+      { type: 'textbox', left: 150, top: 260, width: 2250, text: 'Progressive overload program \u00b7 3 days/week \u00b7 45\u201360 min sessions', fontFamily: 'DM Sans', fontSize: 24, fill: '#6b7280' },
+      { type: 'rect', left: 150, top: 380, width: 2250, height: 520, fill: '#C4704A', opacity: 0.06, rx: 8, ry: 8 },
+      { type: 'textbox', left: 200, top: 400, width: 400, text: 'WEEK 1', fontFamily: 'Montserrat', fontSize: 26, fontWeight: 'bold', fill: '#C4704A' },
+      { type: 'textbox', left: 200, top: 450, width: 2100, text: 'Day A: Squats 3\u00d710 \u00b7 Bench Press 3\u00d710 \u00b7 Barbell Row 3\u00d710\nDay B: Deadlift 3\u00d78 \u00b7 Overhead Press 3\u00d710 \u00b7 Pull-ups 3\u00d7max\nDay C: Front Squat 3\u00d78 \u00b7 Incline Bench 3\u00d710 \u00b7 Cable Row 3\u00d712', fontFamily: 'DM Sans', fontSize: 22, fill: '#374151', lineHeight: 2.0 },
+      { type: 'rect', left: 150, top: 940, width: 2250, height: 520, fill: 'rgba(0,0,0,0.02)', rx: 8, ry: 8 },
+      { type: 'textbox', left: 200, top: 960, width: 400, text: 'WEEK 2', fontFamily: 'Montserrat', fontSize: 26, fontWeight: 'bold', fill: '#C4704A' },
+      { type: 'textbox', left: 200, top: 1010, width: 2100, text: 'Day A: Squats 4\u00d78 \u00b7 Bench Press 4\u00d78 \u00b7 Barbell Row 4\u00d78\nDay B: Deadlift 4\u00d76 \u00b7 Overhead Press 4\u00d78 \u00b7 Pull-ups 4\u00d7max\nDay C: Front Squat 4\u00d76 \u00b7 Incline Bench 4\u00d78 \u00b7 Cable Row 4\u00d710', fontFamily: 'DM Sans', fontSize: 22, fill: '#374151', lineHeight: 2.0 },
+      { type: 'rect', left: 150, top: 1500, width: 2250, height: 520, fill: '#C4704A', opacity: 0.06, rx: 8, ry: 8 },
+      { type: 'textbox', left: 200, top: 1520, width: 400, text: 'WEEK 3', fontFamily: 'Montserrat', fontSize: 26, fontWeight: 'bold', fill: '#C4704A' },
+      { type: 'textbox', left: 200, top: 1570, width: 2100, text: 'Day A: Squats 4\u00d76 \u00b7 Bench Press 4\u00d76 \u00b7 Barbell Row 4\u00d76\nDay B: Deadlift 5\u00d75 \u00b7 Overhead Press 4\u00d76 \u00b7 Weighted Pull-ups 4\u00d76\nDay C: Front Squat 4\u00d75 \u00b7 Incline Bench 4\u00d76 \u00b7 Cable Row 4\u00d78', fontFamily: 'DM Sans', fontSize: 22, fill: '#374151', lineHeight: 2.0 },
+      { type: 'rect', left: 150, top: 2060, width: 2250, height: 520, fill: 'rgba(0,0,0,0.02)', rx: 8, ry: 8 },
+      { type: 'textbox', left: 200, top: 2080, width: 400, text: 'WEEK 4', fontFamily: 'Montserrat', fontSize: 26, fontWeight: 'bold', fill: '#C4704A' },
+      { type: 'textbox', left: 200, top: 2130, width: 2100, text: 'Day A: Squats 5\u00d75 \u00b7 Bench Press 5\u00d75 \u00b7 Barbell Row 5\u00d75\nDay B: Deadlift 5\u00d73 \u00b7 Overhead Press 5\u00d75 \u00b7 Weighted Pull-ups 5\u00d75\nDay C: Front Squat 5\u00d73 \u00b7 Incline Bench 5\u00d75 \u00b7 Cable Row 5\u00d76', fontFamily: 'DM Sans', fontSize: 22, fill: '#374151', lineHeight: 2.0 },
+      { type: 'rect', left: 150, top: 2700, width: 2250, height: 4, fill: '#e5e7eb' },
+      { type: 'textbox', left: 150, top: 2740, width: 2250, text: 'Rest 90\u2013120 seconds between sets. Increase weight by 5 lbs each week. Log every session.', fontFamily: 'Georgia', fontSize: 20, fontStyle: 'italic', fill: '#9ca3af' },
     ]),
 
-  // ─── INFOGRAPHICS (3) — 1080×1920 ──────────────────────────────
-
-  tpl('infographic-stats', 'Stats Infographic', 'Bold statistics infographic with big numbers',
-    'Social Media', 'Infographic', ['infographic', 'stats', 'data', 'numbers'],
-    1080, 1920, 'solid', '#0f172a', [
-      { type: 'textbox', left: 100, top: 80, width: 880, text: 'BY THE\nNUMBERS', fontFamily: 'Inter', fontSize: 72, fontWeight: 'bold', fill: '#ffffff', lineHeight: 1.1 },
-      { type: 'rect', left: 100, top: 260, width: 60, height: 4, fill: '#3b82f6' },
-      { type: 'textbox', left: 100, top: 300, width: 880, text: '2026 Industry Report', fontFamily: 'Inter', fontSize: 20, fill: '#64748b' },
-      { type: 'rect', left: 100, top: 400, width: 380, height: 200, fill: '#1e293b', rx: 16, ry: 16 },
-      { type: 'textbox', left: 130, top: 430, width: 320, text: '87%', fontFamily: 'Inter', fontSize: 64, fontWeight: 'bold', fill: '#3b82f6' },
-      { type: 'textbox', left: 130, top: 520, width: 320, text: 'Growth Rate', fontFamily: 'Inter', fontSize: 18, fill: '#94a3b8' },
-      { type: 'rect', left: 600, top: 400, width: 380, height: 200, fill: '#1e293b', rx: 16, ry: 16 },
-      { type: 'textbox', left: 630, top: 430, width: 320, text: '2.4M', fontFamily: 'Inter', fontSize: 64, fontWeight: 'bold', fill: '#10b981' },
-      { type: 'textbox', left: 630, top: 520, width: 320, text: 'Active Users', fontFamily: 'Inter', fontSize: 18, fill: '#94a3b8' },
-      { type: 'rect', left: 100, top: 650, width: 380, height: 200, fill: '#1e293b', rx: 16, ry: 16 },
-      { type: 'textbox', left: 130, top: 680, width: 320, text: '$42B', fontFamily: 'Inter', fontSize: 64, fontWeight: 'bold', fill: '#f59e0b' },
-      { type: 'textbox', left: 130, top: 770, width: 320, text: 'Market Size', fontFamily: 'Inter', fontSize: 18, fill: '#94a3b8' },
-      { type: 'rect', left: 600, top: 650, width: 380, height: 200, fill: '#1e293b', rx: 16, ry: 16 },
-      { type: 'textbox', left: 630, top: 680, width: 320, text: '150+', fontFamily: 'Inter', fontSize: 64, fontWeight: 'bold', fill: '#ec4899' },
-      { type: 'textbox', left: 630, top: 770, width: 320, text: 'Countries', fontFamily: 'Inter', fontSize: 18, fill: '#94a3b8' },
+  // 46. Wellness Quote — gradient on divider line, shadow+charSpacing on heading
+  tpl('wellness-quote', 'Breathe In Calm', 'Wellness quote',
+    'Food & Lifestyle', 'Wellness', ['wellness', 'mindfulness', 'quote', 'calm'],
+    1080, 1080, 'gradient', 'linear:to-bottom:#f5f0eb:#d4e7d4', [
+      { type: 'circle', left: -100, top: -100, radius: 300, fill: 'rgba(196,112,74,0.08)', stroke: '', strokeWidth: 0 },
+      { type: 'circle', left: 750, top: 700, radius: 400, fill: 'rgba(150,190,150,0.1)', stroke: '', strokeWidth: 0 },
+      { type: 'circle', left: 500, top: 200, radius: 180, fill: 'rgba(196,112,74,0.06)', stroke: '', strokeWidth: 0 },
+      { type: 'textbox', left: 120, top: 340, width: 840, text: 'breathe in calm,\nbreathe out tension.', fontFamily: 'Playfair Display', fontSize: 56, fontStyle: 'italic', fill: '#3d3d35', textAlign: 'center', lineHeight: 1.6, charSpacing: 50, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 440, top: 640, width: 200, height: 2, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 200, y2: 0 }, colorStops: [{ offset: 0, color: 'rgba(196,112,74,0.2)' }, { offset: 1, color: 'rgba(196,112,74,0.6)' }] } },
+      { type: 'textbox', left: 120, top: 680, width: 840, text: '\u2014 daily reminder', fontFamily: 'DM Sans', fontSize: 22, fill: '#888880', textAlign: 'center' },
     ]),
 
-  tpl('infographic-steps', 'Process Steps', 'Step-by-step process infographic',
-    'Social Media', 'Infographic', ['infographic', 'process', 'steps', 'how-to'],
-    1080, 1920, 'gradient', 'linear:to-bottom:#1e293b:#0f172a', [
-      { type: 'textbox', left: 100, top: 80, width: 880, text: 'HOW IT WORKS', fontFamily: 'Inter', fontSize: 48, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 160, width: 880, text: 'A simple 4-step process', fontFamily: 'Inter', fontSize: 20, fill: '#64748b', textAlign: 'center' },
-      { type: 'circle', left: 100, top: 320, radius: 35, fill: '#3b82f6' },
-      { type: 'textbox', left: 112, top: 332, width: 48, text: '1', fontFamily: 'Inter', fontSize: 28, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 200, top: 320, width: 780, text: 'Sign Up', fontFamily: 'Inter', fontSize: 28, fontWeight: 'bold', fill: '#ffffff' },
-      { type: 'textbox', left: 200, top: 365, width: 780, text: 'Create your free account in just 30 seconds', fontFamily: 'Inter', fontSize: 18, fill: '#94a3b8' },
-      { type: 'circle', left: 100, top: 500, radius: 35, fill: '#8b5cf6' },
-      { type: 'textbox', left: 112, top: 512, width: 48, text: '2', fontFamily: 'Inter', fontSize: 28, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 200, top: 500, width: 780, text: 'Choose a Template', fontFamily: 'Inter', fontSize: 28, fontWeight: 'bold', fill: '#ffffff' },
-      { type: 'textbox', left: 200, top: 545, width: 780, text: 'Browse 50+ professional templates for any occasion', fontFamily: 'Inter', fontSize: 18, fill: '#94a3b8' },
-      { type: 'circle', left: 100, top: 680, radius: 35, fill: '#ec4899' },
-      { type: 'textbox', left: 112, top: 692, width: 48, text: '3', fontFamily: 'Inter', fontSize: 28, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 200, top: 680, width: 780, text: 'Customize', fontFamily: 'Inter', fontSize: 28, fontWeight: 'bold', fill: '#ffffff' },
-      { type: 'textbox', left: 200, top: 725, width: 780, text: 'Add your text, images, and brand colors', fontFamily: 'Inter', fontSize: 18, fill: '#94a3b8' },
-      { type: 'circle', left: 100, top: 860, radius: 35, fill: '#10b981' },
-      { type: 'textbox', left: 112, top: 872, width: 48, text: '4', fontFamily: 'Inter', fontSize: 28, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 200, top: 860, width: 780, text: 'Export & Share', fontFamily: 'Inter', fontSize: 28, fontWeight: 'bold', fill: '#ffffff' },
-      { type: 'textbox', left: 200, top: 905, width: 780, text: 'Download as PNG, JPG, or PDF and share anywhere', fontFamily: 'Inter', fontSize: 18, fill: '#94a3b8' },
+  // ─── SEASONAL ───────────────────────────────────────────────────────
+
+  // 47. Valentine — gradient on divider line, shadow+charSpacing on heading
+  tpl('valentines-heart', 'You Have My Heart', 'Valentine card',
+    'Seasonal', 'Valentine', ['valentine', 'love', 'heart', 'romantic'],
+    1080, 1080, 'gradient', 'linear:to-bottom:#fecdd3:#fda4af', [
+      { type: 'circle', left: 300, top: 200, radius: 120, fill: 'rgba(225,29,72,0.15)', stroke: '', strokeWidth: 0 },
+      { type: 'circle', left: 500, top: 180, radius: 120, fill: 'rgba(225,29,72,0.15)', stroke: '', strokeWidth: 0 },
+      { type: 'circle', left: 200, top: 600, radius: 80, fill: 'rgba(225,29,72,0.25)', stroke: '', strokeWidth: 0 },
+      { type: 'circle', left: 780, top: 500, radius: 100, fill: 'rgba(225,29,72,0.12)', stroke: '', strokeWidth: 0 },
+      { type: 'circle', left: 650, top: 150, radius: 60, fill: 'rgba(225,29,72,0.35)', stroke: '', strokeWidth: 0 },
+      { type: 'textbox', left: 100, top: 420, width: 880, text: 'YOU HAVE\nMY HEART', fontFamily: 'Playfair Display', fontSize: 80, fontWeight: 'bold', fill: '#9f1239', textAlign: 'center', lineHeight: 1.15, charSpacing: 80, shadow: { color: 'rgba(0,0,0,0.08)', blur: 12, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 440, top: 650, width: 200, height: 2, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 200, y2: 0 }, colorStops: [{ offset: 0, color: '#e11d48' }, { offset: 1, color: '#f472b6' }] } },
+      { type: 'textbox', left: 100, top: 690, width: 880, text: 'Happy Valentine\u2019s Day', fontFamily: 'Georgia', fontSize: 28, fontStyle: 'italic', fill: '#be123c', textAlign: 'center' },
     ]),
 
-  tpl('infographic-comparison', 'Comparison', 'Side-by-side comparison infographic',
-    'Social Media', 'Infographic', ['infographic', 'comparison', 'versus', 'vs'],
-    1080, 1920, 'solid', '#ffffff', [
-      { type: 'textbox', left: 100, top: 80, width: 880, text: 'FREE vs PRO', fontFamily: 'Inter', fontSize: 56, fontWeight: 'bold', fill: '#111827', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 165, width: 880, text: 'Choose the right plan for you', fontFamily: 'Inter', fontSize: 20, fill: '#6b7280', textAlign: 'center' },
-      { type: 'rect', left: 60, top: 260, width: 460, height: 600, fill: '#f1f5f9', rx: 16, ry: 16 },
-      { type: 'textbox', left: 80, top: 290, width: 420, text: 'FREE', fontFamily: 'Inter', fontSize: 28, fontWeight: 'bold', fill: '#374151', textAlign: 'center' },
-      { type: 'textbox', left: 80, top: 340, width: 420, text: '$0', fontFamily: 'Inter', fontSize: 48, fontWeight: 'bold', fill: '#6b7280', textAlign: 'center' },
-      { type: 'textbox', left: 80, top: 420, width: 420, text: '\u2713 5 templates\n\u2713 Basic export\n\u2713 1 brand kit\n\u2717 AI generation\n\u2717 Priority support', fontFamily: 'Inter', fontSize: 18, fill: '#475569', lineHeight: 2.0, textAlign: 'center' },
-      { type: 'rect', left: 560, top: 260, width: 460, height: 600, fill: '#1e293b', rx: 16, ry: 16 },
-      { type: 'textbox', left: 580, top: 290, width: 420, text: 'PRO', fontFamily: 'Inter', fontSize: 28, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 580, top: 340, width: 420, text: '$12/mo', fontFamily: 'Inter', fontSize: 48, fontWeight: 'bold', fill: '#3b82f6', textAlign: 'center' },
-      { type: 'textbox', left: 580, top: 420, width: 420, text: '\u2713 50+ templates\n\u2713 All export formats\n\u2713 Unlimited brand kits\n\u2713 AI generation\n\u2713 Priority support', fontFamily: 'Inter', fontSize: 18, fill: '#e2e8f0', lineHeight: 2.0, textAlign: 'center' },
+  // 48. Halloween — gradient on accent circle, shadow+charSpacing on heading (already has stroke)
+  tpl('halloween-dare', 'Enter If You Dare', 'Halloween party',
+    'Seasonal', 'Halloween', ['halloween', 'party', 'spooky', 'october'],
+    1080, 1350, 'solid', '#0a0a0a', [
+      { type: 'circle', left: 650, top: 80, radius: 200, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 400, y2: 400 }, colorStops: [{ offset: 0, color: 'rgba(196,112,74,0.3)' }, { offset: 1, color: 'rgba(196,112,74,0.08)' }] } },
+      { type: 'textbox', left: 80, top: 360, width: 920, text: 'ENTER IF\nYOU DARE', fontFamily: 'Montserrat', fontSize: 100, fontWeight: 'bold', fill: '#C4704A', textAlign: 'center', lineHeight: 1.1, charSpacing: 80, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 84, top: 364, width: 920, text: 'ENTER IF\nYOU DARE', fontFamily: 'Montserrat', fontSize: 100, fontWeight: 'bold', fill: 'rgba(0,0,0,0)', stroke: 'rgba(196,112,74,0.5)', strokeWidth: 2, textAlign: 'center', lineHeight: 1.1 },
+      { type: 'triangle', left: 200, top: 150, width: 30, height: 18, fill: '#C4704A', opacity: 0.4 },
+      { type: 'triangle', left: 820, top: 250, width: 24, height: 14, fill: '#C4704A', opacity: 0.3 },
+      { type: 'triangle', left: 450, top: 100, width: 20, height: 12, fill: '#C4704A', opacity: 0.25 },
+      { type: 'rect', left: 250, top: 650, width: 580, height: 2, fill: 'rgba(196,112,74,0.3)' },
+      { type: 'textbox', left: 100, top: 700, width: 880, text: 'HALLOWEEN NIGHT \u00b7 OCT 31', fontFamily: 'Inter', fontSize: 22, fontWeight: 'bold', fill: 'rgba(255,255,255,0.6)', textAlign: 'center', charSpacing: 300 },
+      { type: 'textbox', left: 100, top: 780, width: 880, text: 'The Morrison House \u00b7 8 PM \u00b7 Costumes Required', fontFamily: 'DM Sans', fontSize: 20, fill: 'rgba(255,255,255,0.35)', textAlign: 'center' },
     ]),
 
-  // ─── NEWSLETTER (2) — 1200×1600 ────────────────────────────────
-
-  tpl('newsletter-company', 'Company Newsletter', 'Clean professional company newsletter',
-    'Marketing', 'Newsletter', ['newsletter', 'email', 'company', 'professional'],
-    1200, 1600, 'solid', '#ffffff', [
-      { type: 'rect', left: 0, top: 0, width: 1200, height: 120, fill: '#1e40af' },
-      { type: 'textbox', left: 60, top: 35, width: 600, text: 'ACME WEEKLY', fontFamily: 'Inter', fontSize: 36, fontWeight: 'bold', fill: '#ffffff' },
-      { type: 'textbox', left: 700, top: 48, width: 440, text: 'Issue #42 \u00b7 April 2026', fontFamily: 'Inter', fontSize: 14, fill: '#93c5fd', textAlign: 'right' },
-      { type: 'textbox', left: 60, top: 180, width: 1080, text: 'Big Product Update\nShipping This Week', fontFamily: 'Inter', fontSize: 48, fontWeight: 'bold', fill: '#111827', lineHeight: 1.2 },
-      { type: 'rect', left: 60, top: 320, width: 60, height: 4, fill: '#1e40af' },
-      { type: 'textbox', left: 60, top: 360, width: 1080, text: 'We\u2019re excited to announce a major update to our platform. This release includes the features you\u2019ve been asking for \u2014 faster performance, new integrations, and a completely redesigned dashboard.', fontFamily: 'Inter', fontSize: 18, fill: '#4b5563', lineHeight: 1.7 },
-      { type: 'rect', left: 60, top: 530, width: 1080, height: 1, fill: '#e5e7eb' },
-      { type: 'textbox', left: 60, top: 570, width: 1080, text: 'What\u2019s New', fontFamily: 'Inter', fontSize: 28, fontWeight: 'bold', fill: '#111827' },
-      { type: 'textbox', left: 60, top: 620, width: 1080, text: '\u2022 Dashboard 2.0 with real-time analytics\n\u2022 Slack and Teams integrations\n\u2022 Custom workflows and automation\n\u2022 Advanced reporting and exports', fontFamily: 'Inter', fontSize: 17, fill: '#4b5563', lineHeight: 1.9 },
-      { type: 'rect', left: 60, top: 820, width: 200, height: 48, fill: '#1e40af', rx: 8, ry: 8 },
-      { type: 'textbox', left: 60, top: 832, width: 200, text: 'Read More', fontFamily: 'Inter', fontSize: 16, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
+  // 49. Holiday Card — gradient on divider line, shadow+charSpacing on heading
+  tpl('holiday-wishes', 'Warmest Wishes', 'Holiday greeting card',
+    'Seasonal', 'Holiday Card', ['holiday', 'christmas', 'greeting', 'winter'],
+    1500, 2100, 'solid', '#1a3320', [
+      { type: 'circle', left: 200, top: 300, radius: 8, fill: 'rgba(255,255,255,0.15)', stroke: '', strokeWidth: 0 },
+      { type: 'circle', left: 800, top: 150, radius: 6, fill: 'rgba(255,255,255,0.12)', stroke: '', strokeWidth: 0 },
+      { type: 'circle', left: 1100, top: 400, radius: 10, fill: 'rgba(255,255,255,0.18)', stroke: '', strokeWidth: 0 },
+      { type: 'circle', left: 400, top: 500, radius: 5, fill: 'rgba(255,255,255,0.1)', stroke: '', strokeWidth: 0 },
+      { type: 'circle', left: 1200, top: 200, radius: 7, fill: 'rgba(255,255,255,0.14)', stroke: '', strokeWidth: 0 },
+      { type: 'circle', left: 600, top: 100, radius: 9, fill: 'rgba(255,255,255,0.12)', stroke: '', strokeWidth: 0 },
+      { type: 'circle', left: 300, top: 650, radius: 4, fill: 'rgba(255,255,255,0.16)', stroke: '', strokeWidth: 0 },
+      { type: 'textbox', left: 150, top: 700, width: 1200, text: 'WARMEST\nWISHES', fontFamily: 'Playfair Display', fontSize: 110, fontWeight: 'bold', fill: '#C4704A', textAlign: 'center', lineHeight: 1.15, charSpacing: 100, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'rect', left: 550, top: 980, width: 400, height: 2, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 400, y2: 0 }, colorStops: [{ offset: 0, color: 'rgba(196,112,74,0.2)' }, { offset: 1, color: 'rgba(196,112,74,0.6)' }] } },
+      { type: 'textbox', left: 150, top: 1040, width: 1200, text: 'Wishing you peace, joy,\nand a wonderful new year.', fontFamily: 'Georgia', fontSize: 30, fontStyle: 'italic', fill: 'rgba(255,255,255,0.7)', textAlign: 'center', lineHeight: 1.6 },
+      { type: 'textbox', left: 150, top: 1300, width: 1200, text: 'From the Anderson Family, 2026', fontFamily: 'DM Sans', fontSize: 22, fill: 'rgba(255,255,255,0.4)', textAlign: 'center' },
     ]),
 
-  tpl('newsletter-personal', 'Personal Newsletter', 'Casual and colorful personal newsletter',
-    'Marketing', 'Newsletter', ['newsletter', 'personal', 'blog', 'casual'],
-    1200, 1600, 'solid', '#fef3c7', [
-      { type: 'textbox', left: 100, top: 80, width: 1000, text: '\u2728 The Weekly Spark', fontFamily: 'Playfair Display', fontSize: 48, fill: '#92400e' },
-      { type: 'textbox', left: 100, top: 160, width: 1000, text: 'Ideas, inspiration, and a little bit of magic', fontFamily: 'Lora', fontSize: 18, fill: '#b45309' },
-      { type: 'rect', left: 100, top: 220, width: 1000, height: 1, fill: '#d97706', opacity: 0.3 },
-      { type: 'textbox', left: 100, top: 280, width: 1000, text: 'This week I\u2019ve been thinking about creativity...', fontFamily: 'Lora', fontSize: 22, fill: '#78350f', lineHeight: 1.7 },
-      { type: 'rect', left: 100, top: 400, width: 1000, height: 200, fill: '#fde68a', rx: 12, ry: 12 },
-      { type: 'textbox', left: 140, top: 430, width: 920, text: '\u201cCreativity is intelligence having fun.\u201d', fontFamily: 'Playfair Display', fontSize: 28, fill: '#78350f', textAlign: 'center' },
-      { type: 'textbox', left: 140, top: 520, width: 920, text: '\u2014 Albert Einstein', fontFamily: 'Inter', fontSize: 16, fill: '#92400e', textAlign: 'center' },
+  // 50. New Year — gradient on divider line, shadow+charSpacing on heading
+  tpl('new-year-2026', 'Here\'s to 2026', 'New Year celebration',
+    'Seasonal', 'New Year', ['new year', 'celebration', '2026', 'party'],
+    1080, 1080, 'gradient', 'linear:to-bottom:#0a0a0a:#1a1520', [
+      { type: 'circle', left: 100, top: 100, radius: 6, fill: '#C4704A', opacity: 0.6 },
+      { type: 'circle', left: 800, top: 200, radius: 4, fill: '#C4704A', opacity: 0.4 },
+      { type: 'circle', left: 500, top: 50, radius: 5, fill: '#C4704A', opacity: 0.5 },
+      { type: 'circle', left: 950, top: 400, radius: 3, fill: '#C4704A', opacity: 0.35 },
+      { type: 'circle', left: 200, top: 350, radius: 8, fill: '#C4704A', opacity: 0.2 },
+      { type: 'circle', left: 700, top: 150, radius: 40, fill: 'rgba(196,112,74,0.1)', stroke: '', strokeWidth: 0 },
+      { type: 'circle', left: 300, top: 500, radius: 60, fill: 'rgba(196,112,74,0.06)', stroke: '', strokeWidth: 0 },
+      { type: 'textbox', left: 100, top: 280, width: 880, text: '2026', fontFamily: 'Montserrat', fontSize: 200, fontWeight: 'bold', fill: '#C4704A', textAlign: 'center', charSpacing: 100, shadow: { color: 'rgba(0,0,0,0.5)', blur: 16, offsetX: 0, offsetY: 4 } },
+      { type: 'textbox', left: 100, top: 530, width: 880, text: 'HERE\u2019S TO NEW BEGINNINGS', fontFamily: 'Inter', fontSize: 26, fontWeight: 'bold', fill: 'rgba(255,255,255,0.7)', textAlign: 'center', charSpacing: 400 },
+      { type: 'rect', left: 340, top: 610, width: 400, height: 2, fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 400, y2: 0 }, colorStops: [{ offset: 0, color: 'rgba(196,112,74,0.2)' }, { offset: 1, color: 'rgba(196,112,74,0.6)' }] } },
+      { type: 'textbox', left: 100, top: 660, width: 880, text: 'May this year bring you\njoy, growth, and adventure.', fontFamily: 'Georgia', fontSize: 28, fontStyle: 'italic', fill: 'rgba(255,255,255,0.45)', textAlign: 'center', lineHeight: 1.6 },
     ]),
 
-  // ─── SOCIAL MEDIA STORIES — Modern (5) — 1080×1920 ─────────────
+  // ─── SHOWCASE — Hero screenshot template ────────────────────────────
 
-  tpl('story-product-launch', 'Product Launch', 'Bold product launch story',
-    'Social Media', 'Story', ['story', 'product', 'launch', 'new'],
-    1080, 1920, 'gradient', 'linear:to-bottom:#000000:#1e1b4b', [
-      { type: 'textbox', left: 100, top: 200, width: 880, text: 'INTRODUCING', fontFamily: 'Inter', fontSize: 18, fill: '#818cf8', charSpacing: 400 },
-      { type: 'textbox', left: 100, top: 300, width: 880, text: 'THE\nNEXT\nBIG\nTHING', fontFamily: 'Inter', fontSize: 120, fontWeight: 'bold', fill: '#ffffff', lineHeight: 1.0 },
-      { type: 'rect', left: 100, top: 850, width: 60, height: 4, fill: '#818cf8' },
-      { type: 'textbox', left: 100, top: 900, width: 880, text: 'Available Now', fontFamily: 'Inter', fontSize: 24, fill: '#a5b4fc' },
-      { type: 'rect', left: 100, top: 1000, width: 300, height: 56, fill: '#6366f1', rx: 28, ry: 28 },
-      { type: 'textbox', left: 100, top: 1014, width: 300, text: 'Shop Now', fontFamily: 'Inter', fontSize: 18, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
+  // 51. Product Launch Showcase — modern architecture studio brand
+  //     presentation. Asymmetric grid, confident typography, restrained
+  //     palette. The kind of design that gets 5K likes on Behance.
+  tpl('product-launch-showcase', 'Aura Studio — Brand Launch', 'Modern brand presentation with editorial typography and gradient accents',
+    'Marketing', 'Product Launch', ['showcase', 'brand', 'launch', 'studio', 'architecture', 'modern'],
+    1080, 1080, 'solid', '#f5f0ea', [
+
+      // ── Top bar — thin accent gradient stripe across full width
+      { type: 'rect', left: 0, top: 0, width: 1080, height: 5,
+        fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 1080, y2: 0 },
+          colorStops: [{ offset: 0, color: '#c4704a' }, { offset: 0.5, color: '#d4966e' }, { offset: 1, color: '#8a5a3a' }] } },
+
+      // ── Left column: brand info block ─────────────────────────
+
+      // Small label — studio name
+      { type: 'textbox', left: 80, top: 70, width: 400, text: 'AURA STUDIO',
+        fontFamily: 'DM Sans', fontSize: 11, fontWeight: 'bold', fill: '#c4704a', charSpacing: 400 },
+
+      // Thin horizontal rule under label
+      { type: 'rect', left: 80, top: 98, width: 40, height: 1.5, fill: '#c4704a' },
+
+      // Oversized display year — background texture element
+      { type: 'textbox', left: 56, top: 130, width: 500, text: '2026',
+        fontFamily: 'Fraunces', fontSize: 180, fill: 'rgba(42,36,30,0.04)', lineHeight: 1 },
+
+      // ── Main headline — serif, large, editorial feel
+      { type: 'textbox', left: 80, top: 200, width: 580, text: 'Spaces\nthat\nbreathe.',
+        fontFamily: 'Fraunces', fontSize: 88, fill: '#2a241e', lineHeight: 1.05,
+        charSpacing: -20,
+        shadow: { color: 'rgba(42,36,30,0.06)', blur: 20, offsetX: 0, offsetY: 8 } },
+
+      // ── Body copy — clean, well-spaced
+      { type: 'textbox', left: 80, top: 550, width: 440, text: 'We design homes and workspaces\nthat balance light, material, and\npurpose. Every project begins with\nlistening.',
+        fontFamily: 'DM Sans', fontSize: 18, fill: '#7a7068', lineHeight: 1.7 },
+
+      // ── Service tags — small pills
+      { type: 'rect', left: 80, top: 710, width: 110, height: 28, rx: 14, ry: 14,
+        fill: 'rgba(0,0,0,0)', stroke: '#c4b5a8', strokeWidth: 1 },
+      { type: 'textbox', left: 80, top: 716, width: 110, text: 'INTERIORS',
+        fontFamily: 'DM Sans', fontSize: 9, fill: '#9a9088', textAlign: 'center', charSpacing: 200 },
+
+      { type: 'rect', left: 200, top: 710, width: 130, height: 28, rx: 14, ry: 14,
+        fill: 'rgba(0,0,0,0)', stroke: '#c4b5a8', strokeWidth: 1 },
+      { type: 'textbox', left: 200, top: 716, width: 130, text: 'RESIDENTIAL',
+        fontFamily: 'DM Sans', fontSize: 9, fill: '#9a9088', textAlign: 'center', charSpacing: 200 },
+
+      { type: 'rect', left: 340, top: 710, width: 110, height: 28, rx: 14, ry: 14,
+        fill: 'rgba(0,0,0,0)', stroke: '#c4b5a8', strokeWidth: 1 },
+      { type: 'textbox', left: 340, top: 716, width: 110, text: 'COMMERCIAL',
+        fontFamily: 'DM Sans', fontSize: 9, fill: '#9a9088', textAlign: 'center', charSpacing: 200 },
+
+      // ── Right column: hero image placeholder + accent block ───
+
+      // Large image placeholder — warm toned rect
+      { type: 'rect', left: 580, top: 70, width: 420, height: 520, rx: 6, ry: 6,
+        fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 420, y2: 520 },
+          colorStops: [{ offset: 0, color: '#d4c4b0' }, { offset: 0.4, color: '#c4b09a' }, { offset: 1, color: '#a89480' }] },
+        shadow: { color: 'rgba(42,36,30,0.12)', blur: 32, offsetX: 0, offsetY: 8 } },
+
+      // "Your photo" hint in the placeholder
+      { type: 'textbox', left: 580, top: 310, width: 420, text: 'YOUR PHOTO',
+        fontFamily: 'DM Sans', fontSize: 14, fill: 'rgba(245,240,234,0.5)', textAlign: 'center', charSpacing: 300 },
+
+      // Accent block — overlapping card with gradient, offset from image
+      { type: 'rect', left: 640, top: 530, width: 360, height: 200, rx: 4, ry: 4,
+        fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 360, y2: 200 },
+          colorStops: [{ offset: 0, color: '#2a241e' }, { offset: 1, color: '#3d3530' }] },
+        shadow: { color: 'rgba(42,36,30,0.2)', blur: 24, offsetX: 0, offsetY: 6 } },
+
+      // Quote inside accent block
+      { type: 'textbox', left: 672, top: 562, width: 296, text: '\u201CArchitecture is the\nthoughtful making\nof space.\u201D',
+        fontFamily: 'Fraunces', fontSize: 22, fontStyle: 'italic', fill: '#e8dcc8', lineHeight: 1.5 },
+
+      // Attribution
+      { type: 'textbox', left: 672, top: 680, width: 296, text: '\u2014 Louis Kahn',
+        fontFamily: 'DM Sans', fontSize: 12, fill: 'rgba(232,220,200,0.4)' },
+
+      // ── Bottom bar ────────────────────────────────────────────
+
+      // Horizontal divider
+      { type: 'rect', left: 80, top: 790, width: 920, height: 1, fill: '#e0d8cf' },
+
+      // Bottom left — website
+      { type: 'textbox', left: 80, top: 818, width: 300, text: 'aurastudio.design',
+        fontFamily: 'DM Sans', fontSize: 13, fill: '#9a9088' },
+
+      // Bottom center — location
+      { type: 'textbox', left: 340, top: 818, width: 400, text: 'Copenhagen  \u00B7  New York  \u00B7  Tokyo',
+        fontFamily: 'DM Sans', fontSize: 13, fill: '#9a9088', textAlign: 'center' },
+
+      // Bottom right — CTA with accent color
+      { type: 'textbox', left: 740, top: 818, width: 260, text: 'VIEW PORTFOLIO  \u2192',
+        fontFamily: 'DM Sans', fontSize: 12, fontWeight: 'bold', fill: '#c4704a',
+        textAlign: 'right', charSpacing: 200 },
+
+      // ── Subtle design details ─────────────────────────────────
+
+      // Vertical accent line — left margin detail
+      { type: 'rect', left: 60, top: 70, width: 1.5, height: 120,
+        fill: { type: 'linear', coords: { x1: 0, y1: 0, x2: 0, y2: 120 },
+          colorStops: [{ offset: 0, color: '#c4704a' }, { offset: 1, color: 'rgba(196,112,74,0)' }] } },
+
+      // Corner mark — top right
+      { type: 'rect', left: 980, top: 24, width: 20, height: 1, fill: 'rgba(42,36,30,0.15)' },
+      { type: 'rect', left: 999, top: 24, width: 1, height: 20, fill: 'rgba(42,36,30,0.15)' },
     ]),
 
-  tpl('story-behind-scenes', 'Behind the Scenes', 'Casual behind-the-scenes story',
-    'Social Media', 'Story', ['story', 'behind the scenes', 'bts', 'casual'],
-    1080, 1920, 'solid', '#f97316', [
-      { type: 'circle', left: 700, top: -100, radius: 300, fill: '#fb923c', opacity: 0.4 },
-      { type: 'textbox', left: 80, top: 200, width: 920, text: 'BEHIND\nTHE\nSCENES', fontFamily: 'Anton', fontSize: 100, fill: '#ffffff', lineHeight: 1.0 },
-      { type: 'rect', left: 80, top: 620, width: 920, height: 300, fill: 'rgba(0,0,0,0.2)', rx: 16, ry: 16 },
-      { type: 'textbox', left: 120, top: 650, width: 840, text: 'A sneak peek at what we\u2019re working on...', fontFamily: 'Inter', fontSize: 24, fill: '#ffffff', lineHeight: 1.5 },
-      { type: 'textbox', left: 80, top: 1000, width: 920, text: 'Swipe up to see more \u2191', fontFamily: 'Inter', fontSize: 18, fill: '#fed7aa', textAlign: 'center' },
-    ]),
-
-  tpl('story-sale', 'Sale Announcement', 'Eye-catching sale announcement story',
-    'Social Media', 'Story', ['story', 'sale', 'discount', 'shopping'],
-    1080, 1920, 'solid', '#dc2626', [
-      { type: 'textbox', left: 100, top: 300, width: 880, text: 'MEGA', fontFamily: 'Anton', fontSize: 140, fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 470, width: 880, text: 'SALE', fontFamily: 'Anton', fontSize: 180, fill: '#fbbf24', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 700, width: 880, text: 'UP TO', fontFamily: 'Inter', fontSize: 24, fill: '#fecaca', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 750, width: 880, text: '70% OFF', fontFamily: 'Inter', fontSize: 80, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'rect', left: 300, top: 900, width: 480, height: 60, fill: '#ffffff', rx: 30, ry: 30 },
-      { type: 'textbox', left: 300, top: 912, width: 480, text: 'SHOP NOW', fontFamily: 'Inter', fontSize: 24, fontWeight: 'bold', fill: '#dc2626', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 1020, width: 880, text: 'Limited time only \u00b7 Ends Sunday', fontFamily: 'Inter', fontSize: 16, fill: '#fecaca', textAlign: 'center' },
-    ]),
-
-  tpl('story-testimonial', 'Testimonial Story', 'Customer testimonial story layout',
-    'Social Media', 'Story', ['story', 'testimonial', 'review', 'social proof'],
-    1080, 1920, 'solid', '#faf5ff', [
-      { type: 'textbox', left: 100, top: 200, width: 880, text: '\u2605\u2605\u2605\u2605\u2605', fontFamily: 'Inter', fontSize: 36, fill: '#eab308', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 300, width: 880, text: '\u201cThis completely changed how I work. I can\u2019t imagine going back to the old way.\u201d', fontFamily: 'Playfair Display', fontSize: 36, fill: '#1e1b4b', textAlign: 'center', lineHeight: 1.5 },
-      { type: 'rect', left: 440, top: 580, width: 200, height: 2, fill: '#c084fc' },
-      { type: 'circle', left: 460, top: 640, radius: 40, fill: '#e9d5ff' },
-      { type: 'textbox', left: 100, top: 740, width: 880, text: 'Sarah Martinez', fontFamily: 'Inter', fontSize: 22, fontWeight: 'bold', fill: '#1e1b4b', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 775, width: 880, text: 'CEO, TechStartup', fontFamily: 'Inter', fontSize: 16, fill: '#7c3aed', textAlign: 'center' },
-    ]),
-
-  tpl('story-coming-soon', 'Coming Soon', 'Minimal coming soon teaser story',
-    'Social Media', 'Story', ['story', 'coming soon', 'teaser', 'launch'],
-    1080, 1920, 'solid', '#000000', [
-      { type: 'textbox', left: 100, top: 600, width: 880, text: 'SOMETHING', fontFamily: 'Inter', fontSize: 20, fill: '#525252', textAlign: 'center', charSpacing: 500 },
-      { type: 'textbox', left: 100, top: 680, width: 880, text: 'BIG', fontFamily: 'Inter', fontSize: 140, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 860, width: 880, text: 'IS COMING', fontFamily: 'Inter', fontSize: 20, fill: '#525252', textAlign: 'center', charSpacing: 500 },
-      { type: 'rect', left: 440, top: 960, width: 200, height: 2, fill: '#404040' },
-      { type: 'textbox', left: 100, top: 1020, width: 880, text: '04.15.2026', fontFamily: 'Inter', fontSize: 28, fill: '#737373', textAlign: 'center', charSpacing: 200 },
-    ]),
-
-  // ─── MOTIVATIONAL QUOTES (3) — 1080×1080 ──────────────────────
-
-  tpl('quote-sunrise', 'Sunrise Quote', 'Warm inspirational quote with sunrise colors',
-    'Social Media', 'Quote', ['quote', 'motivational', 'inspiration', 'warm'],
-    1080, 1080, 'gradient', 'linear:to-bottom:#fbbf24:#f97316', [
-      { type: 'textbox', left: 100, top: 250, width: 880, text: '\u201cThe only way\nto do great work\nis to love what\nyou do.\u201d', fontFamily: 'Playfair Display', fontSize: 56, fill: '#ffffff', textAlign: 'center', lineHeight: 1.3 },
-      { type: 'rect', left: 440, top: 700, width: 200, height: 3, fill: 'rgba(255,255,255,0.5)' },
-      { type: 'textbox', left: 100, top: 740, width: 880, text: 'Steve Jobs', fontFamily: 'Inter', fontSize: 20, fill: 'rgba(255,255,255,0.8)', textAlign: 'center' },
-    ]),
-
-  tpl('quote-bold-modern', 'Bold Modern Quote', 'Bold modern motivational quote',
-    'Social Media', 'Quote', ['quote', 'motivational', 'bold', 'modern'],
-    1080, 1080, 'solid', '#111827', [
-      { type: 'rect', left: 80, top: 80, width: 920, height: 920, fill: 'rgba(0,0,0,0)', stroke: '#374151', strokeWidth: 1, strokeUniform: true },
-      { type: 'textbox', left: 140, top: 200, width: 800, text: 'DREAM\nBIG.', fontFamily: 'Inter', fontSize: 120, fontWeight: 'bold', fill: '#ffffff', lineHeight: 1.0 },
-      { type: 'textbox', left: 140, top: 500, width: 800, text: 'START\nSMALL.', fontFamily: 'Inter', fontSize: 120, fontWeight: 'bold', fill: '#3b82f6', lineHeight: 1.0 },
-      { type: 'textbox', left: 140, top: 800, width: 800, text: 'ACT NOW.', fontFamily: 'Inter', fontSize: 48, fill: '#6b7280' },
-    ]),
-
-  tpl('quote-elegant', 'Elegant Quote', 'Minimal elegant quote with serif font',
-    'Social Media', 'Quote', ['quote', 'motivational', 'elegant', 'minimal'],
-    1080, 1080, 'solid', '#fefce8', [
-      { type: 'textbox', left: 100, top: 100, width: 200, text: '\u201c', fontFamily: 'Playfair Display', fontSize: 200, fill: '#d4a574', opacity: 0.3 },
-      { type: 'textbox', left: 140, top: 300, width: 800, text: 'Be yourself;\neveryone else is\nalready taken.', fontFamily: 'Playfair Display', fontSize: 52, fill: '#44403c', lineHeight: 1.4 },
-      { type: 'rect', left: 140, top: 660, width: 80, height: 3, fill: '#d4a574' },
-      { type: 'textbox', left: 140, top: 700, width: 800, text: 'Oscar Wilde', fontFamily: 'Inter', fontSize: 18, fill: '#a8a29e' },
-    ]),
-
-  // ─── PRODUCT SHOWCASES (3) — 1080×1080 ─────────────────────────
-
-  tpl('product-new-arrival', 'New Arrival', 'Clean new product arrival announcement',
-    'Social Media', 'Product', ['product', 'new arrival', 'ecommerce', 'shop'],
-    1080, 1080, 'solid', '#f8fafc', [
-      { type: 'textbox', left: 100, top: 60, width: 880, text: 'NEW ARRIVAL', fontFamily: 'Inter', fontSize: 14, fill: '#64748b', charSpacing: 400 },
-      { type: 'rect', left: 200, top: 150, width: 680, height: 500, fill: '#e2e8f0', rx: 16, ry: 16 },
-      { type: 'textbox', left: 200, top: 350, width: 680, text: 'Product Image', fontFamily: 'Inter', fontSize: 20, fill: '#94a3b8', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 720, width: 880, text: 'The Perfect\nEveryday Bag', fontFamily: 'Playfair Display', fontSize: 48, fill: '#0f172a', textAlign: 'center', lineHeight: 1.2 },
-      { type: 'textbox', left: 100, top: 860, width: 880, text: '$89.00', fontFamily: 'Inter', fontSize: 32, fontWeight: 'bold', fill: '#0f172a', textAlign: 'center' },
-      { type: 'rect', left: 340, top: 930, width: 400, height: 56, fill: '#0f172a', rx: 28, ry: 28 },
-      { type: 'textbox', left: 340, top: 944, width: 400, text: 'Shop Now', fontFamily: 'Inter', fontSize: 18, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-    ]),
-
-  tpl('product-featured', 'Featured Product', 'Bold featured product with dark background',
-    'Social Media', 'Product', ['product', 'featured', 'showcase', 'dark'],
-    1080, 1080, 'solid', '#18181b', [
-      { type: 'rect', left: 60, top: 60, width: 960, height: 960, fill: 'rgba(0,0,0,0)', stroke: '#3f3f46', strokeWidth: 1, strokeUniform: true },
-      { type: 'textbox', left: 100, top: 100, width: 300, text: 'FEATURED', fontFamily: 'Inter', fontSize: 12, fill: '#a1a1aa', charSpacing: 300 },
-      { type: 'rect', left: 250, top: 200, width: 580, height: 400, fill: '#27272a', rx: 12, ry: 12 },
-      { type: 'textbox', left: 100, top: 680, width: 880, text: 'Premium\nWireless Headphones', fontFamily: 'Inter', fontSize: 44, fontWeight: 'bold', fill: '#ffffff', lineHeight: 1.2 },
-      { type: 'textbox', left: 100, top: 820, width: 400, text: 'From $299', fontFamily: 'Inter', fontSize: 24, fill: '#a1a1aa' },
-      { type: 'textbox', left: 600, top: 820, width: 360, text: 'Learn More \u2192', fontFamily: 'Inter', fontSize: 18, fill: '#3b82f6', textAlign: 'right' },
-    ]),
-
-  tpl('product-comparison', 'Product Comparison', 'Side-by-side product comparison',
-    'Social Media', 'Product', ['product', 'comparison', 'versus', 'ecommerce'],
-    1080, 1080, 'solid', '#f1f5f9', [
-      { type: 'textbox', left: 100, top: 60, width: 880, text: 'WHICH ONE IS RIGHT FOR YOU?', fontFamily: 'Inter', fontSize: 16, fill: '#64748b', textAlign: 'center', charSpacing: 150 },
-      { type: 'rect', left: 60, top: 150, width: 460, height: 800, fill: '#ffffff', rx: 16, ry: 16 },
-      { type: 'textbox', left: 80, top: 180, width: 420, text: 'BASIC', fontFamily: 'Inter', fontSize: 18, fontWeight: 'bold', fill: '#475569', textAlign: 'center' },
-      { type: 'textbox', left: 80, top: 230, width: 420, text: '$49', fontFamily: 'Inter', fontSize: 48, fontWeight: 'bold', fill: '#0f172a', textAlign: 'center' },
-      { type: 'textbox', left: 80, top: 320, width: 420, text: '\u2713 Core features\n\u2713 Email support\n\u2713 1 user\n\u2717 Analytics\n\u2717 API access', fontFamily: 'Inter', fontSize: 16, fill: '#64748b', textAlign: 'center', lineHeight: 2.0 },
-      { type: 'rect', left: 560, top: 150, width: 460, height: 800, fill: '#1e293b', rx: 16, ry: 16 },
-      { type: 'rect', left: 660, top: 130, width: 260, height: 28, fill: '#3b82f6', rx: 14, ry: 14 },
-      { type: 'textbox', left: 660, top: 133, width: 260, text: 'MOST POPULAR', fontFamily: 'Inter', fontSize: 11, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 580, top: 180, width: 420, text: 'PRO', fontFamily: 'Inter', fontSize: 18, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 580, top: 230, width: 420, text: '$99', fontFamily: 'Inter', fontSize: 48, fontWeight: 'bold', fill: '#3b82f6', textAlign: 'center' },
-      { type: 'textbox', left: 580, top: 320, width: 420, text: '\u2713 All features\n\u2713 Priority support\n\u2713 5 users\n\u2713 Analytics\n\u2713 API access', fontFamily: 'Inter', fontSize: 16, fill: '#e2e8f0', textAlign: 'center', lineHeight: 2.0 },
-    ]),
-
-  // ─── SALE / DISCOUNT (3) — 1080×1080 ───────────────────────────
-
-  tpl('sale-flash', 'Flash Sale', 'Urgent flash sale with bold red',
-    'Marketing', 'Sale', ['sale', 'flash', 'discount', 'urgent'],
-    1080, 1080, 'solid', '#dc2626', [
-      { type: 'textbox', left: 100, top: 100, width: 880, text: '\u26a1 FLASH SALE \u26a1', fontFamily: 'Inter', fontSize: 24, fill: '#fecaca', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 250, width: 880, text: '50%\nOFF', fontFamily: 'Anton', fontSize: 180, fill: '#ffffff', textAlign: 'center', lineHeight: 0.9 },
-      { type: 'textbox', left: 100, top: 650, width: 880, text: 'EVERYTHING', fontFamily: 'Inter', fontSize: 48, fontWeight: 'bold', fill: '#fbbf24', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 740, width: 880, text: 'Today only \u00b7 Use code FLASH50', fontFamily: 'Inter', fontSize: 20, fill: '#fecaca', textAlign: 'center' },
-      { type: 'rect', left: 300, top: 830, width: 480, height: 60, fill: '#ffffff', rx: 30, ry: 30 },
-      { type: 'textbox', left: 300, top: 842, width: 480, text: 'SHOP THE SALE', fontFamily: 'Inter', fontSize: 22, fontWeight: 'bold', fill: '#dc2626', textAlign: 'center' },
-    ]),
-
-  tpl('sale-seasonal', 'Seasonal Discount', 'Seasonal discount with gradient background',
-    'Marketing', 'Sale', ['sale', 'seasonal', 'discount', 'summer'],
-    1080, 1080, 'gradient', 'linear:to-bottom-right:#06b6d4:#3b82f6', [
-      { type: 'circle', left: 750, top: -50, radius: 200, fill: 'rgba(255,255,255,0.1)' },
-      { type: 'circle', left: -100, top: 700, radius: 250, fill: 'rgba(255,255,255,0.08)' },
-      { type: 'textbox', left: 100, top: 150, width: 880, text: 'SUMMER\nCOLLECTION', fontFamily: 'Inter', fontSize: 80, fontWeight: 'bold', fill: '#ffffff', lineHeight: 1.1 },
-      { type: 'rect', left: 100, top: 380, width: 60, height: 4, fill: '#ffffff' },
-      { type: 'textbox', left: 100, top: 430, width: 880, text: 'Save 30% on all summer styles.\nFree shipping on orders over $50.', fontFamily: 'Inter', fontSize: 24, fill: 'rgba(255,255,255,0.85)', lineHeight: 1.5 },
-      { type: 'rect', left: 100, top: 600, width: 280, height: 56, fill: '#ffffff', rx: 28, ry: 28 },
-      { type: 'textbox', left: 100, top: 614, width: 280, text: 'Shop Now', fontFamily: 'Inter', fontSize: 18, fontWeight: 'bold', fill: '#0284c7', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 720, width: 880, text: 'Code: SUMMER30', fontFamily: 'Inter', fontSize: 16, fill: 'rgba(255,255,255,0.6)' },
-    ]),
-
-  tpl('sale-clearance', 'Clearance Sale', 'Bold clearance sale with yellow/black',
-    'Marketing', 'Sale', ['sale', 'clearance', 'discount', 'bold'],
-    1080, 1080, 'solid', '#fbbf24', [
-      { type: 'rect', left: 0, top: 0, width: 1080, height: 60, fill: '#000000' },
-      { type: 'textbox', left: 0, top: 12, width: 1080, text: '\u2605 CLEARANCE EVENT \u2605', fontFamily: 'Inter', fontSize: 18, fontWeight: 'bold', fill: '#fbbf24', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 200, width: 880, text: 'UP TO', fontFamily: 'Inter', fontSize: 36, fill: '#000000', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 260, width: 880, text: '80%', fontFamily: 'Anton', fontSize: 220, fill: '#000000', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 520, width: 880, text: 'OFF', fontFamily: 'Anton', fontSize: 100, fill: '#000000', textAlign: 'center' },
-      { type: 'rect', left: 200, top: 680, width: 680, height: 70, fill: '#000000', rx: 8, ry: 8 },
-      { type: 'textbox', left: 200, top: 695, width: 680, text: 'WHILE SUPPLIES LAST', fontFamily: 'Inter', fontSize: 24, fontWeight: 'bold', fill: '#fbbf24', textAlign: 'center' },
-      { type: 'rect', left: 0, top: 1020, width: 1080, height: 60, fill: '#000000' },
-      { type: 'textbox', left: 0, top: 1032, width: 1080, text: 'In-store & online \u00b7 This weekend only', fontFamily: 'Inter', fontSize: 16, fill: '#fbbf24', textAlign: 'center' },
-    ]),
-
-  // ─── THANK YOU CARDS (2) — 1050×600 ────────────────────────────
-
-  tpl('thankyou-elegant', 'Elegant Thank You', 'Elegant thank you card with gold accents',
-    'Print', 'Thank You', ['thank you', 'card', 'elegant', 'gratitude'],
-    1050, 600, 'solid', '#1a1a1a', [
-      { type: 'rect', left: 40, top: 40, width: 970, height: 520, fill: 'rgba(0,0,0,0)', stroke: '#c9a96e', strokeWidth: 1, strokeUniform: true },
-      { type: 'textbox', left: 100, top: 120, width: 850, text: 'Thank You', fontFamily: 'Playfair Display', fontSize: 64, fill: '#c9a96e', textAlign: 'center' },
-      { type: 'rect', left: 425, top: 220, width: 200, height: 2, fill: '#c9a96e', opacity: 0.5 },
-      { type: 'textbox', left: 100, top: 260, width: 850, text: 'Your kindness means the world to us.\nWe truly appreciate your generosity and support.', fontFamily: 'Lora', fontSize: 18, fill: '#a8a29e', textAlign: 'center', lineHeight: 1.8 },
-      { type: 'textbox', left: 100, top: 420, width: 850, text: 'With gratitude, The Smith Family', fontFamily: 'Lora', fontSize: 16, fill: '#c9a96e', textAlign: 'center' },
-    ]),
-
-  // ─── BONUS TEMPLATES (3) ────────────────────────────────────────
-
-  tpl('linkedin-post', 'LinkedIn Post', 'Professional LinkedIn post with insight',
-    'Social Media', 'LinkedIn Post', ['linkedin', 'professional', 'post'],
-    1200, 627, 'solid', '#0a66c2', [
-      { type: 'textbox', left: 80, top: 60, width: 1040, text: 'DID YOU\nKNOW?', fontFamily: 'Inter', fontSize: 72, fontWeight: 'bold', fill: '#ffffff', lineHeight: 1.1 },
-      { type: 'rect', left: 80, top: 240, width: 60, height: 4, fill: '#ffffff' },
-      { type: 'textbox', left: 80, top: 280, width: 700, text: '73% of professionals say continuous\nlearning is essential for career growth.', fontFamily: 'Inter', fontSize: 24, fill: '#bfdbfe', lineHeight: 1.5 },
-      { type: 'textbox', left: 80, top: 430, width: 700, text: 'What are you learning today?', fontFamily: 'Inter', fontSize: 20, fill: '#93c5fd' },
-      { type: 'textbox', left: 80, top: 550, width: 400, text: '@YourName \u00b7 Follow for more insights', fontFamily: 'Inter', fontSize: 14, fill: '#60a5fa' },
-    ]),
-
-  tpl('twitter-header', 'Twitter/X Header', 'Clean personal brand Twitter header',
-    'Social Media', 'Twitter Header', ['twitter', 'x', 'header', 'banner'],
-    1500, 500, 'gradient', 'linear:to-right:#1e293b:#0f172a', [
-      { type: 'textbox', left: 100, top: 100, width: 800, text: 'BUILDING THE FUTURE', fontFamily: 'Inter', fontSize: 56, fontWeight: 'bold', fill: '#ffffff' },
-      { type: 'textbox', left: 100, top: 190, width: 800, text: 'Developer \u00b7 Designer \u00b7 Creator', fontFamily: 'Inter', fontSize: 22, fill: '#64748b' },
-      { type: 'rect', left: 100, top: 260, width: 60, height: 4, fill: '#3b82f6' },
-      { type: 'textbox', left: 100, top: 310, width: 600, text: 'Open to collaborations and new projects', fontFamily: 'Inter', fontSize: 16, fill: '#94a3b8' },
-      { type: 'circle', left: 1200, top: 50, radius: 180, fill: '#3b82f6', opacity: 0.1 },
-      { type: 'circle', left: 1250, top: 100, radius: 120, fill: '#8b5cf6', opacity: 0.08 },
-    ]),
-
-  tpl('poster-event', 'Event Poster', 'Bold event poster with large type',
-    'Print', 'Poster', ['poster', 'event', 'concert', 'bold'],
-    1800, 2400, 'solid', '#0f0f0f', [
-      { type: 'textbox', left: 120, top: 200, width: 1560, text: 'SUMMER\nFEST', fontFamily: 'Anton', fontSize: 240, fill: '#ffffff', lineHeight: 0.95 },
-      { type: 'textbox', left: 120, top: 740, width: 1560, text: '2026', fontFamily: 'Anton', fontSize: 200, fill: '#ef4444' },
-      { type: 'rect', left: 120, top: 1000, width: 100, height: 4, fill: '#ef4444' },
-      { type: 'textbox', left: 120, top: 1060, width: 1560, text: 'LIVE MUSIC \u00b7 FOOD \u00b7 ART\nJULY 15\u201317 \u00b7 CENTRAL PARK', fontFamily: 'Inter', fontSize: 40, fill: '#a3a3a3', lineHeight: 1.6 },
-      { type: 'textbox', left: 120, top: 1260, width: 1560, text: 'FEATURING', fontFamily: 'Inter', fontSize: 16, fill: '#525252', charSpacing: 400 },
-      { type: 'textbox', left: 120, top: 1310, width: 1560, text: 'The Midnight Hour \u00b7 Solar Waves\nNeon Dreams \u00b7 Crystal Echo\nThe Low Tides \u00b7 Purple Haze', fontFamily: 'Inter', fontSize: 32, fill: '#d4d4d4', lineHeight: 1.6 },
-      { type: 'rect', left: 120, top: 1600, width: 400, height: 70, fill: '#ef4444', rx: 8, ry: 8 },
-      { type: 'textbox', left: 120, top: 1618, width: 400, text: 'Get Tickets', fontFamily: 'Inter', fontSize: 24, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 120, top: 1750, width: 1560, text: 'summerfest2026.com', fontFamily: 'Inter', fontSize: 18, fill: '#525252' },
-    ]),
-
-  tpl('thankyou-fun', 'Fun Thank You', 'Colorful fun thank you card',
-    'Print', 'Thank You', ['thank you', 'card', 'fun', 'colorful'],
-    1050, 600, 'solid', '#7c3aed', [
-      { type: 'circle', left: -40, top: -40, radius: 100, fill: '#a78bfa', opacity: 0.3 },
-      { type: 'circle', left: 850, top: 400, radius: 120, fill: '#fbbf24', opacity: 0.2 },
-      { type: 'textbox', left: 100, top: 80, width: 850, text: 'THANK', fontFamily: 'Anton', fontSize: 100, fill: '#ffffff', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 190, width: 850, text: 'YOU!', fontFamily: 'Anton', fontSize: 100, fill: '#fbbf24', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 340, width: 850, text: 'You\u2019re the best! We couldn\u2019t have done it without you.', fontFamily: 'Poppins', fontSize: 18, fill: '#e9d5ff', textAlign: 'center' },
-      { type: 'textbox', left: 100, top: 440, width: 850, text: '\u2764\ufe0f', fontFamily: 'Inter', fontSize: 40, textAlign: 'center' },
-    ]),
 ];
+
+// ─── Utility functions ──────────────────────────────────────────────
 
 /** Get all unique template categories */
 export function getTemplateCategories(): string[] {

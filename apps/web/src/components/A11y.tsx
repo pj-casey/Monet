@@ -67,7 +67,7 @@ export function SkipLink() {
   return (
     <a
       href="#canvas-area"
-      className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-[100] focus:rounded focus:bg-blue-600 focus:px-3 focus:py-1 focus:text-sm focus:text-white"
+      className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-[100] focus:rounded focus:bg-accent focus:px-3 focus:py-1 focus:text-sm focus:text-accent-fg"
     >
       Skip to canvas
     </a>

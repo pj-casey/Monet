@@ -9,6 +9,7 @@
 import { useState, useCallback } from 'react';
 import { engine } from './Canvas';
 import { saveUserTemplate } from '../lib/user-templates';
+import { FocusTrap } from './A11y';
 
 const CATEGORY_OPTIONS = [
   'Social Media',
@@ -58,24 +59,25 @@ export function SaveTemplateDialog({ onClose }: SaveTemplateDialogProps) {
   }, [name, category, tagsInput, onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
+      <FocusTrap>
       <div
-        className="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-gray-900"
+        className="animate-scale-up mx-4 w-full max-w-md rounded-lg bg-overlay p-7 shadow-xl"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label="Save as template"
       >
-        <h2 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-100">
+        <h2 className="mb-4 text-lg font-semibold text-text-primary">
           Save as Template
         </h2>
 
-        <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
+        <p className="mb-3 text-xs text-text-secondary">
           Save this design as a reusable template. It will appear in the template browser.
         </p>
 
         {/* Name */}
-        <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
+        <label className="mb-1 block text-xs font-medium text-text-secondary">
           Template Name
         </label>
         <input
@@ -83,18 +85,18 @@ export function SaveTemplateDialog({ onClose }: SaveTemplateDialogProps) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g., Summer Sale Banner"
-          className="mb-3 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+          className="mb-3 w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none"
           autoFocus
         />
 
         {/* Category */}
-        <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
+        <label className="mb-1 block text-xs font-medium text-text-secondary">
           Category
         </label>
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="mb-3 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+          className="mb-3 w-full rounded-lg border border-border px-3 py-2 text-sm"
         >
           {CATEGORY_OPTIONS.map((c) => (
             <option key={c} value={c}>{c}</option>
@@ -102,7 +104,7 @@ export function SaveTemplateDialog({ onClose }: SaveTemplateDialogProps) {
         </select>
 
         {/* Tags */}
-        <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
+        <label className="mb-1 block text-xs font-medium text-text-secondary">
           Tags (comma-separated)
         </label>
         <input
@@ -110,24 +112,25 @@ export function SaveTemplateDialog({ onClose }: SaveTemplateDialogProps) {
           value={tagsInput}
           onChange={(e) => setTagsInput(e.target.value)}
           placeholder="e.g., sale, summer, banner"
-          className="mb-4 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+          className="mb-4 w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-accent focus:outline-none"
         />
 
         {error && (
-          <p className="mb-3 text-xs text-red-500">{error}</p>
+          <p className="mb-3 text-xs text-danger">{error}</p>
         )}
 
         <div className="flex gap-2">
           <button type="button" onClick={onClose}
-            className="flex-1 rounded-lg border border-gray-200 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800">
+            className="flex-1 rounded-lg border border-border py-2 text-sm font-medium text-text-secondary hover:bg-canvas">
             Cancel
           </button>
           <button type="button" onClick={handleSave} disabled={saving || !name.trim()}
-            className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+            className="flex-1 rounded-lg bg-accent py-2 text-sm font-medium text-accent-fg hover:bg-accent-hover disabled:opacity-50">
             {saving ? 'Saving...' : 'Save Template'}
           </button>
         </div>
       </div>
+      </FocusTrap>
     </div>
   );
 }

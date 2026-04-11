@@ -48,7 +48,7 @@ const ILLUSTRATIONS: Illustration[] = [
       <rect width="400" height="300" fill="#FEFCE8"/>
       <circle cx="120" cy="140" r="80" fill="#F97316" opacity="0.7"/>
       <circle cx="200" cy="160" r="60" fill="#EC4899" opacity="0.5"/>
-      <rect x="240" y="80" width="100" height="100" rx="12" fill="#8B5CF6" opacity="0.6" transform="rotate(15 290 130)"/>
+      <rect x="240" y="80" width="100" height="100" rx="12" fill="#C4704A" opacity="0.6" transform="rotate(15 290 130)"/>
       <polygon points="60,250 120,170 180,250" fill="#10B981" opacity="0.6"/>
       <circle cx="330" cy="230" r="45" fill="#06B6D4" opacity="0.5"/>
       <line x1="20" y1="40" x2="160" y2="40" stroke="#F59E0B" stroke-width="4" stroke-linecap="round"/>
@@ -63,7 +63,7 @@ const ILLUSTRATIONS: Illustration[] = [
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
       <rect width="400" height="300" fill="#FDF2F8"/>
       <ellipse cx="100" cy="100" rx="90" ry="70" fill="#F9A8D4" opacity="0.6" transform="rotate(-20 100 100)"/>
-      <ellipse cx="300" cy="80" rx="70" ry="55" fill="#C4B5FD" opacity="0.5" transform="rotate(25 300 80)"/>
+      <ellipse cx="300" cy="80" rx="70" ry="55" fill="#e8c4a8" opacity="0.5" transform="rotate(25 300 80)"/>
       <ellipse cx="200" cy="200" rx="110" ry="80" fill="#93C5FD" opacity="0.4" transform="rotate(-10 200 200)"/>
       <ellipse cx="340" cy="230" rx="60" ry="50" fill="#6EE7B7" opacity="0.5" transform="rotate(15 340 230)"/>
       <ellipse cx="60" cy="240" rx="50" ry="40" fill="#FDE68A" opacity="0.6" transform="rotate(-25 60 240)"/>
@@ -85,11 +85,11 @@ const ILLUSTRATIONS: Illustration[] = [
       <rect x="100" y="100" width="60" height="60" rx="8" fill="#EAB308" opacity="0.8"/>
       <rect x="170" y="100" width="60" height="60" rx="8" fill="#22C55E" opacity="0.7"/>
       <rect x="240" y="100" width="60" height="60" rx="8" fill="#3B82F6" opacity="0.6"/>
-      <rect x="310" y="100" width="60" height="60" rx="8" fill="#8B5CF6" opacity="0.8"/>
+      <rect x="310" y="100" width="60" height="60" rx="8" fill="#C4704A" opacity="0.8"/>
       <rect x="30" y="170" width="60" height="60" rx="8" fill="#EAB308" opacity="0.5"/>
       <rect x="100" y="170" width="60" height="60" rx="8" fill="#22C55E" opacity="0.6"/>
       <rect x="170" y="170" width="60" height="60" rx="8" fill="#3B82F6" opacity="0.8"/>
-      <rect x="240" y="170" width="60" height="60" rx="8" fill="#8B5CF6" opacity="0.7"/>
+      <rect x="240" y="170" width="60" height="60" rx="8" fill="#C4704A" opacity="0.7"/>
       <rect x="310" y="170" width="60" height="60" rx="8" fill="#EC4899" opacity="0.6"/>
     </svg>`,
   },
@@ -183,17 +183,17 @@ const ILLUSTRATIONS: Illustration[] = [
     category: 'Technology',
     tags: 'mobile phone app smartphone device screen ui',
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
-      <rect width="400" height="300" fill="#F5F3FF"/>
+      <rect width="400" height="300" fill="#fdf6f0"/>
       <rect x="140" y="20" width="120" height="260" rx="20" fill="#1E293B"/>
       <rect x="148" y="45" width="104" height="210" rx="4" fill="#E2E8F0"/>
       <rect x="180" y="28" width="40" height="6" rx="3" fill="#475569"/>
-      <rect x="158" y="55" width="84" height="30" rx="6" fill="#8B5CF6"/>
-      <rect x="158" y="95" width="40" height="40" rx="8" fill="#C4B5FD"/>
-      <rect x="202" y="95" width="40" height="40" rx="8" fill="#DDD6FE"/>
+      <rect x="158" y="55" width="84" height="30" rx="6" fill="#C4704A"/>
+      <rect x="158" y="95" width="40" height="40" rx="8" fill="#e8c4a8"/>
+      <rect x="202" y="95" width="40" height="40" rx="8" fill="#f0dcc8"/>
       <rect x="158" y="145" width="84" height="12" rx="4" fill="#E5E7EB"/>
       <rect x="158" y="165" width="84" height="12" rx="4" fill="#E5E7EB"/>
       <rect x="158" y="185" width="60" height="12" rx="4" fill="#E5E7EB"/>
-      <rect x="158" y="210" width="84" height="30" rx="15" fill="#7C3AED"/>
+      <rect x="158" y="210" width="84" height="30" rx="15" fill="#a85a3a"/>
       <circle cx="200" cy="268" r="8" stroke="#475569" stroke-width="2" fill="none"/>
     </svg>`,
   },
@@ -370,14 +370,14 @@ const ILLUSTRATIONS: Illustration[] = [
       <rect x="165" y="255" width="70" height="12" rx="4" fill="#B45309"/>
       <polygon points="200,30 208,58 238,58 214,74 222,102 200,86 178,102 186,74 162,58 192,58" fill="#EAB308"/>
       <circle cx="80" cy="60" r="8" fill="#EF4444" opacity="0.7"/>
-      <circle cx="330" cy="80" r="6" fill="#8B5CF6" opacity="0.7"/>
+      <circle cx="330" cy="80" r="6" fill="#C4704A" opacity="0.7"/>
       <circle cx="60" cy="200" r="5" fill="#22C55E" opacity="0.6"/>
       <circle cx="350" cy="180" r="7" fill="#EC4899" opacity="0.6"/>
       <rect x="100" y="100" width="8" height="8" rx="1" fill="#3B82F6" opacity="0.6" transform="rotate(30 104 104)"/>
       <rect x="300" y="40" width="10" height="10" rx="1" fill="#F97316" opacity="0.7" transform="rotate(45 305 45)"/>
       <rect x="70" y="140" width="6" height="6" rx="1" fill="#FBBF24" opacity="0.8" transform="rotate(15 73 143)"/>
       <polygon points="320,230 325,220 330,230" fill="#EF4444" opacity="0.5"/>
-      <polygon points="90,250 95,240 100,250" fill="#8B5CF6" opacity="0.5"/>
+      <polygon points="90,250 95,240 100,250" fill="#C4704A" opacity="0.5"/>
     </svg>`,
   },
   {
@@ -422,7 +422,7 @@ const ILLUSTRATIONS: Illustration[] = [
     category: 'Business',
     tags: 'rocket launch startup growth takeoff speed innovation boost',
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
-      <rect width="400" height="300" fill="#EDE9FE"/>
+      <rect width="400" height="300" fill="#faeee5"/>
       <path d="M200 30 Q220 80 220 140 L180 140 Q180 80 200 30Z" fill="#E2E8F0"/>
       <path d="M200 30 Q210 80 210 140 L190 140 Q190 80 200 30Z" fill="#CBD5E1"/>
       <circle cx="200" cy="90" r="12" fill="#60A5FA"/>
@@ -431,11 +431,11 @@ const ILLUSTRATIONS: Illustration[] = [
       <path d="M220 110 L245 140 L220 130Z" fill="#94A3B8"/>
       <path d="M185 140 L190 180 L200 170 L210 180 L215 140Z" fill="#F97316"/>
       <path d="M190 150 L195 175 L200 165 L205 175 L210 150Z" fill="#FBBF24"/>
-      <circle cx="150" cy="200" r="8" fill="#C4B5FD" opacity="0.6"/>
-      <circle cx="250" cy="190" r="6" fill="#DDD6FE" opacity="0.5"/>
+      <circle cx="150" cy="200" r="8" fill="#e8c4a8" opacity="0.6"/>
+      <circle cx="250" cy="190" r="6" fill="#f0dcc8" opacity="0.5"/>
       <circle cx="130" cy="240" r="5" fill="#E9D5FF" opacity="0.4"/>
-      <circle cx="270" cy="250" r="7" fill="#C4B5FD" opacity="0.3"/>
-      <circle cx="180" cy="260" r="4" fill="#DDD6FE" opacity="0.5"/>
+      <circle cx="270" cy="250" r="7" fill="#e8c4a8" opacity="0.3"/>
+      <circle cx="180" cy="260" r="4" fill="#f0dcc8" opacity="0.5"/>
       <circle cx="220" cy="230" r="5" fill="#E9D5FF" opacity="0.4"/>
     </svg>`,
   },

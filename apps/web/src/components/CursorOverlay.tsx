@@ -34,7 +34,7 @@ export function CursorOverlay({ cursors }: CursorOverlayProps) {
             </svg>
             {/* Name label */}
             <span
-              className="ml-3 -mt-1 inline-block whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-medium text-white"
+              className="ml-3 -mt-1 inline-block whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-medium text-accent-fg"
               style={{ backgroundColor: c.color }}
             >
               {c.name}

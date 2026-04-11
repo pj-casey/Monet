@@ -36,9 +36,9 @@ export function AssetsPanel() {
   const [tab, setTab] = useState<AssetTab>('icons');
 
   return (
-    <div className="flex w-64 flex-col border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+    <div className="flex w-64 flex-col border-r border-border bg-surface">
       {/* Tab bar */}
-      <div className="flex border-b border-gray-200 dark:border-gray-700">
+      <div className="flex border-b border-border">
         <TabBtn active={tab === 'photos'} onClick={() => setTab('photos')}>Photos</TabBtn>
         <TabBtn active={tab === 'icons'} onClick={() => setTab('icons')}>Icons</TabBtn>
         <TabBtn active={tab === 'illus'} onClick={() => setTab('illus')}>Illus</TabBtn>
@@ -146,15 +146,15 @@ function PhotosTab() {
 
   if (!hasAny) {
     return (
-      <div className="p-2 text-center text-xs text-gray-400 dark:text-gray-500">
+      <div className="p-2 text-center text-xs text-text-tertiary">
         <p className="mb-2 font-medium">No photo service configured</p>
-        <p>Add API keys to <code className="rounded bg-gray-100 px-1 dark:bg-gray-800">.env</code>:</p>
+        <p>Add API keys to <code className="rounded bg-wash px-1">.env</code>:</p>
         <p className="mt-1 font-mono text-[10px]">VITE_UNSPLASH_ACCESS_KEY=your_key</p>
         <p className="font-mono text-[10px]">VITE_PEXELS_API_KEY=your_key</p>
         <p className="mt-2 text-[10px]">
-          Free keys: <span className="text-blue-500">unsplash.com/developers</span>
+          Free keys: <span className="text-accent">unsplash.com/developers</span>
           {' / '}
-          <span className="text-blue-500">pexels.com/api/new</span>
+          <span className="text-accent">pexels.com/api/new</span>
         </p>
       </div>
     );
@@ -164,7 +164,7 @@ function PhotosTab() {
     <div>
       {/* Source toggle — only show if both are configured */}
       {unsplashOk && pexelsOk && (
-        <div className="mb-2 flex rounded border border-gray-200 dark:border-gray-600">
+        <div className="mb-2 flex rounded border border-border">
           <SourceBtn active={source === 'unsplash'} onClick={() => setSource('unsplash')}>Unsplash</SourceBtn>
           <SourceBtn active={source === 'pexels'} onClick={() => setSource('pexels')}>Pexels</SourceBtn>
         </div>
@@ -172,7 +172,7 @@ function PhotosTab() {
 
       {/* Show which source is active if only one configured */}
       {!(unsplashOk && pexelsOk) && (
-        <p className="mb-1 text-[10px] text-gray-400">
+        <p className="mb-1 text-[10px] text-text-tertiary">
           Source: {unsplashOk ? 'Unsplash' : 'Pexels'}
         </p>
       )}
@@ -185,19 +185,19 @@ function PhotosTab() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-          className="flex-1 rounded border border-gray-200 px-2 py-1 text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+          className="flex-1 rounded border border-border px-2 py-1 text-xs"
           aria-label={`Search ${source} photos`}
         />
         <button type="button" onClick={handleSearch}
-          className="rounded bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700">
+          className="rounded bg-accent px-2 py-1 text-xs text-accent-fg hover:bg-accent-hover">
           Go
         </button>
       </div>
 
-      {loading && <p className="text-center text-xs text-gray-400">Searching...</p>}
+      {loading && <p className="text-center text-xs text-text-tertiary">Searching...</p>}
 
       {!loading && searched && photos.length === 0 && (
-        <p className="text-center text-xs text-gray-400">No photos found</p>
+        <p className="text-center text-xs text-text-tertiary">No photos found</p>
       )}
 
       <div className="grid grid-cols-2 gap-1">
@@ -207,7 +207,7 @@ function PhotosTab() {
             aria-label={`Insert photo by ${photo.credit}`}
           >
             <img src={photo.thumb} alt={photo.alt} className="h-20 w-full object-cover" loading="lazy" />
-            <span className="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5 text-[8px] text-white opacity-0 group-hover:opacity-100">
+            <span className="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5 text-[8px] text-accent-fg opacity-0 group-hover:opacity-100">
               {photo.credit}
             </span>
           </button>
@@ -216,7 +216,7 @@ function PhotosTab() {
 
       {/* Attribution */}
       {searched && photos.length > 0 && (
-        <p className="mt-2 text-center text-[8px] text-gray-400">
+        <p className="mt-2 text-center text-[8px] text-text-tertiary">
           Photos by {source === 'unsplash' ? 'Unsplash' : 'Pexels'}
         </p>
       )}
@@ -230,8 +230,8 @@ function SourceBtn({ active, onClick, children }: { active: boolean; onClick: ()
     <button type="button" onClick={onClick}
       className={`flex-1 py-1 text-[10px] font-medium transition-colors ${
         active
-          ? 'bg-blue-600 text-white dark:bg-blue-500'
-          : 'bg-transparent text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
+          ? 'bg-accent text-accent-fg'
+          : 'bg-transparent text-text-secondary hover:bg-canvas'
       }`}>
       {children}
     </button>
@@ -290,7 +290,7 @@ function IconsTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <p className="text-xs text-gray-400">Loading icons...</p>
+        <p className="text-xs text-text-tertiary">Loading icons...</p>
       </div>
     );
   }
@@ -303,7 +303,7 @@ function IconsTab() {
         placeholder="Search 1900+ icons..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="mb-1 w-full rounded border border-gray-200 px-2 py-1 text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+        className="mb-1 w-full rounded border border-border px-2 py-1 text-xs"
         aria-label="Search icons"
       />
 
@@ -311,7 +311,7 @@ function IconsTab() {
       <select
         value={category}
         onChange={(e) => setCategory(e.target.value)}
-        className="mb-2 w-full rounded border border-gray-200 px-1 py-1 text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+        className="mb-2 w-full rounded border border-border px-1 py-1 text-xs"
         aria-label="Filter by category"
       >
         {categories.map((cat) => (
@@ -320,7 +320,7 @@ function IconsTab() {
       </select>
 
       {/* Result count */}
-      <p className="mb-1 text-[10px] text-gray-400">
+      <p className="mb-1 text-[10px] text-text-tertiary">
         {icons.length} icon{icons.length !== 1 ? 's' : ''}
         {category !== 'All' ? ` in ${category}` : ''}
       </p>
@@ -349,7 +349,7 @@ function IconsTab() {
                   type="button"
                   onClick={() => handleInsert(icon)}
                   title={icon.name}
-                  className="flex h-10 w-10 items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                  className="flex h-10 w-10 items-center justify-center rounded hover:bg-wash"
                   aria-label={`Insert ${icon.name} icon`}
                 >
                   <IconPreview nodes={icon.nodes} />
@@ -380,7 +380,7 @@ function IconPreview({ nodes }: { nodes: LucideIcon['nodes'] }) {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="text-gray-600 dark:text-gray-300"
+      className="text-text-secondary"
     >
       {nodes.map(([tag, attrs], i) => {
         switch (tag) {
@@ -431,7 +431,7 @@ function IllustrationsTab() {
         placeholder="Search illustrations..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="mb-1 w-full rounded border border-gray-200 px-2 py-1 text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+        className="mb-1 w-full rounded border border-border px-2 py-1 text-xs"
         aria-label="Search illustrations"
       />
 
@@ -439,7 +439,7 @@ function IllustrationsTab() {
       <select
         value={category}
         onChange={(e) => setCategory(e.target.value)}
-        className="mb-2 w-full rounded border border-gray-200 px-1 py-1 text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+        className="mb-2 w-full rounded border border-border px-1 py-1 text-xs"
         aria-label="Filter illustrations by category"
       >
         {categories.map((cat) => (
@@ -448,7 +448,7 @@ function IllustrationsTab() {
       </select>
 
       {/* Result count */}
-      <p className="mb-1 text-[10px] text-gray-400">
+      <p className="mb-1 text-[10px] text-text-tertiary">
         {illustrations.length} illustration{illustrations.length !== 1 ? 's' : ''}
         {category !== 'All' ? ` in ${category}` : ''}
       </p>
@@ -461,14 +461,14 @@ function IllustrationsTab() {
             type="button"
             onClick={() => handleInsert(illus)}
             title={illus.name}
-            className="group overflow-hidden rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm dark:border-gray-700 dark:hover:border-blue-500"
+            className="group overflow-hidden rounded-lg border border-border hover:border-accent hover:shadow-sm"
             aria-label={`Insert ${illus.name} illustration`}
           >
             <div
               className="h-20 w-full"
               dangerouslySetInnerHTML={{ __html: illus.svg }}
             />
-            <p className="truncate px-1 py-0.5 text-[9px] text-gray-500 dark:text-gray-400">
+            <p className="truncate px-1 py-0.5 text-[9px] text-text-secondary">
               {illus.name}
             </p>
           </button>
@@ -476,7 +476,7 @@ function IllustrationsTab() {
       </div>
 
       {illustrations.length === 0 && (
-        <p className="mt-4 text-center text-xs text-gray-400">No illustrations found</p>
+        <p className="mt-4 text-center text-xs text-text-tertiary">No illustrations found</p>
       )}
     </div>
   );
@@ -499,15 +499,15 @@ function UploadTab() {
 
   return (
     <div>
-      <label className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed border-gray-300 p-6 text-center hover:border-blue-400 hover:bg-blue-50 dark:border-gray-600 dark:hover:border-blue-500 dark:hover:bg-blue-900/10">
-        <svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-gray-400">
+      <label className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed border-border-strong p-6 text-center hover:border-accent hover:bg-accent-subtle">
+        <svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-text-tertiary">
           <path d="M8 10V2M8 2L5 5M8 2l3 3" /><path d="M2 10v3a1 1 0 001 1h10a1 1 0 001-1v-3" />
         </svg>
-        <span className="text-xs text-gray-500 dark:text-gray-400">Click to upload</span>
-        <span className="text-[10px] text-gray-400">PNG, JPG, SVG, WebP, GIF</span>
+        <span className="text-xs text-text-secondary">Click to upload</span>
+        <span className="text-[10px] text-text-tertiary">PNG, JPG, SVG, WebP, GIF</span>
         <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => handleFiles(e.target.files)} />
       </label>
-      <p className="mt-2 text-center text-[10px] text-gray-400">Or drag files onto the canvas</p>
+      <p className="mt-2 text-center text-[10px] text-text-tertiary">Or drag files onto the canvas</p>
     </div>
   );
 }
@@ -519,8 +519,8 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
     <button type="button" onClick={onClick}
       className={`flex-1 border-b-2 py-2 text-xs font-medium ${
         active
-          ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
-          : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+          ? 'border-accent text-accent'
+          : 'border-transparent text-text-secondary hover:text-text-primary'
       }`}>
       {children}
     </button>

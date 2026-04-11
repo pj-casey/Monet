@@ -1,482 +1,714 @@
 /**
- * LeftSidebar — the tool panel on the left side of the editor.
+ * LeftSidebar — the main content panel on the left side of the editor.
  *
- * Contains two parts:
- * 1. A narrow strip of tool icons (select, shape, text, etc.)
- * 2. When a tool with options is selected (like shapes), an expanded panel
- *    opens beside it showing the available options.
+ * Restructured as a single wide panel (~280px) with labeled tabs at the top:
+ *   Design | Elements | Text | Upload | AI
  *
- * Clicking a shape in the expanded panel adds it to the canvas center.
+ * - **Design** tab: templates, brand kits, resize
+ * - **Elements** tab: shapes + icons + illustrations + stock photos with unified search
+ * - **Text** tab: text presets + font browser
+ * - **Upload** tab: file upload zone
+ * - **AI** tab: AI assistant panel
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useEditorStore } from '../stores/editor-store';
 import type { EditorTool } from '../stores/editor-store';
 import type { ShapeType } from '@monet/shared';
 import { engine } from './Canvas';
-import { AssetsPanel } from './AssetsPanel';
 import { BrandKitPanel } from './BrandKitPanel';
 import { PluginsPanel } from './PluginsPanel';
 import { AIAssistantPanel } from './AIAssistantPanel';
+import { searchPhotos, trackDownload, isUnsplashConfigured, type UnsplashPhoto } from '../lib/unsplash';
+import { searchPexelsPhotos, isPexelsConfigured, type PexelsPhoto } from '../lib/pexels';
+import {
+  loadLucideIcons,
+  filterIcons,
+  getCategories,
+  isLoaded,
+  buildSvgString,
+  type LucideIcon,
+} from '../lib/lucide-icons';
+import {
+  filterIllustrations,
+  getIllustrationCategories,
+  type Illustration,
+} from '../lib/illustrations';
 
-export function LeftSidebar() {
-  const activeTool = useEditorStore((s) => s.activeTool);
-  const setActiveTool = useEditorStore((s) => s.setActiveTool);
+export type SidebarTab = 'design' | 'elements' | 'text' | 'upload' | 'ai';
 
+interface LeftSidebarProps {
+  onOpenTemplates?: () => void;
+  onOpenResize?: () => void;
+  onSaveAsTemplate?: () => void;
+}
+
+export function LeftSidebar({ onOpenTemplates, onOpenResize, onSaveAsTemplate }: LeftSidebarProps) {
+  const [activeTab, setActiveTab] = useState<SidebarTab>('elements');
   return (
-    <div className="flex h-full">
-      {/* Narrow tool icon strip */}
-      <div className="flex w-14 flex-col items-center gap-1 border-r border-gray-200 bg-white py-2 dark:border-gray-700 dark:bg-gray-900">
-        <ToolIcon
-          tool="select"
-          label="Select (V)"
-          active={activeTool === 'select'}
-          onClick={() => setActiveTool('select')}
-        >
-          <SelectIcon />
-        </ToolIcon>
-
-        <ToolIcon
-          tool="shape"
-          label="Shapes"
-          active={activeTool === 'shape'}
-          onClick={() => setActiveTool(activeTool === 'shape' ? 'select' : 'shape')}
-        >
-          <ShapesToolIcon />
-        </ToolIcon>
-
-        <ToolIcon
-          tool="text"
-          label="Text (T)"
-          active={activeTool === 'text'}
-          onClick={() => setActiveTool(activeTool === 'text' ? 'select' : 'text')}
-        >
-          <TextIcon />
-        </ToolIcon>
-
-        <ToolIcon
-          tool="image"
-          label="Image"
-          active={activeTool === 'image'}
-          onClick={() => setActiveTool(activeTool === 'image' ? 'select' : 'image')}
-        >
-          <ImageIcon />
-        </ToolIcon>
-
-        <ToolIcon
-          tool="draw"
-          label="Draw (D)"
-          active={activeTool === 'draw'}
-          onClick={() => setActiveTool(activeTool === 'draw' ? 'select' : 'draw')}
-        >
-          <DrawIcon />
-        </ToolIcon>
-
-        <ToolIcon
-          tool="pen"
-          label="Pen Tool (P)"
-          active={activeTool === 'pen'}
-          onClick={() => setActiveTool(activeTool === 'pen' ? 'select' : 'pen')}
-        >
-          <PenToolIcon />
-        </ToolIcon>
-
-        <div className="my-1 h-px w-8 bg-gray-200 dark:bg-gray-700" />
-
-        <ToolIcon
-          tool="assets"
-          label="Assets"
-          active={activeTool === 'assets'}
-          onClick={() => setActiveTool(activeTool === 'assets' ? 'select' : 'assets')}
-        >
-          <AssetsIcon />
-        </ToolIcon>
-
-        <ToolIcon
-          tool="brand"
-          label="Brand Kit"
-          active={activeTool === 'brand'}
-          onClick={() => setActiveTool(activeTool === 'brand' ? 'select' : 'brand')}
-        >
-          <BrandIcon />
-        </ToolIcon>
-
-        <ToolIcon
-          tool="plugins"
-          label="Plugins"
-          active={activeTool === 'plugins'}
-          onClick={() => setActiveTool(activeTool === 'plugins' ? 'select' : 'plugins')}
-        >
-          <PluginsIcon />
-        </ToolIcon>
-
-        <ToolIcon
-          tool="ai"
-          label="AI Assistant"
-          active={activeTool === 'ai'}
-          onClick={() => setActiveTool(activeTool === 'ai' ? 'select' : 'ai')}
-        >
-          <AIIcon />
-        </ToolIcon>
+    <div className="flex h-full w-[280px] flex-col border-r border-border bg-surface shadow-sm">
+      {/* Tab bar */}
+      <div className="flex border-b border-border px-1">
+        <SidebarTabBtn active={activeTab === 'design'} onClick={() => setActiveTab('design')}>Design</SidebarTabBtn>
+        <SidebarTabBtn active={activeTab === 'elements'} onClick={() => setActiveTab('elements')}>Elements</SidebarTabBtn>
+        <SidebarTabBtn active={activeTab === 'text'} onClick={() => setActiveTab('text')}>Text</SidebarTabBtn>
+        <SidebarTabBtn active={activeTab === 'upload'} onClick={() => setActiveTab('upload')}>Upload</SidebarTabBtn>
+        <SidebarTabBtn active={activeTab === 'ai'} onClick={() => setActiveTab('ai')}>AI</SidebarTabBtn>
       </div>
 
-      {/* Expanded panel — shows when a tool with options is active */}
-      {activeTool === 'shape' && <ShapePanel />}
-      {activeTool === 'text' && <TextPanel />}
-      {activeTool === 'image' && <ImagePanel />}
-      {activeTool === 'draw' && <DrawingPanel />}
-      {activeTool === 'pen' && <PenPanel />}
-      {activeTool === 'assets' && <AssetsPanel />}
-      {activeTool === 'brand' && <BrandKitPanel />}
-      {activeTool === 'plugins' && <PluginsPanel />}
-      {activeTool === 'ai' && <AIAssistantPanel />}
+      {/* Tab content */}
+      <div className="flex-1 overflow-hidden">
+        {activeTab === 'design' && (
+          <DesignTab
+            onOpenTemplates={onOpenTemplates}
+            onOpenResize={onOpenResize}
+            onSaveAsTemplate={onSaveAsTemplate}
+          />
+        )}
+        {activeTab === 'elements' && <ElementsTab />}
+        {activeTab === 'text' && <TextTab />}
+        {activeTab === 'upload' && <UploadTab />}
+        {activeTab === 'ai' && <AITab />}
+      </div>
     </div>
   );
 }
 
-// ─── Shape Picker Panel ────────────────────────────────────────────
+// ─── Tab Button ───────────────────────────────────────────────────
 
-/**
- * ShapePanel — the expanded panel showing available shapes.
- * Clicking a shape adds it to the center of the artboard.
- */
-function ShapePanel() {
+function SidebarTabBtn({ active, onClick, children }: {
+  active: boolean; onClick: () => void; children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex-1 border-b-2 py-2.5 text-xs font-medium transition-colors ${
+        active
+          ? 'border-accent text-accent'
+          : 'border-transparent text-text-secondary hover:text-text-primary'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DESIGN TAB — templates, brand kits, resize
+// ═══════════════════════════════════════════════════════════════════
+
+function DesignTab({ onOpenTemplates, onOpenResize, onSaveAsTemplate }: {
+  onOpenTemplates?: () => void;
+  onOpenResize?: () => void;
+  onSaveAsTemplate?: () => void;
+}) {
+  const [section, setSection] = useState<'main' | 'brand' | 'plugins'>('main');
+
+  if (section === 'brand') {
+    return (
+      <div className="flex h-full flex-col">
+        <button type="button" onClick={() => setSection('main')}
+          className="flex items-center gap-1 border-b border-border px-3 py-2 text-xs text-accent hover:bg-canvas">
+          &larr; Back
+        </button>
+        <div className="flex-1 overflow-y-auto">
+          <BrandKitPanelInline />
+        </div>
+      </div>
+    );
+  }
+
+  if (section === 'plugins') {
+    return (
+      <div className="flex h-full flex-col">
+        <button type="button" onClick={() => setSection('main')}
+          className="flex items-center gap-1 border-b border-border px-3 py-2 text-xs text-accent hover:bg-canvas">
+          &larr; Back
+        </button>
+        <div className="flex-1 overflow-y-auto [&>div]:!w-full [&>div]:!border-r-0">
+          <PluginsPanel />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5 overflow-y-auto p-4">
+      {onOpenTemplates && (
+        <DesignActionBtn
+          icon={<TemplateIcon />}
+          label="Browse Templates"
+          description="Start from a pre-made design"
+          onClick={onOpenTemplates}
+        />
+      )}
+      {onOpenResize && (
+        <DesignActionBtn
+          icon={<ResizeIcon />}
+          label="Magic Resize"
+          description="Resize to different formats"
+          onClick={onOpenResize}
+        />
+      )}
+      {onSaveAsTemplate && (
+        <DesignActionBtn
+          icon={<SaveTemplateIcon />}
+          label="Save as Template"
+          description="Reuse this design later"
+          onClick={onSaveAsTemplate}
+        />
+      )}
+      <DesignActionBtn
+        icon={<BrandIcon />}
+        label="Brand Kit"
+        description="Colors, fonts, and logos"
+        onClick={() => setSection('brand')}
+      />
+      <DesignActionBtn
+        icon={<PluginsIcon />}
+        label="Plugins"
+        description="QR codes, charts, lorem ipsum"
+        onClick={() => setSection('plugins')}
+      />
+    </div>
+  );
+}
+
+function DesignActionBtn({ icon, label, description, onClick }: {
+  icon: React.ReactNode; label: string; description: string; onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-3 rounded-lg px-3 py-3.5 text-left transition-colors hover:bg-canvas/60"
+    >
+      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-accent-subtle text-accent">
+        {icon}
+      </div>
+      <div>
+        <p className="text-sm font-medium text-text-primary">{label}</p>
+        <p className="mt-0.5 text-[10px] text-text-tertiary">{description}</p>
+      </div>
+    </button>
+  );
+}
+
+/** Inline version of BrandKitPanel that fits the full sidebar width */
+function BrandKitPanelInline() {
+  // BrandKitPanel has its own w-56 border-r wrapper that doesn't fit
+  // our 280px sidebar. Override via a container that clips overflow and
+  // lets the child stretch via CSS overrides.
+  return (
+    <div className="w-full overflow-hidden [&>div]:!w-full [&>div]:!border-r-0">
+      <BrandKitPanel />
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ELEMENTS TAB — shapes + icons + illustrations + photos with unified search
+// ═══════════════════════════════════════════════════════════════════
+
+type ElementSection = 'all' | 'shapes' | 'photos' | 'icons' | 'illus';
+
+function ElementsTab() {
+  const [section, setSection] = useState<ElementSection>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  return (
+    <div className="flex h-full flex-col">
+      {/* Search bar */}
+      <div className="border-b border-border px-4 py-3">
+        <input
+          type="text"
+          placeholder="Search elements..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full rounded-lg border border-border bg-canvas px-3 py-2 text-xs placeholder:text-text-tertiary focus:border-accent focus:bg-surface focus:outline-none focus:ring-1 focus:ring-accent/30"
+          aria-label="Search elements"
+        />
+      </div>
+
+      {/* Section filter chips */}
+      <div className="flex gap-1.5 border-b border-border px-4 py-2.5">
+        <FilterChip active={section === 'all'} onClick={() => setSection('all')}>All</FilterChip>
+        <FilterChip active={section === 'shapes'} onClick={() => setSection('shapes')}>Shapes</FilterChip>
+        <FilterChip active={section === 'icons'} onClick={() => setSection('icons')}>Icons</FilterChip>
+        <FilterChip active={section === 'illus'} onClick={() => setSection('illus')}>Illustrations</FilterChip>
+        <FilterChip active={section === 'photos'} onClick={() => setSection('photos')}>Photos</FilterChip>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-3">
+        {(section === 'all' || section === 'shapes') && (
+          <ShapesSection collapsed={section !== 'shapes' && section !== 'all'} />
+        )}
+        {(section === 'all' || section === 'icons') && (
+          <IconsSection query={searchQuery} fullHeight={section === 'icons'} />
+        )}
+        {(section === 'all' || section === 'illus') && (
+          <IllustrationsSection query={searchQuery} />
+        )}
+        {(section === 'all' || section === 'photos') && (
+          <PhotosSection query={searchQuery} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FilterChip({ active, onClick, children }: {
+  active: boolean; onClick: () => void; children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-2.5 py-1 text-[10px] font-medium transition-colors ${
+        active
+          ? 'bg-accent-subtle text-accent'
+          : 'bg-wash text-text-secondary hover:bg-wash'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+// ─── Shapes ───────────────────────────────────────────────────────
+
+function ShapesSection(_props: { collapsed?: boolean }) {
   const setActiveTool = useEditorStore((s) => s.setActiveTool);
 
   const addShape = (type: ShapeType) => {
     engine.addShape({ type });
-    // Switch back to select tool so the user can immediately move/resize
     setActiveTool('select');
   };
 
   return (
-    <div className="w-48 border-r border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900">
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+    <div className="mb-4">
+      <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
         Shapes
-      </h3>
-      <div className="grid grid-cols-3 gap-2">
-        <ShapeButton label="Rectangle" onClick={() => addShape('rectangle')}>
-          <svg viewBox="0 0 40 40" className="h-8 w-8">
-            <rect x="4" y="8" width="32" height="24" rx="2" fill="#4A90D9" />
-          </svg>
-        </ShapeButton>
+      </h4>
+      <div className="grid grid-cols-6 gap-1">
+        <ShapeBtn label="Rectangle" onClick={() => addShape('rectangle')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><rect x="4" y="8" width="24" height="16" rx="2" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Circle" onClick={() => addShape('circle')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><circle cx="16" cy="16" r="11" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Triangle" onClick={() => addShape('triangle')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><polygon points="16,4 28,28 4,28" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Line" onClick={() => addShape('line')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><line x1="4" y1="28" x2="28" y2="4" stroke="var(--text-secondary)" strokeWidth="2.5" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Arrow" onClick={() => addShape('arrow')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><line x1="4" y1="16" x2="22" y2="16" stroke="var(--text-secondary)" strokeWidth="2.5" /><polygon points="20,10 28,16 20,22" fill="var(--text-secondary)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Star" onClick={() => addShape('star')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><polygon points="16,2 19.5,12 30,12 22,18 24.5,28 16,22 7.5,28 10,18 2,12 12.5,12" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Rounded Rectangle" onClick={() => addShape('rounded-rect')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><rect x="4" y="8" width="24" height="16" rx="6" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Diamond" onClick={() => addShape('diamond')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><polygon points="16,3 29,16 16,29 3,16" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Pentagon" onClick={() => addShape('pentagon')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><polygon points="16,3 29,12 25,27 7,27 3,12" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Hexagon" onClick={() => addShape('hexagon')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><polygon points="24,5 30,16 24,27 8,27 2,16 8,5" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Heart" onClick={() => addShape('heart')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M16 28C16 28 3 20 3 11C3 6 7 3 11 3C13.5 3 16 5 16 5C16 5 18.5 3 21 3C25 3 29 6 29 11C29 20 16 28 16 28Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Arrow Right" onClick={() => addShape('arrow-right')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M4 11V21H18V26L28 16L18 6V11H4Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Speech Bubble" onClick={() => addShape('speech-bubble')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M5 4H27C28.1 4 29 4.9 29 6V20C29 21.1 28.1 22 27 22H12L6 28V22H5C3.9 22 3 21.1 3 20V6C3 4.9 3.9 4 5 4Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+      </div>
 
-        <ShapeButton label="Circle" onClick={() => addShape('circle')}>
-          <svg viewBox="0 0 40 40" className="h-8 w-8">
-            <circle cx="20" cy="20" r="15" fill="#4A90D9" />
-          </svg>
-        </ShapeButton>
-
-        <ShapeButton label="Triangle" onClick={() => addShape('triangle')}>
-          <svg viewBox="0 0 40 40" className="h-8 w-8">
-            <polygon points="20,5 36,35 4,35" fill="#4A90D9" />
-          </svg>
-        </ShapeButton>
-
-        <ShapeButton label="Line" onClick={() => addShape('line')}>
-          <svg viewBox="0 0 40 40" className="h-8 w-8">
-            <line x1="4" y1="36" x2="36" y2="4" stroke="#333" strokeWidth="2.5" />
-          </svg>
-        </ShapeButton>
-
-        <ShapeButton label="Arrow" onClick={() => addShape('arrow')}>
-          <svg viewBox="0 0 40 40" className="h-8 w-8">
-            <line x1="4" y1="20" x2="30" y2="20" stroke="#333" strokeWidth="2.5" />
-            <polygon points="28,14 36,20 28,26" fill="#333" />
-          </svg>
-        </ShapeButton>
-
-        <ShapeButton label="Star" onClick={() => addShape('star')}>
-          <svg viewBox="0 0 40 40" className="h-8 w-8">
-            <polygon
-              points="20,3 24.5,15 37,15 27,23 30.5,35 20,28 9.5,35 13,23 3,15 15.5,15"
-              fill="#4A90D9"
-            />
-          </svg>
-        </ShapeButton>
+      {/* Drawing tools */}
+      <div className="mt-2 flex gap-1">
+        <DrawToolBtn tool="draw" label="Freehand Draw" />
+        <DrawToolBtn tool="pen" label="Pen Tool" />
       </div>
     </div>
   );
 }
 
-// ─── Drawing Panel ─────────────────────────────────────────────────
+function ShapeBtn({ label, onClick, children }: {
+  label: string; onClick: () => void; children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={`Add ${label}`}
+      title={label}
+      className="flex h-10 w-10 items-center justify-center rounded-lg hover:bg-wash"
+    >
+      {children}
+    </button>
+  );
+}
 
-/**
- * DrawingPanel — freehand pen and eraser controls.
- *
- * When the draw tool is active, the canvas enters drawing mode.
- * The user can pick pen or eraser, choose a color, and set the brush width.
- * Each finished stroke becomes a Path object (movable, deletable, undoable).
- */
-function DrawingPanel() {
+function DrawToolBtn({ tool, label }: { tool: EditorTool; label: string }) {
   const activeTool = useEditorStore((s) => s.activeTool);
-  const [mode, setMode] = useState<'pen' | 'eraser'>('pen');
-  const [color, setColor] = useState('#333333');
-  const [width, setWidth] = useState(4);
+  const setActiveTool = useEditorStore((s) => s.setActiveTool);
+  const isActive = activeTool === tool;
 
-  // Enable/disable drawing mode when this panel mounts/unmounts or mode changes
+  // Enable/disable drawing or pen tool mode on the canvas engine
   useEffect(() => {
-    if (activeTool !== 'draw') {
-      engine.disableDrawing();
-      return;
+    if (tool === 'draw') {
+      if (activeTool === 'draw') {
+        engine.enableDrawing('#2d2a26', 4);
+      } else {
+        engine.disableDrawing();
+      }
     }
-    if (mode === 'pen') {
-      engine.enableDrawing(color, width);
-    } else {
-      engine.enableEraser(width);
+    if (tool === 'pen') {
+      if (activeTool === 'pen') {
+        engine.enablePenTool();
+      } else {
+        engine.disablePenTool();
+        if (engine.isEditPointsActive()) {
+          engine.exitEditPoints();
+        }
+      }
     }
+    // Cleanup on unmount — disable tool if component is removed while active
     return () => {
-      engine.disableDrawing();
+      if (tool === 'draw') engine.disableDrawing();
+      if (tool === 'pen') { engine.disablePenTool(); if (engine.isEditPointsActive()) engine.exitEditPoints(); }
     };
-  }, [activeTool, mode, color, width]);
+  }, [activeTool, tool]);
 
   return (
-    <div className="w-48 border-r border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900">
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
-        Draw
-      </h3>
+    <button
+      type="button"
+      onClick={() => setActiveTool(isActive ? 'select' : tool)}
+      aria-pressed={isActive}
+      className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-medium transition-colors ${
+        isActive
+          ? 'bg-accent-subtle text-accent'
+          : 'bg-wash text-text-secondary hover:bg-wash'
+      }`}
+    >
+      {tool === 'draw' ? <DrawIcon /> : <PenToolIcon />}
+      {label}
+    </button>
+  );
+}
 
-      {/* Pen / Eraser toggle */}
-      <div className="mb-3 flex gap-1">
-        <button
-          type="button"
-          aria-pressed={mode === 'pen'}
-          onClick={() => setMode('pen')}
-          className={`flex-1 rounded-lg px-3 py-1.5 text-xs font-medium ${
-            mode === 'pen'
-              ? 'bg-blue-100 text-blue-600'
-              : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-          }`}
+// ─── Icons ────────────────────────────────────────────────────────
+
+const ICON_COLS = 6;
+const ICON_CELL_SIZE = 44;
+
+function IconsSection({ query, fullHeight }: { query: string; fullHeight?: boolean }) {
+  const [loading, setLoading] = useState(!isLoaded());
+  const [category, setCategory] = useState('All');
+  const [, forceRender] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+
+  useEffect(() => {
+    if (isLoaded()) return;
+    loadLucideIcons().then(() => {
+      setLoading(false);
+      forceRender((n) => n + 1);
+    });
+  }, []);
+
+  const icons = useMemo(
+    () => filterIcons(query, category),
+    [query, category, loading], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
+  const categories = getCategories();
+  const totalRows = Math.ceil(icons.length / ICON_COLS);
+  const totalHeight = totalRows * ICON_CELL_SIZE;
+  const viewportHeight = scrollRef.current?.clientHeight ?? 400;
+  const bufferRows = 4;
+  const startRow = Math.max(0, Math.floor(scrollTop / ICON_CELL_SIZE) - bufferRows);
+  const endRow = Math.min(totalRows, Math.ceil((scrollTop + viewportHeight) / ICON_CELL_SIZE) + bufferRows);
+  const visibleIcons = icons.slice(startRow * ICON_COLS, endRow * ICON_COLS);
+
+  const handleScroll = useCallback(() => {
+    if (scrollRef.current) setScrollTop(scrollRef.current.scrollTop);
+  }, []);
+
+  const handleInsert = useCallback((icon: LucideIcon) => {
+    const svg = buildSvgString(icon.nodes);
+    engine.addSvgFromString(svg);
+  }, []);
+
+  if (loading) {
+    return <p className="py-4 text-center text-xs text-text-tertiary">Loading icons...</p>;
+  }
+
+  return (
+    <div className="mb-4">
+      <div className="mb-2 flex items-center justify-between">
+        <h4 className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+          Icons ({icons.length})
+        </h4>
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="rounded border border-border px-1 py-0.5 text-[10px]"
+          aria-label="Filter by category"
         >
-          Pen
-        </button>
-        <button
-          type="button"
-          aria-pressed={mode === 'eraser'}
-          onClick={() => setMode('eraser')}
-          className={`flex-1 rounded-lg px-3 py-1.5 text-xs font-medium ${
-            mode === 'eraser'
-              ? 'bg-blue-100 text-blue-600'
-              : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-          }`}
-        >
-          Eraser
-        </button>
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
       </div>
 
-      {/* Color picker (only for pen mode) */}
-      {mode === 'pen' && (
-        <div className="mb-3">
-          <label className="mb-1 block text-xs font-medium text-gray-500">Color</label>
-          <div className="flex items-center gap-2">
-            <input
-              type="color"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-              className="h-7 w-7 cursor-pointer rounded border border-gray-200 p-0.5"
-              aria-label="Pen color"
-            />
-            <span className="text-xs text-gray-400">{color}</span>
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="overflow-y-auto"
+        style={{ maxHeight: fullHeight ? '100%' : '240px' }}
+        role="grid"
+        aria-label="Icon grid"
+      >
+        <div style={{ height: totalHeight, position: 'relative' }}>
+          <div style={{ position: 'absolute', top: startRow * ICON_CELL_SIZE, left: 0, right: 0 }}>
+            <div className="grid grid-cols-6 gap-1">
+              {visibleIcons.map((icon) => (
+                <button
+                  key={icon.key}
+                  type="button"
+                  onClick={() => handleInsert(icon)}
+                  title={icon.name}
+                  className="flex h-10 w-10 items-center justify-center rounded hover:bg-wash"
+                  aria-label={`Insert ${icon.name} icon`}
+                >
+                  <IconPreview nodes={icon.nodes} />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      )}
-
-      {/* Width slider */}
-      <div>
-        <label className="mb-1 block text-xs font-medium text-gray-500">
-          {mode === 'pen' ? 'Pen' : 'Eraser'} Width — {width}px
-        </label>
-        <input
-          type="range"
-          min={1}
-          max={mode === 'pen' ? 50 : 100}
-          step={1}
-          value={width}
-          onChange={(e) => setWidth(Number(e.target.value))}
-          className="w-full"
-          aria-label="Brush width"
-        />
       </div>
-
-      <p className="mt-3 text-[10px] leading-tight text-gray-400">
-        Click and drag on the canvas to draw. Each stroke becomes a movable object.
-      </p>
     </div>
   );
 }
 
-// ─── Pen Tool Panel ───────────────────────────────────────────────
-
-/**
- * PenPanel — the expanded panel for the pen (vector path) tool.
- *
- * When active, the user can click on the canvas to place anchor points.
- * Click + drag creates bezier curves. Double-click or click the start
- * point to close the path. Also provides an "Edit Points" button for
- * reshaping existing paths.
- */
-function PenPanel() {
-  const activeTool = useEditorStore((s) => s.activeTool);
-  const [isEditing, setIsEditing] = useState(false);
-
-  // Enable/disable pen tool when this panel mounts/unmounts
-  useEffect(() => {
-    if (activeTool !== 'pen') {
-      engine.disablePenTool();
-      if (engine.isEditPointsActive()) {
-        engine.exitEditPoints();
-        setIsEditing(false);
-      }
-      return;
-    }
-    engine.enablePenTool();
-    return () => {
-      engine.disablePenTool();
-    };
-  }, [activeTool]);
-
-  const handleEditPoints = () => {
-    if (isEditing) {
-      engine.exitEditPoints();
-      setIsEditing(false);
-    } else {
-      engine.disablePenTool();
-      engine.enterEditPoints();
-      setIsEditing(true);
-    }
-  };
-
-  const handleDoneEditing = () => {
-    engine.exitEditPoints();
-    setIsEditing(false);
-    engine.enablePenTool();
-  };
-
+function IconPreview({ nodes }: { nodes: LucideIcon['nodes'] }) {
   return (
-    <div className="w-48 border-r border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900">
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
-        Pen Tool
-      </h3>
-
-      {!isEditing ? (
-        <>
-          <p className="mb-3 text-[10px] leading-tight text-gray-400">
-            <strong className="text-gray-500">Click</strong> to place anchor points.{' '}
-            <strong className="text-gray-500">Click + drag</strong> for bezier curves.{' '}
-            <strong className="text-gray-500">Double-click</strong> or click the{' '}
-            <span className="font-semibold text-green-600">green dot</span> to close the shape.
-          </p>
-
-          <div className="mb-3 rounded bg-gray-50 p-2 dark:bg-gray-800">
-            <p className="text-[10px] text-gray-500 dark:text-gray-400">
-              <span className="font-medium">Enter</span> — finish open path
-            </p>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400">
-              <span className="font-medium">Escape</span> — cancel path
-            </p>
-          </div>
-
-          <div className="border-t border-gray-100 pt-2 dark:border-gray-700">
-            <button
-              type="button"
-              onClick={handleEditPoints}
-              className="w-full rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-            >
-              Edit Points
-            </button>
-            <p className="mt-1 text-[10px] text-gray-400">
-              Select a path first, then click to edit its anchor points.
-            </p>
-          </div>
-        </>
-      ) : (
-        <>
-          <p className="mb-3 text-[10px] leading-tight text-gray-400">
-            Drag the anchor points to reshape the path.
-          </p>
-          <button
-            type="button"
-            onClick={handleDoneEditing}
-            className="w-full rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
-          >
-            Done Editing
-          </button>
-        </>
-      )}
-    </div>
-  );
-}
-
-// ─── Image Panel ───────────────────────────────────────────────────
-
-/**
- * ImagePanel — the expanded panel for uploading images.
- *
- * Provides a file picker button and a drag-and-drop area.
- * Accepted formats: PNG, JPG, SVG, WebP, GIF.
- */
-function ImagePanel() {
-  const setActiveTool = useEditorStore((s) => s.setActiveTool);
-
-  const handleFileSelect = async (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (file.type.startsWith('image/')) {
-        await engine.addImageFromFile(file);
-      }
-    }
-    setActiveTool('select');
-  };
-
-  return (
-    <div className="w-48 border-r border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900">
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
-        Image
-      </h3>
-
-      {/* File picker button */}
-      <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-3 py-4 text-sm text-gray-600 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600">
-        <UploadIcon />
-        Upload Image
-        <input
-          type="file"
-          accept="image/png,image/jpeg,image/svg+xml,image/webp,image/gif"
-          multiple
-          className="hidden"
-          onChange={(e) => handleFileSelect(e.target.files)}
-          aria-label="Upload image file"
-        />
-      </label>
-
-      <p className="mt-3 text-[10px] leading-tight text-gray-400">
-        Or drag and drop an image directly onto the canvas.
-      </p>
-      <p className="mt-2 text-[10px] text-gray-400">
-        PNG, JPG, SVG, WebP, GIF
-      </p>
-    </div>
-  );
-}
-
-function UploadIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M8 10V2M8 2L5 5M8 2l3 3" />
-      <path d="M2 10v3a1 1 0 001 1h10a1 1 0 001-1v-3" />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round" className="text-text-secondary">
+      {nodes.map(([tag, attrs], i) => {
+        switch (tag) {
+          case 'path': return <path key={i} {...attrs} />;
+          case 'circle': return <circle key={i} {...attrs} />;
+          case 'rect': return <rect key={i} {...attrs} />;
+          case 'line': return <line key={i} {...attrs} />;
+          case 'polyline': return <polyline key={i} {...attrs} />;
+          case 'ellipse': return <ellipse key={i} {...attrs} />;
+          case 'polygon': return <polygon key={i} {...attrs} />;
+          default: return null;
+        }
+      })}
     </svg>
   );
 }
 
-// ─── Text Panel ────────────────────────────────────────────────────
+// ─── Illustrations ────────────────────────────────────────────────
 
-/**
- * TextPanel — the expanded panel showing text presets.
- *
- * Provides quick-add buttons for common text styles (heading, subheading, body).
- * Also shows a hint that you can double-click the canvas to add text.
- */
-function TextPanel() {
+function IllustrationsSection({ query }: { query: string }) {
+  const [category, setCategory] = useState('All');
+  const illustrations = useMemo(
+    () => filterIllustrations(query, category),
+    [query, category],
+  );
+  const categories = getIllustrationCategories();
+
+  const handleInsert = useCallback((illus: Illustration) => {
+    engine.addIllustration(illus.svg);
+  }, []);
+
+  return (
+    <div className="mb-4">
+      <div className="mb-2 flex items-center justify-between">
+        <h4 className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+          Illustrations ({illustrations.length})
+        </h4>
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="rounded border border-border px-1 py-0.5 text-[10px]"
+          aria-label="Filter illustrations by category"
+        >
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        {illustrations.slice(0, 12).map((illus) => (
+          <button
+            key={illus.id}
+            type="button"
+            onClick={() => handleInsert(illus)}
+            title={illus.name}
+            className="group overflow-hidden rounded-lg border border-border hover:border-accent hover:shadow-sm"
+            aria-label={`Insert ${illus.name} illustration`}
+          >
+            <div className="h-16 w-full" dangerouslySetInnerHTML={{ __html: illus.svg }} />
+            <p className="truncate px-1 py-0.5 text-[9px] text-text-secondary">{illus.name}</p>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Photos ───────────────────────────────────────────────────────
+
+type PhotoSource = 'unsplash' | 'pexels';
+
+interface NormalizedPhoto {
+  id: string; thumb: string; regular: string; alt: string; credit: string;
+  source: PhotoSource; unsplashPhoto?: UnsplashPhoto;
+}
+
+function normalizeUnsplash(photos: UnsplashPhoto[]): NormalizedPhoto[] {
+  return photos.map((p) => ({
+    id: `u-${p.id}`, thumb: p.urls.thumb, regular: p.urls.regular,
+    alt: p.description || '', credit: p.user.name, source: 'unsplash' as const, unsplashPhoto: p,
+  }));
+}
+
+function normalizePexels(photos: PexelsPhoto[]): NormalizedPhoto[] {
+  return photos.map((p) => ({
+    id: `p-${p.id}`, thumb: p.src.tiny, regular: p.src.large,
+    alt: p.alt, credit: p.photographer, source: 'pexels' as const,
+  }));
+}
+
+function PhotosSection({ query }: { query: string }) {
+  const unsplashOk = isUnsplashConfigured();
+  const pexelsOk = isPexelsConfigured();
+  const hasAny = unsplashOk || pexelsOk;
+  const defaultSource: PhotoSource = unsplashOk ? 'unsplash' : 'pexels';
+  const [source, setSource] = useState<PhotoSource>(defaultSource);
+  const [photos, setPhotos] = useState<NormalizedPhoto[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+  const [localQuery, setLocalQuery] = useState('');
+
+  const handleSearch = useCallback(async () => {
+    const q = localQuery.trim() || query.trim();
+    if (!q) return;
+    setLoading(true);
+    try {
+      let results: NormalizedPhoto[] = [];
+      if (source === 'unsplash' && unsplashOk) {
+        const r = await searchPhotos(q);
+        results = normalizeUnsplash(r.photos);
+      } else if (source === 'pexels' && pexelsOk) {
+        const r = await searchPexelsPhotos(q);
+        results = normalizePexels(r.photos);
+      }
+      setPhotos(results);
+      setSearched(true);
+    } catch {
+      setPhotos([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [localQuery, query, source, unsplashOk, pexelsOk]);
+
+  const handleInsert = useCallback(async (photo: NormalizedPhoto) => {
+    if (photo.unsplashPhoto) trackDownload(photo.unsplashPhoto);
+    await engine.addImageFromUrl(photo.regular);
+  }, []);
+
+  if (!hasAny) {
+    return (
+      <div className="mb-4">
+        <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+          Stock Photos
+        </h4>
+        <p className="text-[10px] text-text-tertiary">
+          Stock photos available with Unsplash or Pexels. Check the project docs to connect.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-4">
+      <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+        Stock Photos
+      </h4>
+
+      {unsplashOk && pexelsOk && (
+        <div className="mb-2 flex rounded border border-border">
+          <SourceBtn active={source === 'unsplash'} onClick={() => setSource('unsplash')}>Unsplash</SourceBtn>
+          <SourceBtn active={source === 'pexels'} onClick={() => setSource('pexels')}>Pexels</SourceBtn>
+        </div>
+      )}
+
+      <div className="mb-2 flex gap-1">
+        <input
+          type="text"
+          placeholder={`Search ${source}...`}
+          value={localQuery}
+          onChange={(e) => setLocalQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+          className="flex-1 rounded border border-border px-2 py-1 text-xs"
+          aria-label={`Search ${source} photos`}
+        />
+        <button type="button" onClick={handleSearch}
+          className="rounded bg-accent px-2 py-1 text-xs text-accent-fg hover:bg-accent-hover">Go</button>
+      </div>
+
+      {loading && <p className="text-center text-xs text-text-tertiary">Searching...</p>}
+      {!loading && searched && photos.length === 0 && <p className="text-center text-xs text-text-tertiary">No photos found</p>}
+
+      <div className="grid grid-cols-3 gap-1">
+        {photos.map((photo) => (
+          <button key={photo.id} type="button" onClick={() => handleInsert(photo)}
+            className="group relative overflow-hidden rounded" aria-label={`Insert photo by ${photo.credit}`}>
+            <img src={photo.thumb} alt={photo.alt} className="h-16 w-full object-cover" loading="lazy" />
+            <span className="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5 text-[7px] text-accent-fg opacity-0 group-hover:opacity-100">
+              {photo.credit}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SourceBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button type="button" onClick={onClick}
+      className={`flex-1 py-1 text-[10px] font-medium transition-colors ${
+        active ? 'bg-accent text-accent-fg' : 'bg-transparent text-text-secondary hover:bg-canvas'
+      }`}>
+      {children}
+    </button>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TEXT TAB — text presets + font browser
+// ═══════════════════════════════════════════════════════════════════
+
+function TextTab() {
   const setActiveTool = useEditorStore((s) => s.setActiveTool);
 
   const addText = (preset: 'heading' | 'subheading' | 'body') => {
@@ -490,185 +722,118 @@ function TextPanel() {
   };
 
   return (
-    <div className="w-48 border-r border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900">
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
-        Text
-      </h3>
+    <div className="overflow-y-auto p-3">
+      <h4 className="mb-3 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+        Add Text
+      </h4>
       <div className="flex flex-col gap-2">
         <button
           type="button"
           onClick={() => addText('heading')}
-          className="rounded-lg border border-gray-200 px-3 py-2 text-left hover:bg-gray-50"
+          className="rounded-lg border border-border px-4 py-3 text-left transition-colors hover:border-accent hover:bg-accent-subtle"
           aria-label="Add heading text"
         >
-          <span className="text-lg font-bold text-gray-800">Heading</span>
+          <span className="text-xl font-bold text-text-primary">Add a heading</span>
         </button>
 
         <button
           type="button"
           onClick={() => addText('subheading')}
-          className="rounded-lg border border-gray-200 px-3 py-2 text-left hover:bg-gray-50"
+          className="rounded-lg border border-border px-4 py-2.5 text-left transition-colors hover:border-accent hover:bg-accent-subtle"
           aria-label="Add subheading text"
         >
-          <span className="text-sm font-bold text-gray-700">Subheading</span>
+          <span className="text-base font-bold text-text-primary">Add a subheading</span>
         </button>
 
         <button
           type="button"
           onClick={() => addText('body')}
-          className="rounded-lg border border-gray-200 px-3 py-2 text-left hover:bg-gray-50"
+          className="rounded-lg border border-border px-4 py-2 text-left transition-colors hover:border-accent hover:bg-accent-subtle"
           aria-label="Add body text"
         >
-          <span className="text-xs text-gray-600">Body text</span>
+          <span className="text-sm text-text-secondary">Add body text</span>
         </button>
       </div>
-      <p className="mt-3 text-[10px] leading-tight text-gray-400">
-        Or double-click the canvas to add text at any position.
+
+      <p className="mt-4 text-[10px] text-text-tertiary">
+        Tip: Double-click the canvas to add text at any position.
       </p>
     </div>
   );
 }
 
-// ─── Button components ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// UPLOAD TAB — file upload zone
+// ═══════════════════════════════════════════════════════════════════
 
-interface ToolIconProps {
-  tool: EditorTool;
-  label: string;
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}
+function UploadTab() {
+  const setActiveTool = useEditorStore((s) => s.setActiveTool);
 
-function ToolIcon({ label, active, onClick, children }: ToolIconProps) {
+  const handleFiles = useCallback(async (files: FileList | null) => {
+    if (!files) return;
+    for (let i = 0; i < files.length; i++) {
+      if (files[i].type.startsWith('image/')) {
+        await engine.addImageFromFile(files[i]);
+      }
+    }
+    setActiveTool('select');
+  }, [setActiveTool]);
+
   return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-      className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-        active ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400' : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
-      }`}
-    >
-      {children}
-    </button>
+    <div className="flex h-full flex-col items-center justify-center p-6">
+      <label className="flex w-full cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed border-border-strong p-8 text-center transition-colors hover:border-accent hover:bg-accent-subtle">
+        <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-text-tertiary">
+          <path d="M8 10V2M8 2L5 5M8 2l3 3" /><path d="M2 10v3a1 1 0 001 1h10a1 1 0 001-1v-3" />
+        </svg>
+        <div>
+          <span className="text-sm font-medium text-text-secondary">Click to upload</span>
+          <p className="mt-1 text-[10px] text-text-tertiary">PNG, JPG, SVG, WebP, GIF</p>
+        </div>
+        <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => handleFiles(e.target.files)} />
+      </label>
+      <p className="mt-4 text-xs text-text-tertiary">Or drag files directly onto the canvas</p>
+    </div>
   );
 }
 
-interface ShapeButtonProps {
-  label: string;
-  onClick: () => void;
-  children: React.ReactNode;
-}
+// ═══════════════════════════════════════════════════════════════════
+// AI TAB — wraps the existing AI assistant panel
+// ═══════════════════════════════════════════════════════════════════
 
-function ShapeButton({ label, onClick, children }: ShapeButtonProps) {
+function AITab() {
   return (
-    <button
-      type="button"
-      aria-label={`Add ${label}`}
-      title={label}
-      onClick={onClick}
-      className="flex flex-col items-center gap-1 rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
-    >
-      {children}
-      <span className="text-[10px] text-gray-500">{label}</span>
-    </button>
+    <div className="flex h-full flex-col overflow-hidden">
+      <AIAssistantPanel />
+    </div>
   );
 }
 
-// ─── SVG icons ─────────────────────────────────────────────────────
+// ─── SVG icons ────────────────────────────────────────────────────
 
-function SelectIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M3 2l5 14 2-5.5L15.5 8.5z" />
-    </svg>
-  );
+function TemplateIcon() {
+  return <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><path d="M12 10v4M10 12h4"/></svg>;
 }
 
-function ShapesToolIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="2" y="2" width="7" height="7" rx="1" />
-      <circle cx="13" cy="13" r="3.5" />
-    </svg>
-  );
+function ResizeIcon() {
+  return <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="1" width="10" height="10" rx="1"/><path d="M13 6v9H6" /><path d="M10 10l5 5"/></svg>;
 }
 
-function TextIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M4 4h10M9 4v11" />
-    </svg>
-  );
-}
-
-function ImageIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="2" y="3" width="14" height="12" rx="1" />
-      <circle cx="6.5" cy="7.5" r="1.5" fill="currentColor" />
-      <path d="M2 13l4-4 3 3 2-2 5 5H3z" />
-    </svg>
-  );
-}
-
-function DrawIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M3 15l3-1L14.5 5.5a1.4 1.4 0 00-2-2L4 12z" />
-      <path d="M11.5 4.5l2 2" />
-    </svg>
-  );
-}
-
-function PenToolIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M3 15 Q5 10 9 9 Q13 8 15 3" />
-      <circle cx="3" cy="15" r="1.5" fill="currentColor" />
-      <circle cx="9" cy="9" r="1.5" fill="currentColor" />
-      <circle cx="15" cy="3" r="1.5" fill="currentColor" />
-    </svg>
-  );
+function SaveTemplateIcon() {
+  return <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 2h9l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M5 2v4h5V2"/><rect x="4" y="9" width="8" height="5" rx="0.5"/></svg>;
 }
 
 function BrandIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <circle cx="9" cy="6" r="4" />
-      <path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6" />
-    </svg>
-  );
-}
-
-function AIIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M9 2l1.5 4.5L15 8l-4.5 1.5L9 14l-1.5-4.5L3 8l4.5-1.5z" />
-      <path d="M14 2l.5 1.5L16 4l-1.5.5L14 6l-.5-1.5L12 4l1.5-.5z" opacity="0.5" />
-    </svg>
-  );
+  return <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="9" cy="6" r="4" /><path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6" /></svg>;
 }
 
 function PluginsIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="3" y="3" width="5" height="5" rx="1" />
-      <rect x="10" y="3" width="5" height="5" rx="1" />
-      <rect x="3" y="10" width="5" height="5" rx="1" />
-      <circle cx="12.5" cy="12.5" r="2.5" />
-    </svg>
-  );
+  return <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="5" height="5" rx="1" /><rect x="10" y="3" width="5" height="5" rx="1" /><rect x="3" y="10" width="5" height="5" rx="1" /><circle cx="12.5" cy="12.5" r="2.5" /></svg>;
 }
 
-function AssetsIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="2" y="2" width="6" height="6" rx="1" />
-      <rect x="10" y="2" width="6" height="6" rx="1" />
-      <rect x="2" y="10" width="6" height="6" rx="1" />
-      <circle cx="13" cy="13" r="3" />
-    </svg>
-  );
+function DrawIcon() {
+  return <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 15l3-1L14.5 5.5a1.4 1.4 0 00-2-2L4 12z" /><path d="M11.5 4.5l2 2" /></svg>;
+}
+
+function PenToolIcon() {
+  return <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 15 Q5 10 9 9 Q13 8 15 3" /><circle cx="3" cy="15" r="1.5" fill="currentColor" /><circle cx="9" cy="9" r="1.5" fill="currentColor" /><circle cx="15" cy="3" r="1.5" fill="currentColor" /></svg>;
 }

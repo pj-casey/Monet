@@ -1,14 +1,17 @@
 /**
- * AI Design Assistant — Claude-powered design feedback, copy suggestions,
- * and translation using the user's stored API key (BYOK).
+ * AI Design Assistant — Claude-powered conversational design partner.
  *
- * Three features:
- * 1. Design Feedback — sends a screenshot to Claude Vision for layout/color/typography critique
- * 2. Suggest Copy — sends design context to generate alternative text for selected textbox
- * 3. Translate Design — reads all text, translates to target language, replaces in-place
+ * Features: design feedback (Vision), copy suggestions, translation,
+ * smart edit, brand extraction, variations, conversational chat.
+ *
+ * Streaming: callClaudeStream() supports Server-Sent Events for
+ * real-time token delivery. Text responses stream into the chat UI;
+ * JSON responses are collected and parsed at the end.
  *
  * Uses the same localStorage key as ai-generate.ts ('monet-anthropic-key').
  */
+
+import { formatUsage } from './token-estimator';
 
 const API_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = 'claude-sonnet-4-20250514';
@@ -23,16 +26,42 @@ function getApiKey(): string {
 }
 
 /** Check if the user has connected their Claude account */
-export function isAIAssistantAvailable(): boolean {
+export function isAIConfigured(): boolean {
   return !!getApiKey();
 }
 
-/** Common fetch wrapper for Anthropic API */
-async function callClaude(
+/** @deprecated Use isAIConfigured instead */
+export const isAIAssistantAvailable = isAIConfigured;
+
+// ─── API result type ────────────────────────────────────────────────
+
+export interface ApiResult {
+  text: string;
+  inputTokens: number;
+  outputTokens: number;
+}
+
+// ─── Streaming API call ─────────────────────────────────────────────
+
+/**
+ * Call Claude with SSE streaming support.
+ *
+ * Sends `stream: true` to the Anthropic API. Parses Server-Sent Events
+ * and calls onDelta for each text chunk. Returns the complete text and
+ * token usage when the stream ends.
+ *
+ * @param system - System prompt
+ * @param messages - Conversation messages
+ * @param maxTokens - Max output tokens
+ * @param onDelta - Optional callback for each text chunk (for streaming UI)
+ * @returns Complete response text and token usage
+ */
+export async function callClaudeStream(
   system: string,
   messages: Array<{ role: string; content: string | Array<{ type: string; [key: string]: unknown }> }>,
   maxTokens: number = 2048,
-): Promise<string> {
+  onDelta?: (text: string) => void,
+): Promise<ApiResult> {
   const key = getApiKey();
   if (!key) throw new Error('No API key configured.');
 
@@ -44,7 +73,13 @@ async function callClaude(
       'anthropic-version': '2023-06-01',
       'anthropic-dangerous-direct-browser-access': 'true',
     },
-    body: JSON.stringify({ model: MODEL, max_tokens: maxTokens, system, messages }),
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: maxTokens,
+      system,
+      messages,
+      stream: true,
+    }),
   });
 
   if (!res.ok) {
@@ -53,11 +88,117 @@ async function callClaude(
     throw new Error(`API error (${res.status}): ${body}`);
   }
 
-  const data = await res.json();
-  const text = data.content?.find((b: { type: string }) => b.type === 'text')?.text;
-  if (!text) throw new Error('No response from Claude.');
-  return text;
+  const reader = res.body!.getReader();
+  const decoder = new TextDecoder();
+  let fullText = '';
+  let inputTokens = 0;
+  let outputTokens = 0;
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const jsonStr = line.slice(6).trim();
+      if (!jsonStr || jsonStr === '[DONE]') continue;
+
+      try {
+        const event = JSON.parse(jsonStr);
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+          fullText += event.delta.text;
+          onDelta?.(event.delta.text);
+        } else if (event.type === 'message_start' && event.message?.usage) {
+          inputTokens = event.message.usage.input_tokens || 0;
+        } else if (event.type === 'message_delta' && event.usage) {
+          outputTokens = event.usage.output_tokens || 0;
+        }
+      } catch {
+        /* skip malformed SSE data */
+      }
+    }
+  }
+
+  return { text: fullText, inputTokens, outputTokens };
 }
+
+/** Non-streaming wrapper — collects the full response and returns text only. */
+async function callClaude(
+  system: string,
+  messages: Array<{ role: string; content: string | Array<{ type: string; [key: string]: unknown }> }>,
+  maxTokens: number = 2048,
+): Promise<string> {
+  const result = await callClaudeStream(system, messages, maxTokens);
+  return result.text;
+}
+
+// ─── Shared advanced recipe documentation ───────────────────────────
+
+const RECIPE_FORMAT_DOCS = `
+ADVANCED RECIPE FORMAT — use these features for professional-quality designs:
+
+GRADIENT FILLS — use on accent shapes, CTA buttons, decorative elements instead of plain colors:
+  Linear: "fill": { "type": "linear", "coords": { "x1": 0, "y1": 0, "x2": WIDTH, "y2": 0 }, "colorStops": [{ "offset": 0, "color": "#C4704A" }, { "offset": 1, "color": "#e8956d" }] }
+  Vertical: set x2=0, y2=HEIGHT. Diagonal: x2=WIDTH, y2=HEIGHT.
+  Radial: "fill": { "type": "radial", "coords": { "x1": CX, "y1": CY, "x2": CX, "y2": CY, "r1": 0, "r2": RADIUS }, "colorStops": [...] }
+  Coords are in object-local space (relative to the shape's own width/height).
+
+DROP SHADOWS — add to headings and key shapes for depth:
+  "shadow": { "color": "rgba(0,0,0,0.3)", "blur": 12, "offsetX": 0, "offsetY": 4 }
+  Glow: { "color": "rgba(196,112,74,0.5)", "blur": 20, "offsetX": 0, "offsetY": 0 }
+
+TEXT EFFECTS:
+  "charSpacing": 200     — letter spacing in 1/1000 em (100-400 for headings, 200-600 for ALL-CAPS labels)
+  "lineHeight": 1.3      — line height multiplier
+  "stroke": "#ffffff", "strokeWidth": 2  — text outline for contrast over images
+  "fontStyle": "italic"
+
+DECORATIVE OPACITY:
+  "opacity": 0.15  — semi-transparent shapes create layered depth behind content
+
+STROKE PATTERNS:
+  "strokeDashArray": [10, 5]  — dashed borders (10px dash, 5px gap)
+
+MANDATORY QUALITY RULES:
+1. ALWAYS include at least ONE gradient fill (accent bar, CTA button, or decorative shape)
+2. ALWAYS add a shadow to the main heading text
+3. Use charSpacing (50-400) on heading text
+4. Add 2-3 decorative shapes with low opacity (0.08-0.25) for visual depth
+5. Use REAL content — actual names, dates, prices. NEVER use "Lorem Ipsum", "Your Title Here", or "[Insert text]"
+6. Layer objects: background → decorative shapes → content → text on top
+
+EXAMPLE — Instagram Sale Story (1080×1920):
+{
+  "dimensions": { "width": 1080, "height": 1920 },
+  "background": { "type": "gradient", "value": "linear:to-bottom-right:#C4704A:#e76f51" },
+  "objects": [
+    { "type": "circle", "left": -60, "top": 100, "radius": 200, "fill": "rgba(255,255,255,0.08)" },
+    { "type": "circle", "left": 800, "top": 1400, "radius": 260, "fill": "rgba(255,255,255,0.06)" },
+    { "type": "textbox", "left": 100, "top": 520, "width": 880, "text": "SUMMER COLLECTION", "fontFamily": "Montserrat", "fontSize": 28, "fontWeight": "bold", "fill": "rgba(255,255,255,0.85)", "textAlign": "center", "charSpacing": 400 },
+    { "type": "textbox", "left": 100, "top": 620, "width": 880, "text": "40% OFF", "fontFamily": "Montserrat", "fontSize": 140, "fontWeight": "bold", "fill": "#ffffff", "textAlign": "center", "charSpacing": 100, "shadow": { "color": "rgba(0,0,0,0.5)", "blur": 16, "offsetX": 0, "offsetY": 4 } },
+    { "type": "rect", "left": 340, "top": 960, "width": 400, "height": 64, "fill": { "type": "linear", "coords": { "x1": 0, "y1": 0, "x2": 400, "y2": 0 }, "colorStops": [{ "offset": 0, "color": "#ffffff" }, { "offset": 1, "color": "#f0e6df" }] }, "rx": 32, "ry": 32 },
+    { "type": "textbox", "left": 340, "top": 975, "width": 400, "text": "Shop Now \\u2192", "fontFamily": "Montserrat", "fontSize": 22, "fontWeight": "bold", "fill": "#C4704A", "textAlign": "center" }
+  ]
+}
+
+EXAMPLE — Minimal Business Card (1050×600):
+{
+  "dimensions": { "width": 1050, "height": 600 },
+  "background": { "type": "solid", "value": "#faf8f5" },
+  "objects": [
+    { "type": "textbox", "left": 80, "top": 100, "width": 600, "text": "ELENA VASQUEZ", "fontFamily": "Montserrat", "fontSize": 28, "fontWeight": "bold", "fill": "#1a1520", "charSpacing": 200, "shadow": { "color": "rgba(0,0,0,0.08)", "blur": 12, "offsetX": 0, "offsetY": 4 } },
+    { "type": "textbox", "left": 80, "top": 150, "width": 600, "text": "Senior Architect", "fontFamily": "DM Sans", "fontSize": 18, "fill": "#8a8078" },
+    { "type": "rect", "left": 80, "top": 200, "width": 50, "height": 2, "fill": { "type": "linear", "coords": { "x1": 0, "y1": 0, "x2": 50, "y2": 0 }, "colorStops": [{ "offset": 0, "color": "#C4704A" }, { "offset": 1, "color": "#e8956d" }] } },
+    { "type": "textbox", "left": 80, "top": 360, "width": 500, "text": "elena@meridianstudio.com\\n(312) 555-0198\\nmeridianstudio.com", "fontFamily": "DM Sans", "fontSize": 14, "fill": "#6b6260", "lineHeight": 1.8 },
+    { "type": "textbox", "left": 750, "top": 480, "width": 250, "text": "MERIDIAN\\nSTUDIO", "fontFamily": "Montserrat", "fontSize": 14, "fontWeight": "bold", "fill": "#C4704A", "textAlign": "right", "lineHeight": 1.3, "charSpacing": 300 }
+  ]
+}
+`;
 
 // ─── 1. Design Feedback ──────────────────────────────────────────
 
@@ -75,14 +216,15 @@ Use bullet points. Be constructive, not just critical.`;
 
 /**
  * Send a canvas screenshot to Claude Vision for design feedback.
- * @param imageDataUrl - PNG data URL from getArtboardDataURL()
- * @returns Markdown-formatted feedback string
+ * Supports streaming — pass onDelta to receive text chunks as they arrive.
  */
-export async function getDesignFeedback(imageDataUrl: string): Promise<string> {
-  // Strip the data URL prefix to get raw base64
+export async function getDesignFeedback(
+  imageDataUrl: string,
+  onDelta?: (text: string) => void,
+): Promise<ApiResult> {
   const base64 = imageDataUrl.replace(/^data:image\/\w+;base64,/, '');
 
-  return callClaude(FEEDBACK_SYSTEM, [
+  return callClaudeStream(FEEDBACK_SYSTEM, [
     {
       role: 'user',
       content: [
@@ -96,7 +238,7 @@ export async function getDesignFeedback(imageDataUrl: string): Promise<string> {
         },
       ],
     },
-  ]);
+  ], 2048, onDelta);
 }
 
 // ─── 2. Suggest Copy ─────────────────────────────────────────────
@@ -112,13 +254,11 @@ Guidelines:
 - Match the tone and purpose of the design
 - Keep similar length to the original (don't make text much longer)
 - Be creative but professional
+- Use REAL content, never generic placeholders
 - Consider the design format (Instagram = punchy, Presentation = clear, etc.)`;
 
 /**
  * Get 3 copy suggestions for a selected text element.
- * @param currentText - The text currently in the textbox
- * @param designContext - Info about the design (dimensions, colors, all text)
- * @returns Array of 3 alternative text strings
  */
 export async function suggestCopy(
   currentText: string,
@@ -142,7 +282,6 @@ Suggest 3 alternatives for this text: "${currentText}"`;
 
   const response = await callClaude(COPY_SYSTEM, [{ role: 'user', content: prompt }], 512);
 
-  // Parse JSON array from response
   let cleaned = response.trim();
   if (cleaned.startsWith('```')) {
     cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
@@ -154,7 +293,6 @@ Suggest 3 alternatives for this text: "${currentText}"`;
       return arr.slice(0, 3).map(String);
     }
   } catch {
-    // If parsing fails, try to extract quoted strings
     const matches = cleaned.match(/"([^"]+)"/g);
     if (matches && matches.length >= 1) {
       return matches.slice(0, 3).map((m) => m.replace(/^"|"$/g, ''));
@@ -194,9 +332,6 @@ export const LANGUAGES = [
 
 /**
  * Translate an array of text strings to a target language.
- * @param texts - Array of text strings to translate
- * @param targetLanguage - Target language name (e.g. "Spanish")
- * @returns Array of translated strings in the same order
  */
 export async function translateTexts(
   texts: string[],
@@ -221,7 +356,7 @@ export async function translateTexts(
   return arr.map(String);
 }
 
-// ─── 4. Smart Edit (Natural Language Instructions) ────────────────
+// ─── 4. Smart Edit ───────────────────────────────────────────────
 
 const SMART_EDIT_SYSTEM = `You are a graphic design assistant that modifies designs based on natural language instructions.
 
@@ -233,17 +368,15 @@ Rules:
 - Keep the same structure (version, id, name, dimensions, etc).
 - When adding objects, use the "recipe" format: { type, left, top, width, height, fill, ... }
 - Supported types: rect, circle, textbox, triangle, line
-- Available fonts: Inter, Roboto, Open Sans, Montserrat, Lato, Poppins, Playfair Display, Merriweather, Lora, Bebas Neue, Oswald, Anton
+- Available fonts: Inter, Roboto, Open Sans, Montserrat, Lato, Poppins, Playfair Display, Merriweather, Lora, Bebas Neue, Oswald, Anton, DM Sans
 - Coordinates: origin at top-left, X right, Y down
 - Colors: hex (#ffffff) or rgba (rgba(0,0,0,0.5))
-- For "button" shapes: rect with rx/ry for rounded corners + centered textbox on top
-- Apply changes precisely: if asked to change colors, change fill/stroke/text colors. If asked to add something, add to the objects array. If asked to move, update left/top.`;
+${RECIPE_FORMAT_DOCS}
+
+Output ONLY the modified JSON.`;
 
 /**
  * Apply a natural language instruction to the current design.
- * @param doc - Current DesignDocument JSON
- * @param instruction - Natural language instruction like "add a red button at the bottom"
- * @returns Modified DesignDocument
  */
 export async function smartEdit(
   doc: import('@monet/shared').DesignDocument,
@@ -265,12 +398,10 @@ export async function smartEdit(
 
   const result = JSON.parse(cleaned);
 
-  // Validate basic structure
   if (!result?.dimensions || !Array.isArray(result?.objects)) {
     throw new Error('Invalid design returned by AI.');
   }
 
-  // Preserve original metadata
   result.version = 1;
   result.id = doc.id;
   result.updatedAt = new Date().toISOString();
@@ -278,7 +409,7 @@ export async function smartEdit(
   return result as import('@monet/shared').DesignDocument;
 }
 
-// ─── 5. Extract Brand from Image ─────────────────────────────────
+// ─── 5. Extract Brand ────────────────────────────────────────────
 
 const EXTRACT_BRAND_SYSTEM = `You are a brand identity expert. Analyze the provided image (logo, screenshot, or design) and extract brand identity information.
 
@@ -303,7 +434,6 @@ For fonts: recommend the closest match from these available fonts:
 
 Output ONLY the JSON.`;
 
-/** Result from brand extraction */
 export interface ExtractedBrand {
   name: string;
   colors: string[];
@@ -313,8 +443,6 @@ export interface ExtractedBrand {
 
 /**
  * Extract brand identity from an uploaded image.
- * @param imageDataUrl - Data URL of the uploaded image
- * @returns Extracted brand information
  */
 export async function extractBrand(imageDataUrl: string): Promise<ExtractedBrand> {
   const base64 = imageDataUrl.replace(/^data:image\/\w+;base64,/, '');
@@ -377,12 +505,12 @@ Rules:
 - Variation 1: Change colors only (fill, stroke, background, text colors)
 - Variation 2: Change fonts only (fontFamily on all textboxes)
 - Variation 3: Change positions/sizes for different emphasis (move, scale objects)
-- Available fonts: Inter, Roboto, Montserrat, Poppins, Playfair Display, Merriweather, Lora, Bebas Neue, Oswald, Anton
+- Available fonts: Inter, Roboto, Montserrat, Poppins, Playfair Display, Merriweather, Lora, Bebas Neue, Oswald, Anton, DM Sans
 - Use hex colors. Keep text readable (good contrast).
+${RECIPE_FORMAT_DOCS}
 
 Output ONLY the JSON array.`;
 
-/** A design variation returned by Claude */
 export interface DesignVariation {
   label: string;
   description: string;
@@ -391,8 +519,6 @@ export interface DesignVariation {
 
 /**
  * Generate 3 design variations from the current design.
- * @param doc - Current DesignDocument
- * @returns Array of 3 variations
  */
 export async function generateVariations(
   doc: import('@monet/shared').DesignDocument,
@@ -430,17 +556,15 @@ export async function generateVariations(
 
 // ─── 7. Conversational Chat ──────────────────────────────────────
 
-/** A message in the AI chat conversation */
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   text: string;
-  /** User-uploaded image (data URL) */
   image?: string;
-  /** Design documents generated by the assistant */
   designs?: Array<{ label: string; document: import('@monet/shared').DesignDocument; thumbnail?: string }>;
-  /** Copy suggestions for a selected textbox */
   copySuggestions?: string[];
+  /** Token usage info shown after the message */
+  usage?: string;
 }
 
 const CHAT_SYSTEM = `You are Monet AI, a conversational design assistant for a web-based graphic design editor.
@@ -450,27 +574,27 @@ You help users create, modify, and improve designs through natural conversation.
 RESPONSE FORMAT — you MUST respond with a JSON object:
 {
   "reply": "Your conversational response (displayed in the chat)",
-  "action": "none",
+  "action": "none"
 }
 
 ACTIONS — set "action" based on what the user asked:
 
-1. If the user asks you to MODIFY the current design (change colors, add elements, move things):
+1. MODIFY the current design (change colors, add elements, move things):
    {"reply": "...", "action": "modify", "design": { ...full modified DesignDocument... }}
 
-2. If the user asks you to CREATE MULTIPLE designs (batch generate):
+2. CREATE MULTIPLE designs (batch generate):
    {"reply": "...", "action": "batch", "designs": [{"label": "Name", "document": {...}}, ...]}
 
-3. If the user asks to RECREATE a design from an image:
+3. RECREATE a design from an image:
    {"reply": "...", "action": "modify", "design": { ...new DesignDocument inspired by the image... }}
 
-4. For FEEDBACK, suggestions, questions, or conversation:
+4. FEEDBACK, suggestions, questions, or conversation:
    {"reply": "Your detailed response here", "action": "none"}
 
-5. If the user asks for TEXT SUGGESTIONS for a specific text element:
+5. TEXT SUGGESTIONS for a specific text element:
    {"reply": "Here are 3 alternatives:", "action": "suggest_copy", "suggestions": ["option 1", "option 2", "option 3"]}
 
-DESIGN FORMAT — when creating/modifying designs, use this DesignDocument schema:
+DESIGN FORMAT — when creating/modifying designs:
 {
   "version": 1, "id": "", "name": "Design Name",
   "createdAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z",
@@ -481,35 +605,37 @@ DESIGN FORMAT — when creating/modifying designs, use this DesignDocument schem
 }
 
 Object types: rect (with rx/ry for rounded), circle (with radius), textbox (with text/fontFamily/fontSize/fontWeight/fill/textAlign), triangle, line.
-Available fonts: Inter, Roboto, Montserrat, Poppins, Playfair Display, Merriweather, Lora, Bebas Neue, Oswald, Anton.
+Available fonts: Inter, Roboto, Montserrat, Poppins, Playfair Display, Merriweather, Lora, Bebas Neue, Oswald, Anton, DM Sans.
 Coordinates: origin top-left, X right, Y down. Colors as hex or rgba.
-Background: solid (#hex) or gradient (linear:to-bottom:#c1:#c2).
+Background: solid (#hex) or gradient (linear:to-bottom:#c1:#c2, linear:to-bottom-right:#c1:#c2).
+${RECIPE_FORMAT_DOCS}
 
 ALWAYS output valid JSON. No markdown fences. The "reply" field is shown to the user as chat text — be helpful, specific, and friendly.`;
 
-/** Parsed response from the chat API */
 export interface ChatResponse {
   reply: string;
   action: 'none' | 'modify' | 'batch' | 'suggest_copy';
   design?: import('@monet/shared').DesignDocument;
   designs?: Array<{ label: string; document: import('@monet/shared').DesignDocument }>;
   suggestions?: string[];
+  inputTokens: number;
+  outputTokens: number;
 }
 
 /**
  * Send a message in the conversational chat.
- * Includes conversation history, current design, and optionally an image.
+ * Supports streaming via onDelta callback.
  */
 export async function chatWithClaude(
   history: ChatMessage[],
   currentDoc: import('@monet/shared').DesignDocument | null,
   userMessage: string,
   userImage?: string,
+  onDelta?: (text: string) => void,
 ): Promise<ChatResponse> {
-  // Build the messages array for the API
   const apiMessages: Array<{ role: string; content: string | Array<{ type: string; [key: string]: unknown }> }> = [];
 
-  // Include recent conversation history (last 10 messages to stay within context)
+  // Include recent conversation history (last 10 messages)
   const recentHistory = history.slice(-10);
   for (const msg of recentHistory) {
     if (msg.role === 'user') {
@@ -519,7 +645,7 @@ export async function chatWithClaude(
     }
   }
 
-  // Build the current user message with context
+  // Build current user message with context
   const contextParts: string[] = [];
   if (currentDoc) {
     contextParts.push(`[Current design JSON]\n${JSON.stringify(currentDoc)}`);
@@ -540,7 +666,9 @@ export async function chatWithClaude(
     apiMessages.push({ role: 'user', content: contextParts.join('\n\n') });
   }
 
-  const response = await callClaude(CHAT_SYSTEM, apiMessages, 16384);
+  const { text: response, inputTokens, outputTokens } = await callClaudeStream(
+    CHAT_SYSTEM, apiMessages, 16384, onDelta,
+  );
 
   // Parse the JSON response
   let cleaned = response.trim();
@@ -553,6 +681,8 @@ export async function chatWithClaude(
     const result: ChatResponse = {
       reply: String(parsed.reply || parsed.message || ''),
       action: parsed.action || 'none',
+      inputTokens,
+      outputTokens,
     };
 
     if (parsed.action === 'modify' && parsed.design) {
@@ -570,8 +700,7 @@ export async function chatWithClaude(
 
     return result;
   } catch {
-    // If JSON parsing fails, treat as plain text reply
-    return { reply: cleaned, action: 'none' };
+    return { reply: cleaned, action: 'none', inputTokens, outputTokens };
   }
 }
 
@@ -591,3 +720,5 @@ function normalizeDoc(doc: unknown): import('@monet/shared').DesignDocument {
     metadata: { tags: [] },
   };
 }
+
+export { formatUsage };

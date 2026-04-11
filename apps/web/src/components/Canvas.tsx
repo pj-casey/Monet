@@ -105,6 +105,9 @@ export function Canvas() {
       onLayersChange: (newLayers) => {
         layersListener?.(newLayers);
       },
+      onPagesChange: (pages, currentIndex) => {
+        useEditorStore.getState().setPagesState(pages, currentIndex);
+      },
     });
 
     // ResizeObserver watches the container and resizes the canvas when it changes.
@@ -240,6 +243,69 @@ export function Canvas() {
       engine.ungroupSelected();
       return;
     }
+    // Ctrl+A = Select all
+    if (mod && e.key === 'a') {
+      e.preventDefault();
+      engine.selectAllObjects();
+      return;
+    }
+    // Ctrl+X = Cut
+    if (mod && e.key === 'x') {
+      e.preventDefault();
+      engine.copySelected();
+      engine.deleteSelectedObjects();
+      return;
+    }
+    // Alt+Shift+C = Copy style
+    if (e.altKey && e.shiftKey && e.key.toLowerCase() === 'c') {
+      e.preventDefault();
+      const style = engine.getSelectedStyle();
+      if (style) {
+        useEditorStore.getState().setCopiedStyle(style as import('../stores/editor-store').CopiedStyle);
+      }
+      return;
+    }
+    // Alt+Shift+V = Paste style
+    if (e.altKey && e.shiftKey && e.key.toLowerCase() === 'v') {
+      e.preventDefault();
+      const style = useEditorStore.getState().copiedStyle;
+      if (style) {
+        engine.applyStyleToSelected(style as unknown as Record<string, unknown>);
+      }
+      return;
+    }
+    // Tool shortcuts (bare keys, no modifiers)
+    if (!mod && !e.altKey) {
+      const toolMap: Record<string, string> = { v: 'select', t: 'text', d: 'draw', p: 'pen' };
+      const tool = toolMap[e.key.toLowerCase()];
+      if (tool) {
+        e.preventDefault();
+        useEditorStore.getState().setActiveTool(tool as import('../stores/editor-store').EditorTool);
+        return;
+      }
+    }
+    // Escape = Deselect all
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      fabricCanvas?.discardActiveObject();
+      fabricCanvas?.requestRenderAll();
+      return;
+    }
+    // PageDown / Ctrl+] = Next page
+    if (e.key === 'PageDown' || (mod && e.key === ']')) {
+      e.preventDefault();
+      const { currentPageIndex, pageCount } = useEditorStore.getState();
+      if (currentPageIndex < pageCount - 1) engine.switchToPage(currentPageIndex + 1);
+      return;
+    }
+    // PageUp / Ctrl+[ = Previous page
+    if (e.key === 'PageUp' || (mod && e.key === '[')) {
+      e.preventDefault();
+      const { currentPageIndex } = useEditorStore.getState();
+      if (currentPageIndex > 0) engine.switchToPage(currentPageIndex - 1);
+      return;
+    }
+
     // Arrow keys = Nudge (1px, or 10px with Shift)
     const nudgeAmount = e.shiftKey ? 10 : 1;
     if (e.key === 'ArrowLeft') { e.preventDefault(); engine.nudgeSelected(-nudgeAmount, 0); return; }
@@ -279,7 +345,7 @@ export function Canvas() {
   return (
     <div
       ref={containerRef}
-      className="relative flex-1 overflow-hidden bg-gray-200 dark:bg-gray-800"
+      className="relative flex-1 overflow-hidden bg-wash"
       onKeyDown={handleKeyDown}
       onDrop={handleDrop}
       onDragOver={handleDragOver}

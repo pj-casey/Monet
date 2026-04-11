@@ -5,18 +5,19 @@
  * 1. Calculate scale factors for width and height
  * 2. Use the smaller factor so nothing gets cut off
  * 3. Reposition objects relative to the new artboard center
- * 4. Scale text font sizes proportionally
+ * 4. Scale all visual properties proportionally
  *
  * The result is a new DesignDocument that can be loaded via fromJSON.
+ *
+ * Key: Fabric.js visual size = baseWidth * scaleX, so we only scale ONE
+ * of these (scaleX/scaleY), never both. Text and circles use direct
+ * property scaling (fontSize, radius) with scaleX/Y reset to 1.
  */
 
 import type { DesignDocument } from '@monet/shared';
 
 /**
  * Resize a design document to new dimensions.
- *
- * Objects are scaled proportionally and re-centered on the new artboard.
- * Text font sizes are adjusted. The background is preserved.
  *
  * @param doc - The source design document
  * @param newWidth - Target width in pixels
@@ -31,67 +32,105 @@ export function resizeDesign(
   const oldW = doc.dimensions.width;
   const oldH = doc.dimensions.height;
 
-  // Calculate how much to scale — use the smaller factor so everything fits
   const scaleX = newWidth / oldW;
   const scaleY = newHeight / oldH;
   const uniformScale = Math.min(scaleX, scaleY);
 
-  // Offset to center the scaled content in the new artboard
+  // Center the scaled content
   const offsetX = (newWidth - oldW * uniformScale) / 2;
   const offsetY = (newHeight - oldH * uniformScale) / 2;
 
-  // Transform each object
   const resizedObjects = doc.objects.map((obj) => {
-    const resized = { ...obj };
+    const r = { ...obj } as Record<string, unknown>;
 
-    // Position: scale and offset to center
-    if (typeof resized.left === 'number') {
-      resized.left = resized.left * uniformScale + offsetX;
-    }
-    if (typeof resized.top === 'number') {
-      resized.top = resized.top * uniformScale + offsetY;
+    // ─── Position: scale + offset ─────────────────────────────
+    if (typeof r.left === 'number') r.left = r.left * uniformScale + offsetX;
+    if (typeof r.top === 'number') r.top = r.top * uniformScale + offsetY;
+
+    // ─── Determine object type ────────────────────────────────
+    const isText = typeof r.fontSize === 'number';
+    const isCircle = typeof r.radius === 'number' && !isText;
+
+    if (isText) {
+      // Text: scale fontSize and width directly (better font hinting)
+      r.fontSize = Math.round((r.fontSize as number) * uniformScale);
+      if (typeof r.width === 'number') r.width = r.width * uniformScale;
+      // Reset scaleX/scaleY since we scaled fontSize directly
+      if (typeof r.scaleX === 'number') r.scaleX = 1;
+      if (typeof r.scaleY === 'number') r.scaleY = 1;
+      // Scale text stroke
+      if (typeof r.strokeWidth === 'number' && (r.strokeWidth as number) > 0) {
+        r.strokeWidth = Math.max(1, (r.strokeWidth as number) * uniformScale);
+      }
+    } else if (isCircle) {
+      // Circle: scale radius directly
+      r.radius = (r.radius as number) * uniformScale;
+      if (typeof r.scaleX === 'number') r.scaleX = 1;
+      if (typeof r.scaleY === 'number') r.scaleY = 1;
+      // Scale stroke for circles
+      if (typeof r.strokeWidth === 'number' && (r.strokeWidth as number) > 0) {
+        r.strokeWidth = Math.max(1, (r.strokeWidth as number) * uniformScale);
+      }
+    } else {
+      // Shapes (rect, triangle, polygon, line): scale via scaleX/scaleY only
+      // Do NOT scale width/height — that would double-scale
+      const curScaleX = typeof r.scaleX === 'number' ? r.scaleX : 1;
+      const curScaleY = typeof r.scaleY === 'number' ? r.scaleY : 1;
+      r.scaleX = curScaleX * uniformScale;
+      r.scaleY = curScaleY * uniformScale;
+      // If no scaleX/scaleY existed (recipe format), we need to scale dimensions directly
+      if (typeof obj.scaleX !== 'number' && typeof obj.scaleY !== 'number') {
+        if (typeof r.width === 'number') r.width = r.width * uniformScale;
+        if (typeof r.height === 'number') r.height = r.height * uniformScale;
+        r.scaleX = 1;
+        r.scaleY = 1;
+        // Scale rx/ry and stroke when using direct dimensions
+        if (typeof r.rx === 'number') r.rx = r.rx * uniformScale;
+        if (typeof r.ry === 'number') r.ry = r.ry * uniformScale;
+        if (typeof r.strokeWidth === 'number' && (r.strokeWidth as number) > 0) {
+          r.strokeWidth = Math.max(1, (r.strokeWidth as number) * uniformScale);
+        }
+      }
+      // strokeDashArray
+      if (Array.isArray(r.strokeDashArray)) {
+        r.strokeDashArray = (r.strokeDashArray as number[]).map((v) => v * uniformScale);
+      }
     }
 
-    // Dimensions: scale width/height
-    if (typeof resized.width === 'number') {
-      resized.width = resized.width * uniformScale;
-    }
-    if (typeof resized.height === 'number') {
-      resized.height = resized.height * uniformScale;
-    }
-
-    // Scale factors: multiply existing scale
-    if (typeof resized.scaleX === 'number') {
-      resized.scaleX = resized.scaleX * uniformScale;
-    }
-    if (typeof resized.scaleY === 'number') {
-      resized.scaleY = resized.scaleY * uniformScale;
+    // ─── Shadow: scale blur and offsets ────────────────────────
+    if (r.shadow && typeof r.shadow === 'object') {
+      const s = { ...(r.shadow as Record<string, unknown>) };
+      if (typeof s.blur === 'number') s.blur = s.blur * uniformScale;
+      if (typeof s.offsetX === 'number') s.offsetX = s.offsetX * uniformScale;
+      if (typeof s.offsetY === 'number') s.offsetY = s.offsetY * uniformScale;
+      r.shadow = s;
     }
 
-    // Circle radius
-    if (typeof resized.radius === 'number') {
-      resized.radius = resized.radius * uniformScale;
+    // ─── Gradient fills: scale coordinates ────────────────────
+    if (r.fill && typeof r.fill === 'object' && !Array.isArray(r.fill)) {
+      const f = { ...(r.fill as Record<string, unknown>) };
+      if (f.coords && typeof f.coords === 'object') {
+        const c = { ...(f.coords as Record<string, number>) };
+        for (const key of Object.keys(c)) {
+          if (typeof c[key] === 'number') c[key] = c[key] * uniformScale;
+        }
+        f.coords = c;
+      }
+      r.fill = f;
     }
 
-    // Text: scale font size
-    if (typeof resized.fontSize === 'number') {
-      resized.fontSize = Math.round(resized.fontSize * uniformScale);
+    // ─── ClipPath: scale sub-object ───────────────────────────
+    if (r.clipPath && typeof r.clipPath === 'object') {
+      const cp = { ...(r.clipPath as Record<string, unknown>) };
+      if (typeof cp.left === 'number') cp.left = cp.left * uniformScale;
+      if (typeof cp.top === 'number') cp.top = cp.top * uniformScale;
+      if (typeof cp.scaleX === 'number') cp.scaleX = (cp.scaleX as number) * uniformScale;
+      if (typeof cp.scaleY === 'number') cp.scaleY = (cp.scaleY as number) * uniformScale;
+      if (typeof cp.radius === 'number') cp.radius = (cp.radius as number) * uniformScale;
+      r.clipPath = cp;
     }
 
-    // Corner radius
-    if (typeof resized.rx === 'number') {
-      resized.rx = resized.rx * uniformScale;
-    }
-    if (typeof resized.ry === 'number') {
-      resized.ry = resized.ry * uniformScale;
-    }
-
-    // Stroke width
-    if (typeof resized.strokeWidth === 'number' && resized.strokeWidth > 0) {
-      resized.strokeWidth = Math.max(1, resized.strokeWidth * uniformScale);
-    }
-
-    return resized;
+    return r;
   });
 
   const now = new Date().toISOString();
@@ -104,6 +143,6 @@ export function resizeDesign(
     createdAt: now,
     updatedAt: now,
     dimensions: { width: newWidth, height: newHeight },
-    objects: resizedObjects,
+    objects: resizedObjects as DesignDocument['objects'],
   };
 }
