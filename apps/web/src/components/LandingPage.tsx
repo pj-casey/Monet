@@ -176,7 +176,8 @@ export function LandingPage() {
       {/* ─── Nav ─────────────────────────────────────────────── */}
       <nav aria-label="Main navigation" className="sticky top-0 z-50 border-b border-border bg-surface/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <span className="font-display text-xl font-semibold tracking-tight text-text-primary">
+          <span className="flex items-center gap-2 font-display text-xl font-semibold tracking-tight text-text-primary">
+            <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" width="22" height="22" className="block" aria-hidden="true" />
             Monet
           </span>
           <div className="flex items-center gap-6">
@@ -539,7 +540,8 @@ export function LandingPage() {
       {/* ─── Footer ──────────────────────────────────────────── */}
       <footer className="border-t border-border bg-surface">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-6 py-8 sm:flex-row sm:justify-between">
-          <span className="font-display text-sm font-medium text-text-tertiary">
+          <span className="flex items-center gap-1.5 font-display text-sm font-medium text-text-tertiary">
+            <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" width="14" height="14" className="block opacity-60" aria-hidden="true" />
             Monet
           </span>
           <div className="flex items-center gap-4 text-xs text-text-tertiary">

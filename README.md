@@ -1,7 +1,13 @@
-# Monet
+<p align="center">
+  <img src="apps/web/public/favicon.svg" alt="Monet" width="64" height="64" />
+</p>
 
-[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/pj-casey/Monet?style=social)](https://github.com/pj-casey/Monet)
+<h1 align="center">Monet</h1>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License" /></a>
+  <a href="https://github.com/pj-casey/Monet"><img src="https://img.shields.io/github/stars/pj-casey/Monet?style=social" alt="Stars" /></a>
+</p>
 
 **The free, open-source design tool for everyone.**
 

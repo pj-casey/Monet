@@ -1,0 +1,26 @@
+{
+  "name": "Monet",
+  "short_name": "Monet",
+  "description": "Free, open-source graphic design editor",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#1a1511",
+  "theme_color": "#C4704A",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

@@ -21,7 +21,8 @@ if ('serviceWorker' in navigator) {
 /** Minimal loading state while the editor bundle downloads */
 function EditorLoader() {
   return (
-    <div className="editor-shell flex h-screen w-screen items-center justify-center bg-canvas">
+    <div className="editor-shell flex h-screen w-screen flex-col items-center justify-center gap-3 bg-canvas">
+      <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" width="32" height="32" className="animate-pulse" />
       <p className="text-sm text-text-secondary">Loading editor...</p>
     </div>
   )

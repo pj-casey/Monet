@@ -200,7 +200,10 @@ export function WelcomeScreen({
     <div className="flex h-screen w-screen flex-col bg-canvas">
       {/* ─── Top Bar ─── */}
       <header className="flex h-14 flex-shrink-0 items-center justify-between border-b border-border bg-surface px-6">
-        <h1 className="font-display text-lg font-semibold text-text-primary">Monet</h1>
+        <h1 className="flex items-center gap-2 font-display text-lg font-semibold text-text-primary">
+          <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" width="20" height="20" className="block" aria-hidden="true" />
+          Monet
+        </h1>
         <div className="flex items-center gap-3">
           <button type="button" onClick={onToggleTheme}
             className="flex h-8 w-8 items-center justify-center rounded-sm text-text-tertiary hover:bg-wash"

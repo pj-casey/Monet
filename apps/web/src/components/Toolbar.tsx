@@ -84,7 +84,10 @@ export function Toolbar({
 
       {/* ─── Left: Logo + Undo/Redo + Save badge ─── */}
       <div className="flex items-center gap-2">
-        <h1 className="font-display text-base font-semibold text-text-primary">Monet</h1>
+        <h1 className="flex items-center gap-1.5 font-display text-base font-semibold text-text-primary">
+          <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" width="18" height="18" className="block" aria-hidden="true" />
+          Monet
+        </h1>
         <Divider />
         <TbBtn label="Undo (Ctrl+Z)" onClick={() => engine.undo()} disabled={!canUndo}>
           <UndoIcon />
