@@ -40,7 +40,7 @@ export function isUnsplashConfigured(): boolean {
 }
 
 function getApiKey(): string {
-  return import.meta.env.VITE_UNSPLASH_ACCESS_KEY ?? '';
+  return localStorage.getItem('monet-unsplash-key') || import.meta.env.VITE_UNSPLASH_ACCESS_KEY || '';
 }
 
 /**

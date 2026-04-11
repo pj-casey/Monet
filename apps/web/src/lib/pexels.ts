@@ -50,7 +50,7 @@ export function isPexelsConfigured(): boolean {
 }
 
 function getApiKey(): string {
-  return import.meta.env.VITE_PEXELS_API_KEY ?? '';
+  return localStorage.getItem('monet-pexels-key') || import.meta.env.VITE_PEXELS_API_KEY || '';
 }
 
 /**

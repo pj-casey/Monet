@@ -47,6 +47,7 @@ import { Onboarding } from './components/Onboarding';
 import { CommandPalette } from './components/CommandPalette';
 import { ContextualAI } from './components/ContextualAI';
 import { TabSuggest } from './components/TabSuggest';
+import { SettingsModal } from './components/SettingsModal';
 import { SkipLink, LiveRegion } from './components/A11y';
 import { migrateFromOpenCanvas } from './lib/migrate-storage';
 import { useTheme } from './hooks/use-theme';
@@ -76,6 +77,7 @@ function App() {
   const [initialized, setInitialized] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const { isDark, toggleTheme } = useTheme();
   const autosave = useAutosave(!!authUser);
@@ -139,6 +141,18 @@ function App() {
         autosave.saveNow();
         return;
       }
+      // Ctrl+N = new design
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        handleNewDesign();
+        return;
+      }
+      // Ctrl+, = settings
+      if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+        e.preventDefault();
+        setSettingsOpen(true);
+        return;
+      }
       // "?" = shortcut sheet (not in inputs)
       if (e.key === '?' && !e.ctrlKey && !e.metaKey && !isInput) {
         e.preventDefault();
@@ -179,10 +193,17 @@ function App() {
 
   /** Handle creating a new design — go to editor and show template browser */
   const handleNewDesign = useCallback(() => {
-    autosave.newDesign();
-    setView('editor');
-    setTemplateBrowserOpen(true);
-  }, [autosave]);
+    // If in editor with content, go to welcome screen to pick a template or blank
+    if (view === 'editor') {
+      autosave.saveNow();
+      autosave.newDesign();
+      setView('welcome');
+    } else {
+      autosave.newDesign();
+      setView('editor');
+      setTemplateBrowserOpen(true);
+    }
+  }, [autosave, view]);
 
   // Pending document to load after canvas mounts (used by welcome screen flows)
   const pendingDoc = useRef<import('@monet/shared').DesignDocument | null>(null);
@@ -289,6 +310,8 @@ function App() {
       <Toolbar
         onExport={() => setExportDialogOpen(true)}
         onMyDesigns={() => setMyDesignsOpen(true)}
+        onNewDesign={handleNewDesign}
+        onSettings={() => setSettingsOpen(true)}
         onSaveFile={handleExportFile}
         onOpenFile={handleImportFile}
         saveStatus={autosave.status}
@@ -393,6 +416,7 @@ function App() {
             alert(`${conflicts.length} design(s) have conflicting changes. Local versions kept.`);
           }
         }} />
+      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <Onboarding />
 
       {/* Command Palette — opens on / or Cmd+K */}

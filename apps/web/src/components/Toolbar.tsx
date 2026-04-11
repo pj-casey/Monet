@@ -18,6 +18,8 @@ interface ToolbarProps {
   onExport?: () => void;
   onMyDesigns?: () => void;
   onShowShortcuts?: () => void;
+  onNewDesign?: () => void;
+  onSettings?: () => void;
   saveStatus?: SaveStatus;
   isDark?: boolean;
   onToggleTheme?: () => void;
@@ -30,8 +32,8 @@ interface ToolbarProps {
 }
 
 export function Toolbar({
-  onExport, onMyDesigns, onShowShortcuts, saveStatus,
-  isDark, onToggleTheme, onShareLink, onSaveFile, onOpenFile,
+  onExport, onMyDesigns, onShowShortcuts, onNewDesign, onSettings,
+  saveStatus, isDark, onToggleTheme, onShareLink, onSaveFile, onOpenFile,
   userName, onLogin, onLogout,
 }: ToolbarProps) {
   const zoom = useEditorStore((s) => s.zoom);
@@ -172,6 +174,11 @@ export function Toolbar({
 
           {menuOpen && (
             <div className="animate-scale-up absolute right-0 top-full z-50 mt-1.5 w-56 rounded-xl border border-border bg-surface py-1.5 shadow-xl">
+              {onNewDesign && (
+                <MenuItem onClick={() => { onNewDesign(); setMenuOpen(false); }}>
+                  New Design
+                </MenuItem>
+              )}
               {onMyDesigns && (
                 <MenuItem onClick={() => { onMyDesigns(); setMenuOpen(false); }}>
                   My Designs
@@ -193,6 +200,11 @@ export function Toolbar({
               <MenuToggle label="Smart Guides" active={showGuides} onClick={() => { toggleShowGuides(); }} />
               <MenuToggle label="Rulers" active={rulersVisible} onClick={() => { toggleRulers(); }} />
               <MenuDivider />
+              {onSettings && (
+                <MenuItem onClick={() => { onSettings(); setMenuOpen(false); }}>
+                  Settings
+                </MenuItem>
+              )}
               {onToggleTheme && (
                 <MenuItem onClick={() => { onToggleTheme(); setMenuOpen(false); }}>
                   {isDark ? 'Light Mode' : 'Dark Mode'}

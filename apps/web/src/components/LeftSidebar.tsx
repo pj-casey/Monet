@@ -646,7 +646,7 @@ function PhotosSection({ query }: { query: string }) {
         </div>
         <p className="mb-1 text-xs font-medium text-text-primary">Add stock photos</p>
         <p className="mb-4 max-w-[200px] text-[10px] leading-relaxed text-text-tertiary">
-          Connect Unsplash or Pexels to browse millions of free photos, or upload your own.
+          Add your Unsplash or Pexels API key in Settings (toolbar menu) to browse free stock photos, or upload your own.
         </p>
         <label className="cursor-pointer rounded-sm bg-accent px-4 py-1.5 text-[10px] font-medium text-accent-fg hover:bg-accent-hover">
           Upload Image
