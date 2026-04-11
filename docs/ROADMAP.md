@@ -62,9 +62,9 @@ A free, open-source, web-based design tool that empowers non-designers to create
 - [x] Set up ESLint + Prettier with shared config
 - [x] Set up Zustand store skeleton
 - [x] Initialize Fabric.js canvas component that renders an empty artboard
-- [ ] Set up GitHub Actions CI (lint + typecheck + build)
-- [ ] Write README with project vision, screenshot placeholder, and dev setup instructions
-- [ ] Choose and apply license (recommend **AGPLv3** — prevents proprietary forks while allowing self-hosting)
+- [x] Set up GitHub Actions CI (lint + typecheck + build)
+- [x] Write README with project vision, screenshot, and dev setup instructions
+- [x] Choose and apply license (AGPLv3)
 
 ### Acceptance Criteria
 
@@ -491,20 +491,21 @@ A free, open-source, web-based design tool that empowers non-designers to create
 
 ### Tasks
 
-- [ ] **Landing page:**
-  - Hero with demo GIF/video
+- [x] **Landing page:**
+  - Hero with editor screenshot
   - Feature highlights
-  - "Open Editor" CTA (no signup required)
+  - "Start Designing" CTA (no signup required)
   - Self-hosting instructions
   - Comparison table (Monet vs Canva Free vs Canva Pro)
   - GitHub star button
-- [ ] **Documentation site:**
-  - Getting started guide
-  - Self-hosting guide
-  - Template creation guide
-  - API reference (if backend is enabled)
-  - Contributing guide
-  - Architecture overview
+  - Support section (GitHub Sponsors, Open Collective)
+- [x] **Documentation:**
+  - Getting started guide (README)
+  - Self-hosting guide (SELF-HOSTING.md)
+  - Template creation guide (TEMPLATE_GUIDE.md)
+  - Contributing guide (CONTRIBUTING.md)
+  - Architecture overview (ARCHITECTURE.md)
+  - Design system (DESIGN.md)
 - [ ] **Launch checklist:**
   - [ ] Security audit (dependencies, auth, XSS in SVG uploads)
   - [ ] License review (all bundled assets are CC0/MIT/Apache compatible)

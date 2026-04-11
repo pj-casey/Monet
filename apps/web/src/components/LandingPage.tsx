@@ -6,12 +6,12 @@
  * Intersection Observer drives subtle fade-in on scroll.
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   LayoutTemplate, Type, FileStack, Palette, Sparkles,
   Crop, Download, Server, Check, X, Terminal,
-  Heart, ArrowRight, Sun, Moon, Users, Copy,
+  Heart, ArrowRight, Sun, Moon, Users,
 } from 'lucide-react';
 
 /** Inline GitHub mark SVG — lucide doesn't include brand logos */
@@ -286,17 +286,13 @@ export function LandingPage() {
               if (fallback) fallback.style.display = 'flex';
             }}
           />
-          {/* Fallback gradient placeholder — hidden when screenshot loads */}
+          {/* Fallback gradient — shown only if screenshot fails to load */}
           <div
             className="hidden aspect-video items-center justify-center rounded-lg shadow-xl"
             style={{
               background: 'linear-gradient(135deg, var(--accent-subtle), var(--bg-wash), var(--accent-subtle))',
             }}
-          >
-            <span className="text-sm font-medium text-text-tertiary">
-              Screenshot coming soon
-            </span>
-          </div>
+          />
         </div>
       </section>
 
@@ -514,17 +510,17 @@ export function LandingPage() {
               </a>
             </div>
 
-            {/* Crypto */}
+            {/* Direct support */}
             <div className="rounded-lg border border-border bg-elevated p-5">
               <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-md bg-accent-subtle mx-auto">
-                <Terminal size={18} className="text-accent" aria-hidden="true" />
+                <GithubIcon size={18} className="text-accent" />
               </div>
-              <h3 className="mb-1 text-sm font-medium text-text-primary">Crypto</h3>
-              <p className="mb-3 text-xs text-text-tertiary">BTC, ETH, SOL</p>
-              {/* TODO: Replace with real wallet addresses before going live */}
-              <CryptoAddress label="BTC" address="bc1q...placeholder" />
-              <CryptoAddress label="ETH" address="0x...placeholder" />
-              <CryptoAddress label="SOL" address="...placeholder" />
+              <h3 className="mb-1 text-sm font-medium text-text-primary">Contribute</h3>
+              <p className="mb-3 text-xs text-text-tertiary">Code, templates, translations</p>
+              <a href="https://github.com/pj-casey/Monet/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer"
+                className="text-xs font-medium text-accent hover:text-accent-hover hover:underline">
+                How to contribute
+              </a>
             </div>
           </div>
         </div>
@@ -558,31 +554,3 @@ export function LandingPage() {
   );
 }
 
-// ─── Pricing helpers ──────────────────────────────────────────────
-
-function CryptoAddress({ label, address }: { label: string; address: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText(address).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }, [address]);
-
-  return (
-    <button type="button" onClick={handleCopy}
-      className="mt-1 flex w-full items-center justify-between rounded-sm bg-canvas px-2 py-1 text-left text-[10px] hover:bg-wash"
-      title={`Copy ${label} address`}
-    >
-      <span className="font-medium text-text-secondary">{label}</span>
-      <span className="flex items-center gap-1 text-text-tertiary">
-        <span className="max-w-[100px] truncate">{address}</span>
-        {copied
-          ? <Check size={10} className="text-accent" aria-hidden="true" />
-          : <Copy size={10} aria-hidden="true" />
-        }
-      </span>
-    </button>
-  );
-}
