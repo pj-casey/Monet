@@ -27,9 +27,13 @@ export function PageNavigator() {
   const [renameValue, setRenameValue] = useState('');
   const contextRef = useRef<HTMLDivElement>(null);
 
-  // Thumbnail aspect ratio
-  const thumbWidth = 120;
-  const thumbHeight = Math.round(thumbWidth * (artboardHeight / artboardWidth));
+  // Thumbnail aspect ratio — capped to fit within the 72px strip
+  const maxThumbH = 56;
+  const rawThumbH = Math.round(120 * (artboardHeight / artboardWidth));
+  const thumbHeight = Math.min(rawThumbH, maxThumbH);
+  const thumbWidth = rawThumbH > maxThumbH
+    ? Math.round(maxThumbH * (artboardWidth / artboardHeight))
+    : 120;
 
   // Render thumbnails when pages change
   useEffect(() => {

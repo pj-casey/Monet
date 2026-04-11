@@ -556,7 +556,7 @@ function IllustrationsSection({ query }: { query: string }) {
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        {illustrations.slice(0, 12).map((illus) => (
+        {illustrations.map((illus) => (
           <button
             key={illus.id}
             type="button"
