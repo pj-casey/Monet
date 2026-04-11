@@ -2,41 +2,28 @@
   <style>
     @media (prefers-color-scheme: dark) {
       .outer { fill: #e8a878; }
-      .inner { fill: #f0c8a0; }
+      .mid { fill: #e0956a; }
+      .base { fill: #f0c8a0; }
     }
   </style>
-  <!-- Left petal: wide rounded top, narrows toward base, leans left -->
+  <!-- Far left petal: wide, shallow, spoon-shaped -->
   <path class="outer" fill="#C4704A" d="
-    M14.5 21
-    Q13.5 17.5 11 13
-    Q9 9.5 7.5 7.5
-    Q6.5 6 7.5 5
-    Q8.5 4.5 10.5 5.5
-    Q13 7 14.5 11
-    Q16 15.5 15.5 20
-    z
+    M14.5 22 Q11 21 7.5 18 Q4 15 3 12.5 Q2 10.5 3.5 9.5 Q5.5 8.5 9 11 Q12.5 14 14.5 18 Q15.5 20.5 14.5 22z
   "/>
-  <!-- Center petal: tallest, wide rounded top, lighter -->
-  <path class="inner" fill="#d4a574" d="
-    M16 20.5
-    Q14.5 17 14 12.5
-    Q13.5 8 15 5
-    Q16 3.5 17 5
-    Q18.5 8 18 12.5
-    Q17.5 17 16 20.5
-    z
+  <!-- Inner left petal -->
+  <path class="mid" fill="#b5613e" d="
+    M15.5 21.5 Q13.5 18.5 11.5 14 Q9.5 9.5 9.5 7.5 Q9.5 5.5 11.5 6 Q13.5 6.5 15 11 Q16 15 16 19 Q16 21 15.5 21.5z
   "/>
-  <!-- Right petal: wide rounded top, narrows toward base, leans right -->
+  <!-- Center petal: widest, most upright, lightest -->
+  <path class="base" fill="#d4a574" d="
+    M16 21 Q14.5 17 14 13 Q13.5 9 15 7 Q16 5.5 17 7 Q18.5 9 18 13 Q17.5 17 16 21z
+  "/>
+  <!-- Inner right petal -->
+  <path class="mid" fill="#b5613e" d="
+    M16.5 21.5 Q16 21 16 19 Q16 15 17 11 Q18.5 6.5 20.5 6 Q22.5 5.5 22.5 7.5 Q22.5 9.5 20.5 14 Q18.5 18.5 16.5 21.5z
+  "/>
+  <!-- Far right petal: wide, shallow, spoon-shaped -->
   <path class="outer" fill="#C4704A" d="
-    M17.5 21
-    Q16.5 20 16.5 15.5
-    Q17.5 11 19.5 7
-    Q21.5 4.5 23 5
-    Q24.5 5.5 24.5 7
-    Q24 9 22 13
-    Q19.5 17.5 17.5 21
-    z
+    M17.5 22 Q16.5 20.5 17.5 18 Q19.5 14 23 11 Q26.5 8.5 28.5 9.5 Q30 10.5 29 12.5 Q28 15 24.5 18 Q21 21 17.5 22z
   "/>
-  <!-- Pistil -->
-  <ellipse class="inner" fill="#d4a574" cx="16" cy="23.5" rx="2" ry="1.2"/>
 </svg>
