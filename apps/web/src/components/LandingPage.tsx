@@ -504,7 +504,7 @@ export function LandingPage() {
               </div>
               <h3 className="mb-1 text-sm font-medium text-text-primary">Open Collective</h3>
               <p className="mb-3 text-xs text-text-tertiary">Transparent finances</p>
-              <a href="https://opencollective.com/monet" target="_blank" rel="noopener noreferrer"
+              <a href="https://opencollective.com/claude-monet" target="_blank" rel="noopener noreferrer"
                 className="text-xs font-medium text-accent hover:text-accent-hover hover:underline">
                 Contribute on Open Collective
               </a>
