@@ -250,7 +250,7 @@ export function LandingPage() {
             <ArrowRight size={16} aria-hidden="true" />
           </Link>
           <a
-            href="https://github.com/anthropics/monet"
+            href="https://github.com/pj-casey/Monet"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-sm border border-border bg-elevated px-6 py-2.5 text-base font-medium text-text-primary shadow-sm hover:bg-wash"
@@ -399,7 +399,7 @@ export function LandingPage() {
             <div className="text-text-tertiary"># Clone and start</div>
             <div className="mt-1">
               <span className="text-accent">$</span>
-              <span className="text-text-primary"> git clone https://github.com/anthropics/monet.git</span>
+              <span className="text-text-primary"> git clone https://github.com/pj-casey/Monet.git</span>
             </div>
             <div className="mt-1">
               <span className="text-accent">$</span>
@@ -415,7 +415,7 @@ export function LandingPage() {
 
         <div className="mt-6 text-center">
           <a
-            href="https://github.com/anthropics/monet/blob/main/SELF-HOSTING.md"
+            href="https://github.com/pj-casey/Monet/blob/main/SELF-HOSTING.md"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm font-medium text-accent hover:text-accent-hover hover:underline"
@@ -446,7 +446,7 @@ export function LandingPage() {
           {/* GitHub badge placeholder */}
           <div className="mb-10 inline-flex items-center gap-2 rounded-full border border-border bg-elevated px-4 py-2 shadow-sm">
             <GithubIcon size={16} className="text-text-secondary" />
-            <span className="text-sm font-medium text-text-primary">anthropics/monet</span>
+            <span className="text-sm font-medium text-text-primary">pj-casey/Monet</span>
             <span className="rounded-full bg-accent-subtle px-2 py-0.5 text-xs font-medium text-accent">
               stars
             </span>
@@ -454,7 +454,7 @@ export function LandingPage() {
 
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a
-              href="https://github.com/anthropics/monet"
+              href="https://github.com/pj-casey/Monet"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-sm bg-accent px-5 py-2 text-sm font-medium text-accent-fg hover:bg-accent-hover"
@@ -463,7 +463,7 @@ export function LandingPage() {
               View on GitHub
             </a>
             <a
-              href="https://github.com/anthropics/monet/blob/main/CONTRIBUTING.md"
+              href="https://github.com/pj-casey/Monet/blob/main/CONTRIBUTING.md"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-sm border border-border bg-elevated px-5 py-2 text-sm font-medium text-text-primary hover:bg-wash"
@@ -495,7 +495,7 @@ export function LandingPage() {
               </div>
               <h3 className="mb-1 text-sm font-medium text-text-primary">GitHub Sponsors</h3>
               <p className="mb-3 text-xs text-text-tertiary">Monthly or one-time</p>
-              <a href="https://github.com/sponsors/anthropics" target="_blank" rel="noopener noreferrer"
+              <a href="https://github.com/sponsors/pj-casey" target="_blank" rel="noopener noreferrer"
                 className="text-xs font-medium text-accent hover:text-accent-hover hover:underline">
                 Sponsor on GitHub
               </a>
@@ -539,7 +539,7 @@ export function LandingPage() {
           </span>
           <div className="flex items-center gap-4 text-xs text-text-tertiary">
             <a
-              href="https://github.com/anthropics/monet"
+              href="https://github.com/pj-casey/Monet"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-text-secondary"

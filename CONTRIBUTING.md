@@ -12,7 +12,7 @@ Thanks for your interest in contributing. This guide will help you get started.
 ### Getting Running
 
 ```bash
-git clone https://github.com/anthropics/monet.git
+git clone https://github.com/pj-casey/Monet.git
 cd monet
 pnpm install
 pnpm dev
@@ -52,7 +52,7 @@ All UI must use tokens from `DESIGN.md`. No hardcoded colors, no Tailwind defaul
 
 ## Finding Issues to Work On
 
-Check the [Issues](https://github.com/anthropics/monet/issues) tab. Issues labeled `good first issue` are a great starting point.
+Check the [Issues](https://github.com/pj-casey/Monet/issues) tab. Issues labeled `good first issue` are a great starting point.
 
 Common areas where help is welcome:
 
