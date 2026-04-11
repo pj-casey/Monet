@@ -1,20 +1,42 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
   <style>
-    .mark { fill: #C4704A; }
     @media (prefers-color-scheme: dark) {
-      .mark { fill: #e8a878; }
+      .outer { fill: #e8a878; }
+      .inner { fill: #f0c8a0; }
     }
   </style>
-  <!-- Petal 1: 12 o'clock, tilted slightly right -->
-  <path class="mark" d="M16.5 14 Q17 10.5 17.8 8 18.5 6 19.5 5.5 20.5 5.2 21 6.5 21.3 8 20 10.5 18.5 13 16.5 14z"/>
-  <!-- Petal 2: ~2:30, pointing right -->
-  <path class="mark" d="M17.5 16 Q20 14.5 22.5 14 24.5 13.5 25.5 14.5 26 15.8 24.5 17 23 18 20 18.5 17.8 18.5 17.5 16z"/>
-  <!-- Petal 3: ~5 o'clock, pointing down-right -->
-  <path class="mark" d="M16.5 18 Q17.5 20.5 17.5 23 17.5 25 16.2 25.8 15 26.2 14 25 13.2 23.5 14 21 14.8 18.5 16.5 18z"/>
-  <!-- Petal 4: ~7:30, pointing down-left -->
-  <path class="mark" d="M14.5 17.5 Q12 19 10 19.5 8 19.8 7 18.8 6.2 17.5 7.5 16.2 8.5 15.2 11 14.8 13.5 14.5 14.5 17.5z"/>
-  <!-- Petal 5: ~10 o'clock, pointing up-left (slightly smaller) -->
-  <path class="mark" d="M14.8 15 Q13 13 11.5 11 10.5 9.5 11 8.2 11.5 7 13 7.5 14.2 8 15 10 15.5 12 14.8 15z"/>
-  <!-- Center dot -->
-  <circle class="mark" cx="16" cy="16.5" r="1.8"/>
+  <!-- Left petal: wide rounded top, narrows toward base, leans left -->
+  <path class="outer" fill="#C4704A" d="
+    M14.5 21
+    Q13.5 17.5 11 13
+    Q9 9.5 7.5 7.5
+    Q6.5 6 7.5 5
+    Q8.5 4.5 10.5 5.5
+    Q13 7 14.5 11
+    Q16 15.5 15.5 20
+    z
+  "/>
+  <!-- Center petal: tallest, wide rounded top, lighter -->
+  <path class="inner" fill="#d4a574" d="
+    M16 20.5
+    Q14.5 17 14 12.5
+    Q13.5 8 15 5
+    Q16 3.5 17 5
+    Q18.5 8 18 12.5
+    Q17.5 17 16 20.5
+    z
+  "/>
+  <!-- Right petal: wide rounded top, narrows toward base, leans right -->
+  <path class="outer" fill="#C4704A" d="
+    M17.5 21
+    Q16.5 20 16.5 15.5
+    Q17.5 11 19.5 7
+    Q21.5 4.5 23 5
+    Q24.5 5.5 24.5 7
+    Q24 9 22 13
+    Q19.5 17.5 17.5 21
+    z
+  "/>
+  <!-- Pistil -->
+  <ellipse class="inner" fill="#d4a574" cx="16" cy="23.5" rx="2" ry="1.2"/>
 </svg>
