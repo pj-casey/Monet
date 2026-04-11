@@ -464,6 +464,7 @@ function IllustrationsTab() {
             className="group overflow-hidden rounded-lg border border-border hover:border-accent hover:shadow-sm"
             aria-label={`Insert ${illus.name} illustration`}
           >
+            {/* Safe: illus.svg is our own bundled static SVG from illustrations.ts, not user input */}
             <div
               className="h-20 w-full"
               dangerouslySetInnerHTML={{ __html: illus.svg }}

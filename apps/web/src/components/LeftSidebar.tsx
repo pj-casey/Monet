@@ -565,6 +565,7 @@ function IllustrationsSection({ query }: { query: string }) {
             className="group overflow-hidden rounded-lg border border-border hover:border-accent hover:shadow-sm"
             aria-label={`Insert ${illus.name} illustration`}
           >
+            {/* Safe: illus.svg is our own bundled static SVG from illustrations.ts, not user input */}
             <div className="h-16 w-full" dangerouslySetInnerHTML={{ __html: illus.svg }} />
             <p className="truncate px-1 py-0.5 text-[9px] text-text-secondary">{illus.name}</p>
           </button>
