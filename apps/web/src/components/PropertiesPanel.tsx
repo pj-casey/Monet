@@ -63,6 +63,12 @@ export function PropertiesPanel({ selection }: PropertiesPanelProps) {
             tintColor={selection.filterTintColor ?? ''}
             tintAlpha={selection.filterTintAlpha ?? 0}
             vignette={selection.filterVignette ?? 0}
+            vibrance={selection.filterVibrance ?? 0}
+            gamma={selection.filterGamma ?? 0}
+            pixelate={selection.filterPixelate ?? 0}
+            grayscale={selection.filterGrayscale ?? false}
+            invert={selection.filterInvert ?? false}
+            sepia={selection.filterSepia ?? false}
           />
         </>
       )}
@@ -441,12 +447,16 @@ function Spinner() {
 function ImageFiltersSection({
   brightness, contrast, saturation, blur,
   hueRotation, noise, sharpen, tintColor, tintAlpha, vignette,
+  vibrance, gamma, pixelate, grayscale, invert, sepia,
 }: {
   brightness: number; contrast: number; saturation: number; blur: number;
   hueRotation: number; noise: number; sharpen: number;
   tintColor: string; tintAlpha: number; vignette: number;
+  vibrance: number; gamma: number; pixelate: number;
+  grayscale: boolean; invert: boolean; sepia: boolean;
 }) {
-  const current = { brightness, contrast, saturation, blur, hueRotation, noise, sharpen, tintColor, tintAlpha, vignette };
+  const [open, setOpen] = useState(true);
+  const current = { brightness, contrast, saturation, blur, hueRotation, noise, sharpen, tintColor, tintAlpha, vignette, vibrance, gamma, pixelate, grayscale, invert, sepia };
 
   const update = useCallback(
     (values: typeof current) => {
@@ -456,75 +466,109 @@ function ImageFiltersSection({
     [],
   );
 
-  const defaults = { brightness: 0, contrast: 0, saturation: 0, blur: 0, hueRotation: 0, noise: 0, sharpen: 0, tintColor: '', tintAlpha: 0, vignette: 0 };
+  const defaults = { brightness: 0, contrast: 0, saturation: 0, blur: 0, hueRotation: 0, noise: 0, sharpen: 0, tintColor: '', tintAlpha: 0, vignette: 0, vibrance: 0, gamma: 0, pixelate: 0, grayscale: false, invert: false, sepia: false };
 
   return (
-    <div className="flex flex-col gap-3">
-      <label className="text-xs font-medium text-text-secondary">Filters</label>
-
-      <FilterSlider label="Brightness" value={brightness} min={-1} max={1} step={0.05}
-        onChange={(v) => update({ ...current, brightness: v })} />
-      <FilterSlider label="Contrast" value={contrast} min={-1} max={1} step={0.05}
-        onChange={(v) => update({ ...current, contrast: v })} />
-      <FilterSlider label="Saturation" value={saturation} min={-1} max={1} step={0.05}
-        onChange={(v) => update({ ...current, saturation: v })} />
-      <FilterSlider label="Blur" value={blur} min={0} max={1} step={0.02}
-        onChange={(v) => update({ ...current, blur: v })} />
-      <FilterSlider label="Hue Rotation" value={hueRotation} min={-180} max={180} step={5}
-        onChange={(v) => update({ ...current, hueRotation: v })} />
-      <FilterSlider label="Noise" value={noise} min={0} max={500} step={10}
-        onChange={(v) => update({ ...current, noise: v })} />
-      <FilterSlider label="Sharpen" value={sharpen} min={0} max={2} step={0.1}
-        onChange={(v) => update({ ...current, sharpen: v })} />
-      <FilterSlider label="Vignette" value={vignette} min={0} max={1} step={0.05}
-        onChange={(v) => update({ ...current, vignette: v })} />
-
-      {/* Tint with color picker */}
-      <div>
-        <div className="mb-0.5 flex items-center justify-between">
-          <span className="text-[10px] text-text-secondary">Tint</span>
-          <span className="text-[10px] text-text-tertiary">{tintAlpha > 0 ? Math.round(tintAlpha * 100) + '%' : 'off'}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <input type="color" value={tintColor || '#ff6600'}
-            onChange={(e) => update({ ...current, tintColor: e.target.value, tintAlpha: current.tintAlpha || 0.3 })}
-            className="h-6 w-6 cursor-pointer rounded border border-border p-0.5" aria-label="Tint color" />
-          <input type="range" min={0} max={1} step={0.05} value={tintAlpha}
-            onChange={(e) => update({ ...current, tintAlpha: Number(e.target.value), tintColor: current.tintColor || '#ff6600' })}
-            className="flex-1" aria-label="Tint intensity" />
-        </div>
-      </div>
-
-      <button type="button"
-        onClick={() => update(defaults)}
-        className="mt-1 rounded border border-border px-2 py-1 text-xs text-text-secondary hover:bg-canvas">
-        Reset Filters
+    <div>
+      {/* Collapsible header */}
+      <button type="button" onClick={() => setOpen(!open)}
+        className="flex w-full items-center justify-between py-2 text-xs font-medium text-text-secondary">
+        Adjustments
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"
+          className={`transition-transform ${open ? 'rotate-180' : ''}`}>
+          <path d="M3 4.5 6 7.5 9 4.5" />
+        </svg>
       </button>
+
+      {open && (
+        <div className="flex flex-col gap-2.5 pb-2">
+          {/* ─── Adjustment Sliders ─── */}
+          <AdjSlider label="Brightness" value={brightness} min={-1} max={1} step={0.01} displayRange={100}
+            onChange={(v) => update({ ...current, brightness: v })} />
+          <AdjSlider label="Contrast" value={contrast} min={-1} max={1} step={0.01} displayRange={100}
+            onChange={(v) => update({ ...current, contrast: v })} />
+          <AdjSlider label="Saturation" value={saturation} min={-1} max={1} step={0.01} displayRange={100}
+            onChange={(v) => update({ ...current, saturation: v })} />
+          <AdjSlider label="Vibrance" value={vibrance} min={-1} max={1} step={0.01} displayRange={100}
+            onChange={(v) => update({ ...current, vibrance: v })} />
+          <AdjSlider label="Hue" value={hueRotation} min={-180} max={180} step={1} displayRange={1} suffix="°"
+            onChange={(v) => update({ ...current, hueRotation: v })} />
+          <AdjSlider label="Gamma" value={gamma} min={-1} max={1} step={0.01} displayRange={100}
+            onChange={(v) => update({ ...current, gamma: v })} />
+          <AdjSlider label="Blur" value={blur} min={0} max={1} step={0.01} displayRange={20}            onChange={(v) => update({ ...current, blur: v })} />
+          <AdjSlider label="Noise" value={noise} min={0} max={500} step={1} displayRange={0.2}            onChange={(v) => update({ ...current, noise: v })} />
+          <AdjSlider label="Sharpen" value={sharpen} min={0} max={2} step={0.01} displayRange={50}            onChange={(v) => update({ ...current, sharpen: v })} />
+          <AdjSlider label="Pixelate" value={pixelate} min={0} max={20} step={1} displayRange={1}            onChange={(v) => update({ ...current, pixelate: v })} />
+          <AdjSlider label="Vignette" value={vignette} min={0} max={1} step={0.01} displayRange={100}            onChange={(v) => update({ ...current, vignette: v })} />
+
+          {/* ─── Effect Toggles ─── */}
+          <div className="flex gap-1.5 pt-1">
+            <EffectToggle label="Grayscale" active={grayscale}
+              onClick={() => update({ ...current, grayscale: !grayscale })} />
+            <EffectToggle label="Sepia" active={sepia}
+              onClick={() => update({ ...current, sepia: !sepia })} />
+            <EffectToggle label="Invert" active={invert}
+              onClick={() => update({ ...current, invert: !invert })} />
+          </div>
+
+          {/* ─── Tint ─── */}
+          <div>
+            <div className="mb-0.5 flex items-center justify-between">
+              <span className="text-[10px] text-text-secondary">Tint</span>
+              <span className="text-[10px] text-text-tertiary">{tintAlpha > 0 ? Math.round(tintAlpha * 100) + '%' : 'off'}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <input type="color" value={tintColor || '#ff6600'}
+                onChange={(e) => update({ ...current, tintColor: e.target.value, tintAlpha: current.tintAlpha || 0.3 })}
+                className="h-6 w-6 cursor-pointer rounded border border-border p-0.5" aria-label="Tint color" />
+              <input type="range" min={0} max={1} step={0.05} value={tintAlpha}
+                onChange={(e) => update({ ...current, tintAlpha: Number(e.target.value), tintColor: current.tintColor || '#ff6600' })}
+                className="flex-1" aria-label="Tint intensity" />
+            </div>
+          </div>
+
+          {/* ─── Reset ─── */}
+          <button type="button"
+            onClick={() => update(defaults)}
+            className="mt-1 rounded border border-border px-2 py-1 text-[10px] text-text-secondary hover:bg-canvas">
+            Reset Adjustments
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
-function FilterSlider({
-  label,
-  value,
-  min,
-  max,
-  step,
-  onChange,
+/** Effect toggle pill button */
+function EffectToggle({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick}
+      className={`rounded-full px-2.5 py-1 text-[10px] font-medium transition-colors ${
+        active ? 'bg-accent text-accent-fg' : 'bg-wash text-text-secondary hover:text-text-primary'
+      }`}>
+      {label}
+    </button>
+  );
+}
+
+/** Adjustment slider with user-friendly display values */
+function AdjSlider({
+  label, value, min, max, step, displayRange, suffix, onChange,
 }: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  step: number;
+  label: string; value: number; min: number; max: number; step: number;
+  /** Multiply internal value by this for display (e.g. 100 turns 0.5 → 50) */
+  displayRange?: number;
+  suffix?: string;
   onChange: (v: number) => void;
 }) {
-  const display = value === 0 ? '0' : value > 0 ? `+${value.toFixed(2)}` : value.toFixed(2);
+  const dr = displayRange ?? 1;
+  const display = Math.round(value * dr);
+  const prefix = display > 0 && min < 0 ? '+' : '';
   return (
     <div>
       <div className="mb-0.5 flex justify-between text-[10px] text-text-tertiary">
         <span>{label}</span>
-        <span>{display}</span>
+        <span>{prefix}{display}{suffix ?? ''}</span>
       </div>
       <input
         type="range"

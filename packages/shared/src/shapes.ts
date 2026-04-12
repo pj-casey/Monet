@@ -98,6 +98,18 @@ export interface SelectedObjectProps {
   filterTintAlpha?: number;
   /** Vignette intensity (0 to 1) */
   filterVignette?: number;
+  /** Vibrance (-1 to 1) */
+  filterVibrance?: number;
+  /** Gamma correction (-1 to 1) */
+  filterGamma?: number;
+  /** Pixelate block size (0 = off) */
+  filterPixelate?: number;
+  /** Grayscale toggle */
+  filterGrayscale?: boolean;
+  /** Invert toggle */
+  filterInvert?: boolean;
+  /** Sepia toggle */
+  filterSepia?: boolean;
 
   // ─── Shadow (all object types) ──────────────────────────────────
   shadowEnabled?: boolean;

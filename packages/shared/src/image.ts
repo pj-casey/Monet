@@ -30,6 +30,18 @@ export interface ImageFilterValues {
   tintAlpha: number;
   /** Vignette intensity (0 = off, 1 = strong) */
   vignette: number;
+  /** Vibrance (-1 to 1, boosts muted colors more than saturated ones) */
+  vibrance: number;
+  /** Gamma correction (-1 to 1, mapped to 0..2 where 0 = neutral) */
+  gamma: number;
+  /** Pixelate block size (0 = off, 2-20 = pixelated) */
+  pixelate: number;
+  /** Convert to grayscale */
+  grayscale: boolean;
+  /** Invert colors */
+  invert: boolean;
+  /** Apply sepia tone */
+  sepia: boolean;
 }
 
 /** Default filter values — no adjustments */
@@ -44,4 +56,10 @@ export const DEFAULT_IMAGE_FILTERS: ImageFilterValues = {
   tintColor: '',
   tintAlpha: 0,
   vignette: 0,
+  vibrance: 0,
+  gamma: 0,
+  pixelate: 0,
+  grayscale: false,
+  invert: false,
+  sepia: false,
 };

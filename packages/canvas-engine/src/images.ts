@@ -5,8 +5,38 @@
  * The file is converted to a data URL (a long string that contains the
  * entire image data), which Fabric.js can then render on the canvas.
  *
- * Filters (brightness, contrast, saturation, blur) are Fabric.js built-in
- * effects that modify how the image looks without changing the original data.
+ * Filters use Fabric.js built-in WebGL-accelerated filter classes.
+ * Currently supported: Brightness, Contrast, Saturation, Blur, HueRotation,
+ * Noise, Sharpen (Convolute), Tint (BlendColor), Vignette (custom),
+ * Vibrance, Gamma, Pixelate, Grayscale, Invert, Sepia.
+ *
+ * ─── LIBRARY EVALUATION: colorthief ────────────────────────────────
+ * Package: colorthief (https://npmjs.com/package/colorthief)
+ * Size: 8.6KB gzip | Downloads: 398K/week | License: MIT | Last: Mar 2026
+ *
+ * Extracts dominant colors from images via getPalette(). Native OKLCH
+ * output aligns with our design token system. Zero dependencies.
+ * Supports Web Workers for non-blocking extraction.
+ *
+ * Use case: "Upload image → extract brand colors → add to brand kit."
+ * Verdict: Best pick for color extraction. Tiny, zero deps, OKLCH native.
+ * ───────────────────────────────────────────────────────────────────
+ *
+ * ─── LIBRARY EVALUATION: opentype.js ───────────────────────────────
+ * Package: opentype.js (https://npmjs.com/package/opentype.js)
+ * Size: 47KB gzip | Downloads: 675K/week | License: MIT
+ * Last npm: Oct 2021 | GitHub: active (Apr 2026)
+ *
+ * Parses TTF/OTF/WOFF fonts, provides per-glyph SVG path outlines via
+ * font.getPaths(text, x, y, fontSize). Each path converts to SVG via
+ * path.toSVG(). Enables "Convert text to outlines" (text becomes editable
+ * vector paths, independent of the font file).
+ *
+ * Text-on-path: not built in, but per-glyph paths + advance widths make
+ * it implementable — walk a Bezier curve, place each glyph at tangent.
+ *
+ * Verdict: Only option for font parsing. Enables curved text feature.
+ * ───────────────────────────────────────────────────────────────────
  */
 
 import { FabricImage, filters, classRegistry } from 'fabric';
@@ -143,6 +173,27 @@ export function applyFilters(img: FabricImage, values: ImageFilterValues): void 
   if (values.vignette > 0) {
     filterList.push(new VignetteFilter({ vignette: values.vignette }) as InstanceType<typeof filters.BaseFilter>);
   }
+  if (values.vibrance !== 0) {
+    filterList.push(new filters.Vibrance({ vibrance: values.vibrance }));
+  }
+  if (values.gamma !== 0) {
+    // Map our -1..1 range to Fabric's 0.01..2.2 (1 = neutral)
+    const g = Math.max(0.01, 1 + values.gamma * 1.2);
+    filterList.push(new filters.Gamma({ gamma: [g, g, g] }));
+  }
+  if (values.pixelate > 0) {
+    filterList.push(new filters.Pixelate({ blocksize: values.pixelate }));
+  }
+  if (values.grayscale) {
+    filterList.push(new filters.Grayscale());
+  }
+  if (values.invert) {
+    filterList.push(new filters.Invert());
+  }
+  if (values.sepia) {
+    // Sepia is a ColorMatrix preset — Fabric.js exports it under ColorMatrixFilters
+    filterList.push(new filters.Sepia());
+  }
 
   img.filters = filterList;
   img.applyFilters();
@@ -177,6 +228,20 @@ export function readFilterValues(img: FabricImage): ImageFilterValues {
       result.tintAlpha = filter.alpha ?? 0;
     } else if (filter instanceof VignetteFilter) {
       result.vignette = filter.vignette ?? 0;
+    } else if (filter instanceof filters.Vibrance) {
+      result.vibrance = (filter as unknown as { vibrance: number }).vibrance ?? 0;
+    } else if (filter instanceof filters.Gamma) {
+      // Reverse-map from Fabric's [g,g,g] (0.01..2.2) back to our -1..1 range
+      const g = ((filter as unknown as { gamma: number[] }).gamma ?? [1, 1, 1])[0];
+      result.gamma = (g - 1) / 1.2;
+    } else if (filter instanceof filters.Pixelate) {
+      result.pixelate = (filter as unknown as { blocksize: number }).blocksize ?? 0;
+    } else if (filter instanceof filters.Grayscale) {
+      result.grayscale = true;
+    } else if (filter instanceof filters.Invert) {
+      result.invert = true;
+    } else if (filter instanceof filters.Sepia) {
+      result.sepia = true;
     }
   }
 

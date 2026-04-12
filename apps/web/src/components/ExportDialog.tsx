@@ -8,6 +8,31 @@
  * - Filename
  *
  * Clicking "Export" triggers a browser download — no server needed.
+ *
+ * ─── LIBRARY EVALUATION: pdf-lib ───────────────────────────────────
+ * Package: pdf-lib (https://npmjs.com/package/pdf-lib)
+ * Size: 161KB gzip | Downloads: 4.6M/week | License: MIT | Last: Nov 2021
+ *
+ * Our current PDF export embeds rasterized PNG images via jsPDF — PDFs
+ * look pixelated when printed at high resolution. pdf-lib creates true
+ * vector PDFs with shapes, text, and SVG paths (not rasterized).
+ *
+ * Key API: PDFDocument.create(), page.drawText() with embedded fonts,
+ * page.drawRectangle/Circle/Ellipse/Line(), page.drawSvgPath(),
+ * page.drawImage() for embedded PNGs. Works in browser, no native deps.
+ *
+ * We could map Fabric.js canvas objects to pdf-lib drawing commands:
+ * - Rect → page.drawRectangle()
+ * - Circle → page.drawEllipse()
+ * - Textbox → page.drawText() with embedFont() for Google Fonts
+ * - Path → page.drawSvgPath() (directly accepts SVG d="" strings)
+ * - Image → page.drawImage() (PNG/JPEG embedding)
+ *
+ * Verdict: Best option for vector PDF export. Would produce dramatically
+ * better print quality. 161KB is heavy but justified for the quality
+ * upgrade. Mature, stable API (4.6M weekly downloads). Implement when
+ * PDF print quality becomes a priority.
+ * ───────────────────────────────────────────────────────────────────
  */
 
 import { useState } from 'react';

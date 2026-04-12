@@ -1556,6 +1556,12 @@ export class CanvasEngine {
       result.filterTintColor = filterVals.tintColor;
       result.filterTintAlpha = filterVals.tintAlpha;
       result.filterVignette = filterVals.vignette;
+      result.filterVibrance = filterVals.vibrance;
+      result.filterGamma = filterVals.gamma;
+      result.filterPixelate = filterVals.pixelate;
+      result.filterGrayscale = filterVals.grayscale;
+      result.filterInvert = filterVals.invert;
+      result.filterSepia = filterVals.sepia;
     }
 
     // Add text-specific properties if it's a text object
