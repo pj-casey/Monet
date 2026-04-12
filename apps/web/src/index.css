@@ -143,59 +143,6 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════ */
-/* Water Lily Logo — petal animations synced with activity state  */
-/* ═══════════════════════════════════════════════════════════════ */
-
-.lily-petal {
-  will-change: transform, opacity;
-}
-
-/* ─── Idle: barely perceptible breathing ─── */
-@keyframes lily-breathe {
-  0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.04); }
-}
-.lily-idle .lily-petal {
-  animation: lily-breathe 6s ease-in-out infinite;
-  animation-delay: calc(var(--petal-i) * 200ms);
-}
-
-/* ─── Loading: gentle open/close ─── */
-@keyframes lily-load {
-  0%, 100% { transform: scale(1) rotate(0deg); }
-  50%      { transform: scale(1.12) rotate(3deg); }
-}
-.lily-loading .lily-petal {
-  animation: lily-load 2s ease-in-out infinite;
-  animation-delay: calc(var(--petal-i) * 150ms);
-}
-
-/* ─── Processing: more pronounced bloom pulse ─── */
-@keyframes lily-process {
-  0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
-  50%      { transform: scale(1.18) rotate(5deg); opacity: 0.85; }
-}
-.lily-processing .lily-petal {
-  animation: lily-process 1.5s ease-in-out infinite;
-  animation-delay: calc(var(--petal-i) * 120ms);
-}
-
-/* ─── Success: bloom flash then settle ─── */
-.lily-success .lily-petal {
-  animation: none;
-  transform: scale(1.15) rotate(4deg);
-  transition: transform 1.5s ease-out, opacity 1.5s ease-out;
-}
-
-/* ─── Error: brief red tint then settle ─── */
-.lily-error .lily-petal {
-  animation: none;
-  transform: scale(0.92);
-  opacity: 0.7;
-  transition: transform 1.5s ease-out, opacity 1.5s ease-out;
-}
-
-/* ═══════════════════════════════════════════════════════════════ */
 /* Canvas Pasteboard — subtle dot grid texture (Figma-style)      */
 /* ═══════════════════════════════════════════════════════════════ */
 .canvas-pasteboard {
@@ -294,8 +241,7 @@ button, [role="button"], a, select, input[type="color"] {
   .animate-toast-up {
     animation: none !important;
   }
-  .monet-letter,
-  .lily-petal {
+  .monet-letter {
     animation: none !important;
     transition: none !important;
   }

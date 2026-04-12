@@ -12,7 +12,6 @@ import { useHistoryStore } from '../stores/history-store';
 import { engine } from './Canvas';
 import { Tooltip } from './Tooltip';
 import { MonetWordmark } from './MonetWordmark';
-import { WaterLilyLogo } from './WaterLilyLogo';
 
 import type { SaveStatus } from '../hooks/use-autosave';
 
@@ -89,7 +88,7 @@ export function Toolbar({
       {/* ─── Left: Logo + Undo/Redo + Save badge ─── */}
       <div className="flex items-center gap-2">
         <h1 className="flex items-center gap-1.5">
-          <WaterLilyLogo size={18} animate />
+          <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" width="18" height="18" className="block" aria-hidden="true" />
           <MonetWordmark />
         </h1>
         <Divider />
