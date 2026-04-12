@@ -509,36 +509,49 @@ A free, open-source, web-based design tool that empowers non-designers to create
 - [ ] API preferences route has no authentication
 - [ ] Marketplace moderation PATCH has no admin role check
 
-### P1 Bugs (35 remaining — next priority)
-- [ ] `nudgeSelected()` has no undo history — arrow key moves can't be undone
-- [ ] `setBackground()` has no undo history
-- [ ] `toggleLayerLock()`/`toggleLayerVisibility()` have no undo history
-- [ ] Smart guides filter misses `__isGuide` and `__isBgImage` tags — guides snap to other guides
-- [ ] `getArtboardDataURL()` used to miss `__isPenPreview`/`__isCropOverlay` (FIXED)
-- [ ] `history.restoreState()` removes pen preview and crop overlay on undo — breaks crop mode
-- [ ] PenTool `deactivate()` misses `__isCropOverlay` in selectability restore
-- [ ] `updateSelectedObject()` silently ignores width for objects with `active.width === 0`
-- [ ] Montserrat font not preloaded — 30+ templates render in fallback font on first load
-- [ ] Collab client has no `connect_error` handler — hangs indefinitely with no feedback
-- [ ] Stock photo API errors silently swallowed — shows "no results" instead of error message
-- [ ] AI `normalizeDoc()` doesn't handle multi-page designs — AI edits lose all pages
-- [ ] AI `smartEdit()` system prompt doesn't mention multi-page
-- [ ] AI `generateDesign()` returns doc without `pages` field (inconsistent with current format)
-- [ ] AI chat history sends rendered `reply` text, not structured JSON — Claude loses context
-- [ ] AI feedback regex too narrow — misses valid phrasing like "Can you review my design?"
-- [ ] AI no 429 rate-limit handling — raw error body shown to user
-- [ ] `FocusTrap` queries focusable elements once on mount — dynamic content breaks trap
-- [ ] `CommandPalette` Escape closes during AI processing — loses in-progress edit
-- [ ] `FontBrowser` `useEffect` depends on `visibleItems` (reference changes every render)
-- [ ] `TabSuggest` accesses `doc.objects` not `doc.pages` — poor suggestions on multi-page
-- [ ] `serializeCanvas` sets `createdAt` to empty string on saves after the first
-- [ ] Auto-save race condition — concurrent `doSave()` calls can produce stale saves
-- [ ] Sync conflict boundary off-by-one — diff exactly 5000ms silently ignored
-- [ ] `ResizeDialog` imports old `apps/web/src/lib/resize.ts` (was double-scaling, now fixed)
-- [ ] Marketplace upvote counter can go negative on race condition
-- [ ] `PropertiesPanel` shows "Arrow" label for all grouped objects
-- [ ] AI duplicate `STORAGE_KEY`/`getApiKey()` in `ai-generate.ts` (redundant, risks divergence)
-- [ ] `ContextualAI` position doesn't account for HiDPI canvas scaling
+### P1 Bugs (ALL FIXED — Sessions 74-75)
+- [x] `nudgeSelected()` has no undo history — added checkpoint/commit
+- [x] `setBackground()` has no undo history — added checkpoint/commit
+- [x] `toggleLayerLock()`/`toggleLayerVisibility()` have no undo history — added checkpoint/commit
+- [x] Smart guides filter misses `__isGuide` and `__isBgImage` tags — replaced with isInfrastructure()
+- [x] `getArtboardDataURL()` used to miss `__isPenPreview`/`__isCropOverlay` (FIXED)
+- [x] `history.restoreState()` removes pen preview and crop overlay on undo — replaced with isInfrastructure()
+- [x] PenTool `deactivate()` misses `__isCropOverlay` in selectability restore — replaced with isInfrastructure()
+- [x] `updateSelectedObject()` silently ignores width for objects with `active.width === 0` — fixed guard
+- [x] Montserrat font not preloaded — added to Google Fonts link + Playfair Display + Inter
+- [x] Collab client has no `connect_error` handler — added connect_error + disconnect handlers
+- [x] Stock photo API errors silently swallowed — added photoError state + error display
+- [x] AI `normalizeDoc()` doesn't handle multi-page designs — wraps into pages array
+- [x] AI `smartEdit()` system prompt doesn't mention multi-page — added pages instructions + uses normalizeDoc
+- [x] AI `generateDesign()` returns doc without `pages` field — wraps objects into pages
+- [x] AI chat history sends rendered `reply` text, not structured JSON — added rawResponse field
+- [x] AI feedback regex too narrow — broadened pattern
+- [x] AI no 429 rate-limit handling — added with retry-after
+- [x] `FocusTrap` queries focusable elements once on mount — queries on each Tab press now
+- [x] `CommandPalette` Escape closes during AI processing — added processing guard
+- [x] `FontBrowser` `useEffect` depends on `visibleItems` — removed from deps
+- [x] `TabSuggest` accesses `doc.objects` not `doc.pages` — uses flatMap on pages
+- [x] `serializeCanvas` sets `createdAt` to empty string on saves after the first — passes original
+- [x] Auto-save race condition — added savingRef concurrent-save guard
+- [x] Sync conflict boundary off-by-one — handles diff===0 as "in sync"
+- [x] Marketplace upvote counter can go negative — wrapped in transaction + MAX(0,...)
+- [x] `PropertiesPanel` shows "Arrow" label for all grouped objects — changed to "Group"
+- [x] AI duplicate `STORAGE_KEY`/`getApiKey()` in `ai-generate.ts` — deduplicated to ai-assistant.ts
+- [x] `ContextualAI` position doesn't account for HiDPI canvas scaling — added scale factor
+
+### Additional bugs found and fixed (Sessions 74-75 QA passes 1-5)
+- [x] Hover outline, selectAll, alt-drag duplicate used inline tag checks instead of isInfrastructure()
+- [x] groupSelected() missing setCoords() after add
+- [x] Gamma filter precision loss — multiplier 1.2→0.99 for exact round-trip
+- [x] Text stroke width reset on color change (strokeWidth || 1 → > 0 check)
+- [x] Infrastructure guards missing on deleteLayerByIndex/toggleLayerLock/toggleLayerVisibility
+- [x] MyDesigns duplicate shallow copy — shared page references between original and copy
+- [x] MyDesigns rename missing updatedAt timestamp
+- [x] switchToPage() missing history.clear() — undo on wrong page
+- [x] Magic Resize shadows not scaled
+- [x] smartEdit() rejects valid multi-page AI responses
+- [x] saveNow() saves even with no changes (Ctrl+S guard)
+- [x] Marketplace moderation has no admin role check — added first-user check
 
 ---
 
