@@ -73,6 +73,7 @@ function App() {
   const [resizeDialogOpen, setResizeDialogOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [backendAvailable, setBackendAvailable] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   const [marketplaceOpen, setMarketplaceOpen] = useState(false);
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
@@ -88,7 +89,10 @@ function App() {
 
   // Check for existing session on startup (non-blocking — guest mode if server is down)
   useEffect(() => {
-    checkAuth().then((user) => { if (user) setAuthUser(user); });
+    checkAuth().then(({ user, reachable }) => {
+      if (user) setAuthUser(user);
+      setBackendAvailable(reachable);
+    });
     // Migrate storage from old "opencanvas-*" keys to "monet-*" (runs once, idempotent)
     migrateFromOpenCanvas();
   }, []);
@@ -361,8 +365,8 @@ function App() {
         onToggleTheme={toggleTheme}
         onShowShortcuts={() => setShortcutSheetOpen(true)}
         userName={authUser?.name || authUser?.email || null}
-        onLogin={() => setAuthModalOpen(true)}
-        onLogout={async () => { await doLogout(); setAuthUser(null); }}
+        onLogin={backendAvailable ? () => setAuthModalOpen(true) : undefined}
+        onLogout={backendAvailable ? async () => { await doLogout(); setAuthUser(null); } : undefined}
       />
       </ErrorBoundary>
 

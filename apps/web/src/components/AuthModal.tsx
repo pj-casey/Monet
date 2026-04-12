@@ -145,16 +145,16 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
  * Check if the user is currently logged in.
  * Calls GET /api/auth/me — returns the user or null.
  */
-export async function checkAuth(): Promise<AuthUser | null> {
+export async function checkAuth(): Promise<{ user: AuthUser | null; reachable: boolean }> {
   try {
     const res = await fetch(`${API_BASE}/api/auth/me`, {
       credentials: 'include',
     });
-    if (!res.ok) return null;
+    if (!res.ok) return { user: null, reachable: true };
     const data = await res.json();
-    return data.user ?? null;
+    return { user: data.user ?? null, reachable: true };
   } catch {
-    return null; // Server not running — that's fine, guest mode
+    return { user: null, reachable: false }; // Server not running — guest mode
   }
 }
 
