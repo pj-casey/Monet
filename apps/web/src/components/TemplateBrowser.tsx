@@ -32,12 +32,7 @@ interface TemplateBrowserProps {
 }
 
 export function TemplateBrowser({ isOpen, onClose, initialTab, onOpenSettings }: TemplateBrowserProps) {
-  const [activeTab, setActiveTab] = useState<'blank' | 'templates' | 'ai'>('templates');
-
-  // Sync to initialTab when the modal opens
-  useEffect(() => {
-    if (isOpen && initialTab) setActiveTab(initialTab);
-  }, [isOpen, initialTab]);
+  const [activeTab, setActiveTab] = useState<'blank' | 'templates' | 'ai'>(initialTab || 'templates');
   const [customWidth, setCustomWidth] = useState(800);
   const [customHeight, setCustomHeight] = useState(600);
   // AI generate is now inline in the tab, no separate dialog needed
@@ -45,12 +40,10 @@ export function TemplateBrowser({ isOpen, onClose, initialTab, onOpenSettings }:
   const setArtboardDimensions = useEditorStore((s) => s.setArtboardDimensions);
   const categories = getTemplateCategories();
 
-  // Load user templates when the browser opens
+  // Load user templates on mount
   useEffect(() => {
-    if (isOpen) {
-      getAllUserTemplates().then(setUserTemplates);
-    }
-  }, [isOpen]);
+    getAllUserTemplates().then(setUserTemplates);
+  }, []);
 
   if (!isOpen) return null;
 

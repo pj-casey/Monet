@@ -413,7 +413,17 @@ function App() {
       <BottomBar />
 
       {/* Modals */}
-      <TemplateBrowser isOpen={templateBrowserOpen} initialTab={templateBrowserTab} onClose={() => { setTemplateBrowserOpen(false); setTemplateBrowserTab(undefined); }} onOpenSettings={() => { setTemplateBrowserOpen(false); setSettingsOpen(true); }} />
+      {templateBrowserOpen && (
+        <ErrorBoundary name="Template Browser">
+          <TemplateBrowser
+            key={`tb-${templateBrowserTab || 'default'}`}
+            isOpen
+            initialTab={templateBrowserTab}
+            onClose={() => { setTemplateBrowserOpen(false); setTemplateBrowserTab(undefined); }}
+            onOpenSettings={() => { setTemplateBrowserOpen(false); setSettingsOpen(true); }}
+          />
+        </ErrorBoundary>
+      )}
       <ExportDialog isOpen={exportDialogOpen} onClose={() => setExportDialogOpen(false)} />
       <ShortcutSheet isOpen={shortcutSheetOpen} onClose={() => setShortcutSheetOpen(false)} />
       <MyDesigns isOpen={myDesignsOpen} onClose={() => setMyDesignsOpen(false)} onOpenDesign={handleOpenDesign} />
