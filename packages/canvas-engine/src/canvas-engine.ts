@@ -2484,6 +2484,7 @@ export class CanvasEngine {
       this.canvas.sendObjectToBack(this.artboard);
     }
     this.canvas.requestRenderAll();
+    this.history.clear();
     this.emitLayersChange();
     this.onSelectionChange?.(null);
     this.emitPagesChange();

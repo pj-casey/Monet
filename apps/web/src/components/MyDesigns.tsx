@@ -46,13 +46,20 @@ export function MyDesigns({ isOpen, onClose, onOpenDesign }: MyDesignsProps) {
   const handleDuplicate = async (design: SavedDesign) => {
     const id = Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
     const now = new Date().toISOString();
+    // Deep copy the document to avoid shared references between original and duplicate
+    const docCopy = JSON.parse(JSON.stringify(design.document));
+    docCopy.id = id;
+    docCopy.name = `${design.name} (copy)`;
+    docCopy.createdAt = now;
+    docCopy.updatedAt = now;
     const copy: SavedDesign = {
       ...design,
       id,
       name: `${design.name} (copy)`,
       createdAt: now,
       updatedAt: now,
-      document: { ...design.document, id, name: `${design.name} (copy)`, createdAt: now, updatedAt: now },
+      thumbnail: design.thumbnail,
+      document: docCopy,
     };
     await saveDesign(copy);
     refresh();
@@ -65,10 +72,12 @@ export function MyDesigns({ isOpen, onClose, onOpenDesign }: MyDesignsProps) {
 
   const handleRenameConfirm = async (design: SavedDesign) => {
     const newName = renameValue.trim() || design.name;
+    const now = new Date().toISOString();
     const updated: SavedDesign = {
       ...design,
       name: newName,
-      document: { ...design.document, name: newName },
+      updatedAt: now,
+      document: { ...design.document, name: newName, updatedAt: now },
     };
     await saveDesign(updated);
     setRenaming(null);

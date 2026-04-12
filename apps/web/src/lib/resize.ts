@@ -71,6 +71,15 @@ function resizeObject(
     resized.strokeWidth = Math.max(1, resized.strokeWidth * uniformScale);
   }
 
+  // Shadow: scale offset and blur proportionally
+  if (resized.shadow && typeof resized.shadow === 'object') {
+    const shadow = { ...(resized.shadow as Record<string, unknown>) };
+    if (typeof shadow.offsetX === 'number') shadow.offsetX = shadow.offsetX * uniformScale;
+    if (typeof shadow.offsetY === 'number') shadow.offsetY = shadow.offsetY * uniformScale;
+    if (typeof shadow.blur === 'number') shadow.blur = shadow.blur * uniformScale;
+    resized.shadow = shadow;
+  }
+
   return resized;
 }
 
