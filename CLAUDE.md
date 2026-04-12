@@ -360,15 +360,16 @@ pnpm test         # Run tests
 - Build passes, JS 1,932KB (6KB smaller than before — simpler component)
 
 **Template System Expansion (complete):**
-- **50 built-in templates** (up from 18) across 8 categories:
+- **51 built-in templates** across 8 categories:
   - Social Media (10): Podcast, Instagram Post/Story, YouTube Thumbnail, LinkedIn, Twitter, Pinterest, TikTok, Facebook, Discord
   - Business (9): Business Card, Invoice, One-Pager, Email Signature, Proposal, Certificate, Meeting Notes, Name Badge, Resume
   - Marketing (7): Product Launch, Real Estate, Coupon, Testimonial, Newsletter, App Promo
   - Events (7): Wedding, Birthday, Concert, Conference Badge, Gala, Music Festival, Workshop
   - Education (3): Workshop, Flashcard, Study Guide
   - Creative (6): Book Cover, Movie Poster, Magazine Cover, Exhibition, Portfolio, Album Cover
-  - Food & Lifestyle (6): Restaurant Menu, Café Menu, Recipe Card, Cocktail Card, Fitness Plan, Wellness
+  - Food & Lifestyle (6): Restaurant Menu, Cafe Menu, Recipe Card, Cocktail Card, Fitness Plan, Wellness
   - Seasonal (4): Valentine, Halloween, Holiday Card, New Year
+- **Template Quality Upgrade (Session 75):** 28 templates rebuilt from scratch — each with unique visual personality, category-appropriate colors, diverse shape types (hearts, stars, diamonds, hexagons, pentagons), gradient-filled image placeholders, varied shadow styles, 15-40+ objects each. No more formulaic repetition.
 - **Template Creator Guide** (`docs/TEMPLATE_GUIDE.md`) — explains JSON format, object types, coordinates, fonts, colors, design tips, and contribution workflow
 - **User templates** stored in IndexedDB (`monet-user-templates`) following the brand-kit pattern
 - **Template thumbnails** rendered at runtime via offscreen Fabric.js canvas (`renderTemplateThumbnail()` in `packages/canvas-engine/src/thumbnail.ts`). Batched rendering (6 at a time), cached in memory. Skeleton loading placeholders shown while rendering.
@@ -528,10 +529,10 @@ pnpm test         # Run tests
 - **Library evaluations (comments only):** pdf-lib (vector PDF export), colorthief (OKLCH color extraction), opentype.js (font parsing for curved text)
 - **Login hidden when no backend:** `checkAuth()` returns `{ user, reachable }`, Toolbar only shows login/logout when backend confirmed reachable
 - **5 comprehensive QA passes** (10 parallel agents total): canvas engine, properties panel, save/load+export, templates+navigation, AI+plugins+edge cases. 17 additional bugs found and fixed.
-- `pnpm build` succeeds, JS ~1,807KB gzipped ~524KB
+- `pnpm build` succeeds, JS ~1,913KB gzipped ~542KB
 
 **Known Issues:** All P0 and P1 bugs fixed. P2/P3 issues from QA audit remain (cosmetic/edge-case only, not launch-blocking). API server routes still have no auth middleware (optional backend, not needed for client-only deployment).
-**What's Next:** Upgrade all 53 templates to use advanced features (gradients, shadows, charSpacing, text stroke, opacity) — make them market-ready. Then final launch checklist.
+**What's Next:** Visual QA of all 51 templates (open in editor, verify rendering). Verify template-loader compatibility with new shape types (heart, star, diamond, hexagon, pentagon, arrow-right). Then final launch checklist.
 
 **Phase 5 — Backend, Auth, Cloud Sync, Self-Hosting (complete):**
 - **Hono API server** with SQLite, auth (email/password, sessions), designs CRUD, preferences

@@ -3292,3 +3292,255 @@ Stripped the landing page back to a clean open-source launch message. No pricing
 - This is creative work best done in a fresh session with full context available
 
 **Pushed to:** `pj-casey/Monet` main (commits `9ddd4be` through `06cc691`)
+
+## Session 75 — 2026-04-12
+**Phase:** Phase 10 — Template Quality Upgrade
+**Completed:**
+- **Template Audit:** Comprehensive quality audit of all 51 templates (report at `template-audit.md`). Scored each 1-5 on 8 criteria. Found systemic formula problem: 50/51 templates used identical gradient accent line + shadow + charSpacing formula
+- **28 Template Rebuilds:** Rebuilt every template that scored 2/5 in the audit. Each rebuild follows the quality bar set by template #51 (product-launch-showcase)
+- **Seasonal (4):** valentines-heart (actual heart shapes, Pacifico font, pink/rose palette), holiday-wishes (snowflakes via stars/hexagons, tree from stacked triangles, string lights, ornaments, red/green/gold), new-year-2026 (firework bursts from radiating lines, confetti shapes, champagne silhouettes, gold gradient text via Bebas Neue), birthday-mia (bunting triangles, balloon shapes, scattered stars in bright colors, Pacifico "7" at 300px)
+- **Business (6):** biz-card-elena (two-zone dark/cream with monogram), invoice-studio (full-page with proper columnar table, 5 line items, subtotal/tax/total, payment terms), one-pager-apex (full-page with about, services grid, client logos, testimonial, contact footer), email-sig-david (horizontal layout with gradient headshot circle, vertical dividers, social icons), proposal-cover (geometric diamond pattern, structured info block, full border), name-badge (teal tech accent, role pill, QR code detail, day indicators, WiFi info)
+- **Marketing (4):** real-estate (gradient photo placeholder, JUST LISTED pill, agent headshot, logo area), coupon-twenty (red/orange gradient bg, star behind text, scissors triangles, barcode lines, promo pill), newsletter-header (hexagon brand mark, article teaser, navigation pills), app-promo-taskflow (warm sienna gradient, device frame with notch and mock UI, store badges, star rating)
+- **Events (3):** fb-event-jazz (piano keys, treble clef, Bebas Neue at 180px with rotation, gold palette), gala-evening (art deco, ornamental double border with corner diamonds, gold on black, ticket tiers), conf-badge (teal accent, role pill, QR code grid, day dots, WiFi bar)
+- **Social Media (5):** podcast-cover (audio waveform bars, amber glow, halftone dots, Bebas Neue), yt-thumb-mistakes (split screen, giant "5", X mark, face placeholder, arrow), tw-banner-studio (portfolio samples, services with dots, hexagon mark, full-width), discord-banner (neon glow, pixel grid, avatar circles with colored borders, JOIN US pill), pin-home-office (gradient photo, overlapping white card, bookmark pentagon, author section)
+- **Creative (2):** album-velvet (concentric circles, radiating lines, diamond shape, purple glow, EXPLICIT placeholder), photo-portfolio (dark sidebar, asymmetric image grid with project titles, 4 gradient-filled placeholders)
+- **Food & Lifestyle (2):** fitness-plan (dark header with dumbbell icon, body-part legend with diamond/triangle/circle, progressive week tints, warm-up/cool-down cards, progress checkboxes), wellness-quote (sage mandala circles, diamond petals, ornamental border, lotus flower, Lora italic)
+
+**Files Modified:**
+- `packages/templates/src/registry.ts` — 28 templates completely rebuilt, header comment updated
+
+**Decisions Made:**
+- Every template gets a unique visual personality — no more shared formula
+- Category-appropriate color palettes: pink/red for Valentine, gold for galas, teal for tech, neon for Discord
+- Gradient-filled rects replace "YOUR PHOTO"/"PHOTO" text in all image placeholders
+- Uses diverse shape types: heart (Valentine), star (birthday, New Year, Halloween), diamond (coupon, gala, proposals), hexagon (newsletter, Discord, wellness), pentagon (Pinterest bookmark), triangle (birthday bunting, fitness legend, bats), arrow-right (YouTube)
+- Varied shadow styles: amber glow shadows (podcast), purple glow (album), neon glow (Discord), colored warm shadows (marketing), zero-offset glow effects
+- Approved fonts only: replaced all Georgia/Inter uses with Lora, Bebas Neue, Oswald, Pacifico, DM Sans
+- Full-page templates (invoice, one-pager, fitness, resume) now fill the canvas — no 65% empty space
+- Art deco aesthetic for gala (corner diamonds, chevron lines, fan shapes)
+- Minimum 15 objects per template; most have 20-40+
+
+**Next Steps:**
+- Visual QA: open each template in the editor and verify rendering
+- Test template thumbnail generation
+- Address any template-loader compatibility issues with new shape types
+
+**Issues:**
+- Templates use shape types (heart, star, diamond, hexagon, pentagon, arrow-right) that the template loader may render as generic polygons or skip — needs runtime verification
+- Build passes clean, JS ~1,870KB gzipped ~535KB
+
+## Session 76 — 2026-04-12
+**Phase:** Phase 10 — Template Touch-Up Pass
+**Completed:**
+- **24 Template Touch-Ups:** Upgraded all templates that scored 3/5 in the audit — broke the formulaic sameness while preserving what worked
+- **Formulaic elements eliminated:**
+  - Replaced gradient accent lines (C4704A→e8956d) with category-appropriate dividers: diamond dividers, star-centered dividers, solid accent bars in varied colors
+  - Replaced low-opacity decorative circles with diverse shapes: diamonds, stars, hexagons, pentagons, arrows
+  - Added second accent colors to every template: navy (#1e3a5f), dusty rose (#b5838d), gold (#d4a853), sage (#7a9a6a), electric blue (#3b82f6), electric purple (#7c3aed)
+  - Varied shadow styles: warm-tinted shadows, colored glow effects, different blur/offset combinations
+- **Content expansions (templates that were underfilling their canvas):**
+  - meeting-notes: Added attendees section, action items with checkboxes, decisions, notes, next meeting footer (12→42 objects, fills 65% of page)
+  - menu-golden-fork: Added desserts, wine pairings, hours/address footer, diamond dividers (14→48 objects, fills 80%)
+  - workshop-watercolor: Added instructor bio, materials list, testimonial, CTA button, early bird pricing (14→40 objects, fills 80%)
+  - resume-alex: Added profile summary, 3rd job, certifications, languages, headshot circle (fills 55% of main column)
+  - concert-midnight: Added ghost text for "ECHO", support acts, light streaks, sponsor row (11→31 objects)
+  - cafe-menu: Added specialties, sides, WiFi footer, logo area (16→40 objects, fills 70%)
+- **Font fixes:** All Georgia → Lora, all Inter → DM Sans or Montserrat
+- **Specific improvements per template:**
+  - ig-quote-believe: Diamond dividers, botanical corner accents, dusty rose accent
+  - ig-story-sale: Star behind "40% OFF", rotated rects, gold accent
+  - li-carousel-cover: Navy accent bar, chart bar shapes, trend arrow, dot grid
+  - tiktok-cover-watch: Play button, bolder rects, electric blue accent, stars
+  - certificate-excellence: Corner diamond ornaments, gold seal rings, signature lines, date/number
+  - testimonial-card: "2x Conversion" metric, diamond dividers, company logo placeholder
+  - product-launch: Prominent circles, hexagon silhouette, spec icons, blue accent
+  - wedding-emma-james: Diamond corners, monogram circle, hearts, "Kindly respond" section
+  - book-cover-quiet: Constellation pattern (dots + connecting lines), review quote, publisher
+  - flashcard-photo: Sage green, hexagon, difficulty stars, diagram area, card number
+  - study-guide-bio: Diagram placeholder, key term highlights, page number
+  - movie-poster-signal: Signal wave arcs, PG-13 badge, studio logo, deep red accent
+  - magazine-form: Gradient photo placeholder, price, "EXCLUSIVE" badge, dusty rose accent
+  - art-exhibition: Abstract art preview (rect+triangle+circle), Lora/Montserrat fonts
+  - music-festival: Lineup hierarchy (72/44/28px), ticket tiers, sponsor row, gold accent
+  - recipe-lemon: Gradient photo, prep/cook badges, difficulty dots, sage accent
+  - cocktail-paloma: Glass silhouette, flavor pills, gold accent
+  - halloween-dare: Spider web strands, purple (#7c3aed) palette throughout
+
+**Files Modified:**
+- `packages/templates/src/registry.ts` — 24 templates touched up
+
+**Decisions Made:**
+- Touch-ups preserve the original template's identity while adding personality
+- Diamond shapes used as universal dividers across categories (replacing the formulaic gradient line)
+- Each template gets a unique second accent color appropriate to its mood
+- Content-sparse templates expanded with realistic sections that fill the page
+- All font usage now from approved list only (no Georgia, no Inter)
+
+**Next Steps:**
+- Visual QA: open each template in the editor and verify rendering
+- Test template thumbnail generation for all 51 templates
+- Final launch checklist
+
+**Issues:**
+- Build passes clean, JS ~1,909KB gzipped ~542KB
+- New shape types need runtime verification in the template loader
+
+## Session 77 — 2026-04-12
+**Phase:** Phase 10 — Business Template Rebuild (Round 2)
+**Completed:**
+- **6 Business Templates Rebuilt** to match user's detailed specifications:
+  - **biz-card-elena** (20 objects): Two-zone split layout — dark left panel (40%) with monogram "E" and accent-dot bullet contact details, cream right panel (60%) with name, title "Architect · LEED AP", company, italic tagline, logo placeholder. 3px accent stripe at zone boundary.
+  - **invoice-studio** (61 objects): Full letter-page invoice — gradient header bar, logo placeholder (rounded-rect), company info + "INVOICE" heading on one row. Bill To / Project sections side-by-side. 5 line items in proper columnar layout (separate textboxes per column). Subtotal, Tax (8%), Total row with accent tint background. Payment section with bank routing + account info. Notes section. Footer with "Thank you" + full contact. Bottom accent bar.
+  - **one-pager-apex** (44 objects): Full page with 6 sections — gradient header bar with company name + tagline, About Us with vertical accent bar, Stats row (4 columns: 150+/\$2.4B/98%/12), Services grid (3 gradient-filled icon circles + descriptions, alternating tint), Client logos row (5 gradient-filled rounded-rects), Testimonial with large quotation mark, Contact section in two columns, footer bar with URL.
+  - **email-sig-david** (14 objects): Crisp horizontal 3-zone layout — gradient-filled headshot circle with accent border, vertical accent separator, name/title/company stacked, thin horizontal line, phone + email, right-zone vertical separator, logo placeholder (rounded-rect), 4 social circles. No shadows (too small).
+  - **proposal-cover** (32 objects): Dark navy gradient (#0f1729→#1a1a2a). Accent-stroked inset border. Corner marks (perpendicular lines). Logo placeholder. Vertical accent line on left margin. Oversized "2026" at 400px/3% opacity as background texture. Main title centered with diamond divider. "Prepared for" + "LUMINARY BRANDS". Info block with Date, Version, Document ID, Prepared By. "CONFIDENTIAL" footer. 6 scattered decorative diamonds at 2-3% opacity.
+  - **name-badge** (21 objects): Tech conference aesthetic — dark gradient header (30%) with TECHSUMMIT 2026. Teal (#0891b2) accent throughout. Gradient-filled photo circle (teal-to-dark). "SPEAKER" role pill. Name in Playfair Display. QR code area with crosshair detail. 3 day-indicator dots. WiFi info in teal gradient footer bar.
+
+**Files Modified:**
+- `packages/templates/src/registry.ts` — 6 templates rebuilt
+
+**Decisions Made:**
+- Invoice uses separate textboxes for each table column (not space-aligned text in proportional fonts)
+- One-pager fills full page with 6 distinct sections — no empty space
+- Email signature skips shadows entirely (too blurry at 600×200 scale)
+- Proposal uses dark navy gradient instead of purple-to-sienna — feels more premium
+- Name badge uses teal (#0891b2) consistently — zero sienna in the template
+- Business card uses accent dot bullets for contact info — subtle but distinctive
+
+**Next Steps:**
+- Visual QA: open each template in the editor and verify rendering
+- Final launch checklist
+
+**Issues:**
+- Build passes clean, JS ~1,913KB gzipped ~542KB
+
+## Session 78 — 2026-04-12
+**Phase:** Phase 10 — Marketing/Events Template Rebuild
+**Completed:**
+- **7 Templates Rebuilt** — marketing and events templates rebuilt to match detailed specifications:
+  - **real-estate** (18 obj): Asymmetric layout — gradient photo placeholder (top 60%), "JUST LISTED" dark pill badge, white content panel (bottom 40%), property name, $425K price with accent shadow, specs with dot separators, agent headshot circle, logo placeholder
+  - **coupon-twenty** (25 obj): Red-to-orange gradient bg, dashed border, large star motif behind "20%" in Bebas Neue 200px, "CRAFT & CO" brand section, scissors triangles at cut line, dotted cut line, promo code pill, 8-rect barcode placeholder, scattered star shapes
+  - **newsletter-header** (14 obj): Solid cream bg (#faf8f0), hexagon brand mark with "WB", "THE WEEKLY BRIEF" in Montserrat 36px, accent bar, vertical divider between zones, Playfair Display italic article teaser, navigation hints, scattered diamonds, left accent stripe, bottom accent gradient line
+  - **app-promo-taskflow** (40 obj): Dark warm gradient bg, TaskFlow title + tagline above phone, white device frame with proper proportions (rx:28), notch detail, accent header bar inside phone, 4 task items with colored left-accent borders (sienna/green/sienna/gold), floating action button, star/diamond/hexagon feature icons below, 5 gold star rating, two dark store badge rects
+  - **fb-event-jazz** (23 obj): Warm golden-hour gradient, "JAZZ" in Bebas Neue 160px rotated -2° with gold shadow, "IN THE PARK" in Montserrat, date pill with rounded-rect, large gradient-filled performer circle (130px), performer name below, 10-bar equalizer pattern in alternating gold/cream, fading gold bottom line
+  - **gala-evening** (26 obj): Art deco aesthetic — double-line gold border (2px outer, 1px inner), 4 corner diamond ornaments at 45°, 7-line fan/sunburst radiating from center-top, "THE HARTWELL FOUNDATION" in Montserrat, "An Evening of Hope" in Playfair Display italic, "Benefiting Children's Literacy Fund" in Lora italic, 3 ticket tiers including Patron $1,000
+  - **conf-badge** (27 obj): White bg with dark header (top 25%), teal-to-cyan gradient accent stripe, "2026" in teal, ATTENDEE role pill, gradient photo circle (teal-to-dark, left side), "Jordan Park" / "Streamline Labs", QR area with 7-line grid detail (4 horizontal + 3 vertical), DAY 1/2/3 labels with filled/outline circles, dark bottom bar with WiFi
+
+**Files Modified:**
+- `packages/templates/src/registry.ts` — 7 templates rebuilt
+
+**Decisions Made:**
+- Jazz event now uses equalizer bars instead of piano keys — simpler, more visually impactful
+- Gala uses diamond shapes for corners instead of rotated rects — semantically clearer
+- Conference badge uses white body (not all-dark) — better contrast for name/title readability
+- App promo uses colored left-accent borders on task items (sienna, green, sienna, gold) — suggests task priority/status
+- Coupon uses Bebas Neue for "20%" — more impactful than Montserrat at large sizes
+
+**Next Steps:**
+- Visual QA: open each template in the editor and verify rendering
+- Final launch checklist
+
+**Issues:**
+- Build passes clean, 51 templates confirmed
+
+## Session 79 — 2026-04-12
+**Phase:** Phase 10 — Social/Creative Template Rebuild (Final Batch)
+**Completed:**
+- **6 Templates Rebuilt** — the final batch of social media and creative templates:
+  - **podcast-cover** (34 obj): Dark spotlight gradient bg, 18 amber/orange waveform bars centered, title with amber glow shadow, EP pill with accent stroke border, platform icons at bottom, scattered halftone dots
+  - **yt-thumb-mistakes** (20 obj): Diagonal split (triangle overlay for angular division), giant "5" at 480px, X mark in dark area (two 200px rotated rects), 5 numbered background circles, "DESIGN MISTAKES" with black text stroke, face placeholder with white border, arrow-right, "You're making ALL of these" text
+  - **tw-banner-studio** (22 obj): Dot grid texture (10 tiny circles), studio name stacked at left, 3 portfolio sample rects with different gradient fills (sienna/sage/dusty-rose), brand mark cluster (hexagon + diamond + circle overlapping), handle + "Est. 2019", thin accent bottom line
+  - **pin-home-office** (15 obj): Warm gradient photo (beige to terracotta), overlapping cream card (rx:16), "10 MINIMALIST" + "Home Office Ideas" in italic Playfair, 3-line description, author circle + name + handle, pentagon bookmark icon, decorative diamonds in photo corners
+  - **discord-banner** (27 obj): Dark bg (#12101f), 12 pixel-grid rects (8×8) in cyan/purple, "PIXEL" in Oswald 72px with cyan neon glow, "COLLECTIVE" in 60px with magenta glow, diamond divider between words, "> join us_" in Fira Code green terminal prompt, 3 avatar circles with neon borders, "JOIN SERVER" pill, stats text, accent lines
+  - **photo-portfolio** (18 obj): Dark sidebar (25%), Montserrat name (not Playfair), specialties/contact/location in sidebar, cream right area, asymmetric grid — 1 large hero rect (1400×1000) + 3 smaller rects with different gradients (sage/dusty-rose/warm-gray), each with project title (VOGUE JAPAN, THE MODERN HOUSE, STUDIO PORTRAIT, GOLDEN HOUR)
+
+**Files Modified:**
+- `packages/templates/src/registry.ts` — 6 templates rebuilt
+
+**Decisions Made:**
+- Podcast waveform uses alternating amber/orange bars (not gradient-filled — simpler, more readable at scale)
+- YouTube thumbnail uses triangle overlay for diagonal split (cleaner than two rotated rects)
+- Discord uses Oswald for "PIXEL" and "COLLECTIVE" (bolder, more impactful than Montserrat for neon aesthetic)
+- Discord uses Fira Code for terminal prompt (monospace font, fits the dev/gaming community vibe)
+- Photo portfolio uses Montserrat for name (not oversized Playfair — cleaner, more modern)
+- Photo portfolio project titles are real publication names (VOGUE JAPAN, THE MODERN HOUSE) — suggests high-end work
+
+**Next Steps:**
+- All 51 templates now rebuilt to quality standard
+- Visual QA in browser to verify rendering
+- Final launch checklist
+
+**Issues:**
+- Build passes clean, 51 templates confirmed
+
+## Session 80 — 2026-04-12
+**Phase:** Phase 10 — Pre-Launch QA Audit
+**Completed:**
+- **Full end-to-end QA audit** of template system integrity
+- **3 bugs found and fixed:**
+
+**Bug 1 (CRITICAL): Category filter pills showed "No templates match"**
+- Root cause: `WelcomeScreen.tsx` line 122 compared CATEGORY_MAP subcategory values against `t.category` (top-level). "Podcast" !== "Social Media" → always false.
+- Fix: Changed to `t.subcategory && cats.includes(t.subcategory)`. Also moved "Facebook Event" from Social Media to Events in CATEGORY_MAP.
+
+**Bug 2 (MEDIUM): Template #51 still had "YOUR PHOTO" text**
+- Root cause: Showcase template was never included in rebuild batches.
+- Fix: Removed the textbox. Gradient-filled rect placeholder remains.
+
+**Bug 3 (MEDIUM): 5 template fonts not preloaded**
+- Root cause: Lora, Bebas Neue, Oswald, Pacifico, Fira Code not in Google Fonts link.
+- Fix: Added all 5 to `index.html` font link.
+
+**Audit results — verified clean:**
+- All 51 templates have valid fields
+- No Georgia/Inter fonts, no placeholder text
+- All 8 category filter pills map to 3+ templates
+- Template search works via name and tags
+
+**Files Modified:**
+- `apps/web/src/components/WelcomeScreen.tsx` — fixed category filter, updated CATEGORY_MAP
+- `apps/web/index.html` — added 5 missing Google Fonts
+- `packages/templates/src/registry.ts` — removed YOUR PHOTO text from showcase template
+
+**Next Steps:**
+- Start dev server, manually test all user flows in browser
+- Final launch checklist
+
+## Session 81 — 2026-04-12
+**Phase:** Phase 10 — Visual Quality Pass
+**Completed:**
+- **Automated audit** of all 51 templates — checked positioning, readability, alignment, content quality
+- **Results:** 0 CRITICAL, 2 MEDIUM, 27 LOW issues found
+
+**Issues found and fixed:**
+| Template | Issue | Severity | Fixed |
+|----------|-------|----------|-------|
+| photo-portfolio | Contact info at 11px on 3300×2550 canvas | MEDIUM | Bumped to 16px |
+| photo-portfolio | Project titles at 11px on 3300×2550 canvas | MEDIUM | Bumped to 14px |
+| photo-portfolio | Specialties at 12px on 3300×2550 | MEDIUM | Bumped to 16px |
+| halloween-dare | Spider web lines extend past right edge | FALSE POS | No fix — rotated lines project inward |
+| invoice-studio | Section labels at 12px on letter-size | LOW | Acceptable — small labels are intentional |
+| proposal-cover | Info labels at 12px on letter-size | LOW | Acceptable — metadata labels are small |
+| magazine-form | "BARCODE" text at 10px | LOW | Intentional magazine detail |
+| concert-midnight | "SPONSOR" placeholders | LOW | Intentional labeled placeholders |
+| study-guide-bio | "diagram" placeholder text | LOW | Intentional educational placeholder |
+
+**Verified clean (no issues):**
+- Invoice math correct ($4,500 + $6,200 + $1,800 + $2,400 + $1,600 = $16,500 + $1,320 tax = $17,820)
+- Menu prices consistently right-aligned
+- Resume sections consistently formatted
+- Business card readable at smallest sizes (10px minimum)
+- Email signature readable at smallest sizes (10px minimum)
+- Seasonal decorative shapes well-distributed
+- Badge role pills properly positioned
+- No objects with 0 width/height
+- No empty text objects
+- No placeholder text (YOUR PHOTO etc.)
+- No Georgia/Inter fonts
+- charSpacing values all within reasonable range
+
+**Files Modified:**
+- `packages/templates/src/registry.ts` — bumped photo-portfolio font sizes (11px→14-16px)
+
+**Next Steps:**
+- Final launch checklist

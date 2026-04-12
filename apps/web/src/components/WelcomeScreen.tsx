@@ -28,10 +28,10 @@ const thumbnailCache = new Map<string, string>();
 /** Maps welcome filter labels to template registry categories */
 const CATEGORY_MAP: Record<string, string[]> = {
   'All': [],
-  'Social Media': ['Podcast', 'Instagram Post', 'Instagram Story', 'YouTube Thumbnail', 'LinkedIn Post', 'Twitter Header', 'Pinterest Pin', 'TikTok Cover', 'Facebook Event', 'Discord Banner'],
+  'Social Media': ['Podcast', 'Instagram Post', 'Instagram Story', 'YouTube Thumbnail', 'LinkedIn Post', 'Twitter Header', 'Pinterest Pin', 'TikTok Cover', 'Discord Banner'],
   'Business': ['Business Card', 'Invoice', 'One-Pager', 'Email Signature', 'Proposal', 'Certificate', 'Meeting Notes', 'Name Badge', 'Resume'],
   'Marketing': ['Product Launch', 'Real Estate', 'Coupon', 'Testimonial', 'Newsletter', 'App Promo'],
-  'Events': ['Wedding', 'Birthday', 'Concert', 'Conference', 'Gala', 'Music Festival'],
+  'Events': ['Wedding', 'Birthday', 'Concert', 'Conference', 'Gala', 'Music Festival', 'Facebook Event'],
   'Education': ['Workshop', 'Flashcard', 'Study Guide'],
   'Creative': ['Book Cover', 'Movie Poster', 'Magazine Cover', 'Exhibition', 'Portfolio', 'Album Cover'],
   'Food & Lifestyle': ['Restaurant Menu', 'Café Menu', 'Recipe Card', 'Cocktail Card', 'Fitness Plan', 'Wellness'],
@@ -119,7 +119,7 @@ export function WelcomeScreen({
     if (activeFilter !== 'All') {
       const cats = CATEGORY_MAP[activeFilter];
       if (cats && cats.length > 0) {
-        templates = templates.filter((t) => cats.includes(t.category));
+        templates = templates.filter((t) => t.subcategory && cats.includes(t.subcategory));
       }
     }
 
