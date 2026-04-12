@@ -143,6 +143,66 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════ */
+/* Water Lily Logo — whole-icon animation synced with activity    */
+/* ═══════════════════════════════════════════════════════════════ */
+
+.water-lily-logo {
+  will-change: transform, filter;
+}
+
+/* ─── Idle: barely perceptible breathing ─── */
+@keyframes lily-breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.03); }
+}
+.lily-idle {
+  animation: lily-breathe 6s ease-in-out infinite;
+  filter: none;
+}
+
+/* ─── Loading: gentle pulse + rotation + glow ─── */
+@keyframes lily-load-scale {
+  0%, 100% { transform: scale(1) rotate(-3deg); }
+  50%      { transform: scale(1.06) rotate(3deg); }
+}
+@keyframes lily-load-glow {
+  0%, 100% { filter: drop-shadow(0 0 0 transparent); }
+  50%      { filter: drop-shadow(0 0 3px var(--accent)); }
+}
+.lily-loading {
+  animation: lily-load-scale 2.5s ease-in-out infinite, lily-load-glow 2s ease-in-out infinite;
+}
+
+/* ─── Processing: stronger pulse + rotation + glow ─── */
+@keyframes lily-process-scale {
+  0%, 100% { transform: scale(1) rotate(-5deg); }
+  50%      { transform: scale(1.08) rotate(5deg); }
+}
+@keyframes lily-process-glow {
+  0%, 100% { filter: drop-shadow(0 0 2px var(--accent)); }
+  50%      { filter: drop-shadow(0 0 6px var(--accent)); }
+}
+.lily-processing {
+  animation: lily-process-scale 2s ease-in-out infinite, lily-process-glow 1.5s ease-in-out infinite;
+}
+
+/* ─── Success: single bloom flash, settle back ─── */
+.lily-success {
+  animation: none;
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 8px var(--accent));
+  transition: transform 1.5s ease-out, filter 1.5s ease-out;
+}
+
+/* ─── Error: brief shrink + danger flash, settle back ─── */
+.lily-error {
+  animation: none;
+  transform: scale(0.95);
+  filter: drop-shadow(0 0 6px var(--danger));
+  transition: transform 1s ease-out, filter 1s ease-out;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
 /* Canvas Pasteboard — subtle dot grid texture (Figma-style)      */
 /* ═══════════════════════════════════════════════════════════════ */
 .canvas-pasteboard {
@@ -241,9 +301,11 @@ button, [role="button"], a, select, input[type="color"] {
   .animate-toast-up {
     animation: none !important;
   }
-  .monet-letter {
+  .monet-letter,
+  .water-lily-logo {
     animation: none !important;
     transition: none !important;
+    filter: none !important;
   }
   button, [role="button"], a, select, input[type="color"] {
     transition-duration: 0ms !important;

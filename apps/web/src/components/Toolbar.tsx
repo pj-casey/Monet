@@ -12,6 +12,7 @@ import { useHistoryStore } from '../stores/history-store';
 import { engine } from './Canvas';
 import { Tooltip } from './Tooltip';
 import { MonetWordmark } from './MonetWordmark';
+import { useActivityStore } from '../stores/activity-store';
 
 import type { SaveStatus } from '../hooks/use-autosave';
 
@@ -51,6 +52,13 @@ export function Toolbar({
 
   const canUndo = useHistoryStore((s) => s.canUndo);
   const canRedo = useHistoryStore((s) => s.canRedo);
+  const activity = useActivityStore((s) => s.activity);
+  const lilyClass =
+    activity === 'loading'    ? 'lily-loading' :
+    activity === 'processing' ? 'lily-processing' :
+    activity === 'success'    ? 'lily-success' :
+    activity === 'error'      ? 'lily-error' :
+                                'lily-idle';
 
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -88,7 +96,9 @@ export function Toolbar({
       {/* ─── Left: Logo + Undo/Redo + Save badge ─── */}
       <div className="flex items-center gap-2">
         <h1 className="flex items-center gap-1.5">
-          <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" width="18" height="18" className="block" aria-hidden="true" />
+          <span className={`water-lily-logo inline-flex ${lilyClass}`}>
+            <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" width="18" height="18" className="block" aria-hidden="true" />
+          </span>
           <MonetWordmark />
         </h1>
         <Divider />
