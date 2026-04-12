@@ -21,8 +21,8 @@ FabricObjectClass.ownDefaults.originY = 'top';
 
 // ─── Font preloading (singleton) ────────────────────────────────────
 
-/** Fonts used across templates but NOT loaded in index.html */
-const TEMPLATE_FONTS = ['Montserrat', 'Playfair Display', 'Inter'];
+/** Fonts used across templates — Montserrat now preloaded in index.html */
+const TEMPLATE_FONTS = ['Playfair Display', 'Inter'];
 
 let _fontLoadPromise: Promise<void> | null = null;
 
@@ -55,7 +55,7 @@ function ensureTemplateFonts(): Promise<void> {
     if (cssPromises.length > 0) {
       await Promise.race([
         Promise.all(cssPromises),
-        new Promise<void>(resolve => setTimeout(resolve, 2500)),
+        new Promise<void>(resolve => setTimeout(resolve, 1000)),
       ]);
     }
 
@@ -65,10 +65,9 @@ function ensureTemplateFonts(): Promise<void> {
         TEMPLATE_FONTS.flatMap(f => [
           document.fonts.load(`400 20px "${f}"`),
           document.fonts.load(`700 20px "${f}"`),
-          document.fonts.load(`italic 400 20px "${f}"`),
         ]),
       ),
-      new Promise<void>(resolve => setTimeout(resolve, 3000)),
+      new Promise<void>(resolve => setTimeout(resolve, 1500)),
     ]);
   })();
   return _fontLoadPromise;
@@ -231,7 +230,7 @@ export async function renderTemplateThumbnail(
     return fabricCanvas.toDataURL({
       format: 'jpeg',
       quality: 0.92,
-      multiplier: 1.5,
+      multiplier: 1,
     });
   } catch (err) {
     console.warn('Failed to render template thumbnail:', err);

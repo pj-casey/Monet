@@ -186,8 +186,9 @@ export function WelcomeScreen({
 
   if (loading) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-canvas">
-        <p className="text-sm text-text-tertiary">Loading...</p>
+      <div className="flex h-screen w-screen flex-col items-center justify-center gap-3 bg-canvas">
+        <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" width="28" height="28" className="animate-pulse" />
+        <p className="text-sm text-text-secondary">Loading your designs...</p>
       </div>
     );
   }
@@ -334,8 +335,8 @@ export function WelcomeScreen({
               <SearchIcon />
               <input type="text" value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search templates..."
-                className="w-36 bg-transparent text-xs text-text-primary placeholder:text-text-tertiary focus:outline-none" />
+                placeholder="Search..."
+                className="w-24 bg-transparent text-xs text-text-primary placeholder:text-text-tertiary focus:outline-none sm:w-36" />
             </div>
           </section>
 
@@ -348,7 +349,7 @@ export function WelcomeScreen({
                   className="mt-2 text-sm text-accent hover:underline">Clear filters</button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {filteredTemplates.map((template) => (
                   <TemplateCard
                     key={template.templateId}
@@ -432,12 +433,8 @@ function TemplateCard({ template, thumbnailUrl, onClick }: {
             loading="lazy"
           />
         ) : (
-          /* Skeleton: background color + pulsing animation */
-          <div className="flex h-full w-full animate-pulse items-center justify-center" style={fallbackBg}>
-            <span className="text-[10px] font-medium text-text-tertiary opacity-60">
-              Loading...
-            </span>
-          </div>
+          /* Skeleton: background color + shimmer animation */
+          <div className="h-full w-full animate-pulse" style={fallbackBg} />
         )}
       </div>
       {/* Label */}

@@ -227,16 +227,18 @@ function App() {
 
   // Pending document to load after canvas mounts (used by welcome screen flows)
   const pendingDoc = useRef<import('@monet/shared').DesignDocument | null>(null);
+  const [canvasReady, setCanvasReady] = useState(false);
 
   // When the view switches to editor, load the pending document once Canvas mounts
   useEffect(() => {
-    if (view !== 'editor' || !pendingDoc.current) return;
+    if (view !== 'editor') { setCanvasReady(false); return; }
+    if (!pendingDoc.current) { setCanvasReady(true); return; }
     const doc = pendingDoc.current;
     pendingDoc.current = null;
     // Wait for Canvas component to mount and initialize the engine
     const tryLoad = () => {
       if (engine.isInitialized()) {
-        engine.fromJSON(doc);
+        engine.fromJSON(doc).then(() => setCanvasReady(true));
       } else {
         setTimeout(tryLoad, 50);
       }
@@ -338,6 +340,11 @@ function App() {
   // ─── Editor ─────────────────────────────────────────────────────
   return (
     <div className="editor-shell flex h-screen w-screen flex-col bg-canvas">
+      {/* Mobile notice — visible below 768px */}
+      <div className="flex items-center justify-center gap-2 border-b border-border bg-elevated px-3 py-2 text-center text-xs text-text-secondary md:hidden">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="18" r="1"/></svg>
+        Best experienced on desktop
+      </div>
       <SkipLink />
       <LiveRegion message={autosave.status === 'saved' ? 'Design saved' : autosave.status === 'saving' ? 'Saving design' : ''} />
       <ErrorBoundary name="Toolbar">
@@ -391,6 +398,7 @@ function App() {
         {/* Canvas */}
         <ErrorBoundary name="Canvas">
           <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden"
+            style={canvasReady ? undefined : { opacity: 0 }}
             onContextMenu={(e) => {
               e.preventDefault();
               setContextMenu({ x: e.clientX, y: e.clientY });
@@ -414,6 +422,15 @@ function App() {
               />
             )}
           </div>
+          {/* Loading overlay during canvas initialization */}
+          {!canvasReady && (
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-canvas">
+              <div className="flex flex-col items-center gap-3">
+                <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" width="28" height="28" className="animate-pulse" />
+                <p className="text-sm text-text-secondary">Preparing your design...</p>
+              </div>
+            </div>
+          )}
         </ErrorBoundary>
 
         {/* Right sidebar — contextual, only visible when object selected */}
