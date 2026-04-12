@@ -3544,3 +3544,54 @@ Stripped the landing page back to a clean open-source launch message. No pricing
 
 **Next Steps:**
 - Final launch checklist
+
+## Session 82 — 2026-04-12
+**Phase:** Phase 10 — Landing Page Overhaul for HN Launch
+**Completed:**
+- **Full rewrite of LandingPage.tsx** optimized for HN audience
+
+**Changes made:**
+
+1. **Hero copy rewritten** — "Design anything. Free forever." (generic) → "The open-source Canva alternative" (specific, immediately communicates value). Subheadline now lists concrete differentiators: "No account needed. 51 templates. Self-hostable. Built with React, Fabric.js, and Claude."
+
+2. **CTA improved** — "Start Designing" → "Start Designing — no account needed" (reduces friction anxiety). CTAs now stack full-width on mobile (`flex-col` + `w-full`). Two CTAs appear in hero AND again at bottom in a final "Try it now" section.
+
+3. **Feature section replaced** — Removed generic 8-card icon grid. Replaced with 4 alternating text-left/visual-right feature sections that SHOW capabilities:
+   - Templates: gradient color palette grid showing the range
+   - Canvas engine: property list showing gradient fills, shadows, 13 shapes, blend modes, crop
+   - AI: mock prompt→result showing design generation
+   - Export: format list with checkmarks for transparent PNG and batch export
+
+4. **Comparison table reframed** — Moved below features (was above self-hosting). Template row changed from "50+" vs "610,000+" (embarrassing count comparison) to "Hand-crafted" vs "Generic" vs "610K+" (quality vs quantity framing). Added "Account Required" and "Watermarks" rows (Monet wins both). Removed "Multi-Page" and "Custom Export Sizes" (less impactful).
+
+5. **Self-hosting promoted** — Moved up in page order (now before comparison). Added background color change (`bg-canvas`) for visual section break. Added "Docker or bare metal" to description.
+
+6. **Open Source section enhanced** — Added full tech stack: "React 18 · TypeScript · Fabric.js v6 · Tailwind CSS · Zustand · Vite · Built with Claude by Anthropic". Changed badge from "stars" to "AGPLv3" (more informative).
+
+7. **Navigation simplified** — Removed "Compare" and "Open Source" nav links. Kept: Features, Self-Host, GitHub (with icon), theme toggle, Open Editor CTA. Cleaner, less overwhelming.
+
+8. **Final CTA section added** — "Try it now" with "No signup. No download. Just open the editor and start designing." + two CTAs (Start Designing + View Source).
+
+9. **Mobile improvements** — CTAs use `flex-col w-full` on mobile, `sm:flex-row sm:w-auto` on desktop. All sections stack properly at 375px.
+
+10. **Meta tags updated** — og:title changed to "Monet — The Open-Source Canva Alternative". og:description updated to match new hero copy.
+
+**Kept intact:**
+- Support/donation section with GitHub Sponsors, Open Collective, and crypto addresses
+- Hero screenshot with perspective transform and gradient fallback
+- Intersection Observer fade-in animations with prefers-reduced-motion respect
+- Skip-to-content accessibility button
+- Lazy-loaded editor (already code-split)
+- Footer
+
+**Files Modified:**
+- `apps/web/src/components/LandingPage.tsx` — full rewrite
+- `apps/web/index.html` — updated og:title and og:description
+
+**Verified:**
+- Hero screenshot exists at `public/hero-screenshot.png`
+- OG image exists at `public/og-image.png`
+- Editor lazy-loaded via `React.lazy()` in main.tsx
+- Landing page not bundled with editor
+- prefers-reduced-motion respected
+- Build passes clean

@@ -1,7 +1,8 @@
 /**
  * LandingPage — the "/" route for Monet.
  *
- * A warm, calm, premium marketing page that feels like a sibling to claude.ai.
+ * Optimized for HN launch: specific hero copy, show-don't-tell features,
+ * honest comparison, self-hosting, open source credibility.
  * Uses DESIGN.md tokens exclusively. Fraunces for headings, DM Sans for body.
  * Intersection Observer drives subtle fade-in on scroll.
  */
@@ -9,9 +10,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  LayoutTemplate, Type, FileStack, Palette, Sparkles,
-  Crop, Download, Server, Check, X, Terminal,
-  Heart, ArrowRight, Sun, Moon, Users,
+  Check, X, Terminal, Heart, ArrowRight, Sun, Moon, Users,
 } from 'lucide-react';
 
 /** Inline GitHub mark SVG — lucide doesn't include brand logos */
@@ -73,53 +72,6 @@ function scrollTo(id: string) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════ */
-/* Feature card data                                                  */
-/* ═══════════════════════════════════════════════════════════════════ */
-
-const FEATURES = [
-  {
-    icon: LayoutTemplate,
-    title: '50+ Templates',
-    desc: 'Start with professionally designed templates, not a blank canvas.',
-  },
-  {
-    icon: Type,
-    title: '1,900+ Fonts',
-    desc: 'Google Fonts library with live preview and font pairing suggestions.',
-  },
-  {
-    icon: FileStack,
-    title: 'Multi-Page Designs',
-    desc: 'Create presentations, carousels, and multi-page PDFs.',
-  },
-  {
-    icon: Palette,
-    title: 'Brand Kits',
-    desc: 'Save your colors, fonts, and logos. Apply them everywhere.',
-  },
-  {
-    icon: Sparkles,
-    title: 'AI-Powered',
-    desc: 'Bring your own Anthropic API key. Generate designs, rewrite copy, remove backgrounds. Optional \u2014 works fully without it.',
-  },
-  {
-    icon: Crop,
-    title: 'Crop & Image Editing',
-    desc: 'Non-destructive crop, filters, adjustments, background removal.',
-  },
-  {
-    icon: Download,
-    title: 'Export Anything',
-    desc: 'PNG, JPG, SVG, multi-page PDF. Transparent backgrounds. Up to 3x resolution.',
-  },
-  {
-    icon: Server,
-    title: 'Self-Hostable',
-    desc: 'One command: docker compose up. Your data stays yours.',
-  },
-] as const;
-
-/* ═══════════════════════════════════════════════════════════════════ */
 /* Comparison table data                                              */
 /* ═══════════════════════════════════════════════════════════════════ */
 
@@ -133,16 +85,16 @@ interface CompRow {
 }
 
 const COMPARISON: CompRow[] = [
-  { label: 'Price',              monet: '$0 forever',  canvaFree: '$0',        canvaPro: '$15/mo' },
-  { label: 'Templates',         monet: '50+',         canvaFree: '250,000+',  canvaPro: '610,000+' },
-  { label: 'Fonts',             monet: '1,900+',      canvaFree: '1,000+',    canvaPro: '3,000+' },
-  { label: 'Background Removal', monet: true,         canvaFree: false,       canvaPro: true },
-  { label: 'Brand Kit',         monet: true,          canvaFree: false,       canvaPro: true },
-  { label: 'Multi-Page',        monet: true,          canvaFree: true,        canvaPro: true },
-  { label: 'Custom Export Sizes', monet: true,        canvaFree: false,       canvaPro: true },
-  { label: 'AI Features',       monet: 'BYOK',       canvaFree: 'Limited',   canvaPro: true },
-  { label: 'Self-Hostable',     monet: true,          canvaFree: false,       canvaPro: false },
-  { label: 'Open Source',       monet: true,          canvaFree: false,       canvaPro: false },
+  { label: 'Price',              monet: 'Free forever', canvaFree: '$0',        canvaPro: '$15/mo' },
+  { label: 'Account Required',   monet: false,          canvaFree: true,        canvaPro: true },
+  { label: 'Open Source',        monet: true,           canvaFree: false,       canvaPro: false },
+  { label: 'Self-Hostable',     monet: true,           canvaFree: false,       canvaPro: false },
+  { label: 'Templates',         monet: 'Hand-crafted', canvaFree: 'Generic',   canvaPro: '610K+' },
+  { label: 'Background Removal', monet: true,          canvaFree: false,       canvaPro: true },
+  { label: 'Brand Kit',         monet: true,           canvaFree: false,       canvaPro: true },
+  { label: 'AI Features',       monet: 'BYOK',        canvaFree: 'Limited',   canvaPro: true },
+  { label: 'Export (PNG/PDF/SVG)', monet: true,        canvaFree: 'Limited',   canvaPro: true },
+  { label: 'Watermarks',        monet: false,          canvaFree: false,       canvaPro: false },
 ];
 
 function CellDisplay({ value, label }: { value: CellValue; label: string }) {
@@ -164,6 +116,7 @@ export function LandingPage() {
   const selfHostRef = useReveal();
   const openSourceRef = useReveal();
   const supportRef = useReveal();
+  const ctaRef = useReveal();
 
   return (
     <div className="min-h-screen bg-surface font-sans text-text-primary">
@@ -190,25 +143,20 @@ export function LandingPage() {
             </button>
             <button
               type="button"
-              onClick={() => scrollTo('compare')}
-              className="hidden text-sm font-medium text-text-secondary hover:text-text-primary sm:block"
-            >
-              Compare
-            </button>
-            <button
-              type="button"
               onClick={() => scrollTo('self-host')}
-              className="hidden text-sm font-medium text-text-secondary hover:text-text-primary md:block"
+              className="hidden text-sm font-medium text-text-secondary hover:text-text-primary sm:block"
             >
               Self-Host
             </button>
-            <button
-              type="button"
-              onClick={() => scrollTo('open-source')}
-              className="hidden text-sm font-medium text-text-secondary hover:text-text-primary md:block"
+            <a
+              href="https://github.com/pj-casey/Monet"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary sm:flex"
             >
-              Open Source
-            </button>
+              <GithubIcon size={14} />
+              GitHub
+            </a>
             <button
               type="button"
               onClick={toggleTheme}
@@ -231,49 +179,47 @@ export function LandingPage() {
       <main id="main-content">
       <section
         ref={heroRef as React.RefObject<HTMLElement>}
-        className="mx-auto max-w-4xl px-6 pb-24 pt-20 text-center sm:pb-32 sm:pt-28"
+        className="mx-auto max-w-4xl px-6 pb-20 pt-16 text-center sm:pb-28 sm:pt-24"
       >
         <h1 className="font-display text-4xl font-semibold leading-tight tracking-tight text-text-primary sm:text-5xl md:text-6xl">
-          Design anything.{' '}
+          The open-source{' '}
           <br className="hidden sm:block" />
-          Free forever.
+          Canva alternative
         </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-text-secondary sm:text-xl">
-          The free, open-source design tool built with Claude.
-          No account. No watermarks. No limits.
+        <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-text-secondary sm:text-xl">
+          A free design tool that runs in your browser.
+          No account needed. 51 templates. Self-hostable.
+          Built with React, Fabric.js, and Claude.
         </p>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
           <Link
             to="/editor"
-            className="inline-flex items-center gap-2 rounded-sm bg-accent px-6 py-2.5 text-base font-medium text-accent-fg shadow-sm hover:bg-accent-hover"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-accent px-6 py-2.5 text-base font-medium text-accent-fg shadow-sm hover:bg-accent-hover sm:w-auto"
           >
-            Start Designing
+            Start Designing — no account needed
             <ArrowRight size={16} aria-hidden="true" />
           </Link>
           <a
             href="https://github.com/pj-casey/Monet"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-sm border border-border bg-elevated px-6 py-2.5 text-base font-medium text-text-primary shadow-sm hover:bg-wash"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-border bg-elevated px-6 py-2.5 text-base font-medium text-text-primary shadow-sm hover:bg-wash sm:w-auto"
           >
             <GithubIcon size={16} />
             View on GitHub
           </a>
         </div>
-        <p className="mt-6 text-sm text-text-tertiary">
-          Built with{' '}
+        <p className="mt-4 text-sm text-text-tertiary">
+          AGPLv3 · React + TypeScript + Fabric.js · Built with{' '}
           <a href="https://claude.ai" target="_blank" rel="noopener noreferrer"
             className="font-medium text-text-secondary hover:text-text-primary">Claude</a>
-          {' '}by{' '}
-          <a href="https://anthropic.com" target="_blank" rel="noopener noreferrer"
-            className="font-medium text-text-secondary hover:text-text-primary">Anthropic</a>
         </p>
 
         {/* Hero image — editor screenshot with subtle perspective */}
-        <div className="mx-auto mt-16 max-w-4xl">
+        <div className="mx-auto mt-12 max-w-4xl">
           <img
             src={`${import.meta.env.BASE_URL}hero-screenshot.png`}
-            alt="Monet editor showing a luxury product launch design with gradient fills, text shadows, and the properties panel"
+            alt="Monet editor showing a design template with gradient fills, text shadows, and the properties panel"
             className="w-full rounded-lg shadow-xl"
             style={{
               transform: 'perspective(2000px) rotateY(-2deg)',
@@ -297,32 +243,193 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ─── Features ────────────────────────────────────────── */}
+      {/* ─── Features — show don't tell ─────────────────────── */}
       <section
         id="features"
         ref={featuresRef as React.RefObject<HTMLElement>}
-        className="mx-auto max-w-6xl px-6 pb-24"
+        className="mx-auto max-w-5xl px-6 pb-24"
       >
         <h2 className="mb-4 text-center font-display text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">
-          Everything you need
+          What you get
         </h2>
-        <p className="mx-auto mb-12 max-w-xl text-center text-base leading-relaxed text-text-secondary">
-          A complete design toolkit, without the subscription.
+        <p className="mx-auto mb-16 max-w-xl text-center text-base leading-relaxed text-text-secondary">
+          Everything Canva Pro charges $15/month for. Free.
         </p>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((f) => (
-            <div
-              key={f.title}
-              className="rounded-lg border border-border bg-elevated p-5 shadow-sm"
-            >
-              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-md bg-accent-subtle">
-                <f.icon size={18} className="text-accent" />
-              </div>
-              <h3 className="mb-1 text-base font-medium text-text-primary">{f.title}</h3>
-              <p className="text-sm leading-relaxed text-text-secondary">{f.desc}</p>
+        {/* Feature 1 — Templates */}
+        <div className="mb-20 flex flex-col items-center gap-8 md:flex-row md:gap-12">
+          <div className="flex-1">
+            <h3 className="mb-3 text-xl font-semibold text-text-primary">51 hand-crafted templates</h3>
+            <p className="mb-4 text-base leading-relaxed text-text-secondary">
+              Not generic filler. Every template was designed with real content — actual names, prices, dates — and uses advanced features like gradient fills, drop shadows, and 13 different shape types.
+              Social media, business documents, marketing materials, event invitations.
+            </p>
+            <p className="text-sm text-text-tertiary">
+              Instagram · YouTube · LinkedIn · Invoices · Resumes · Menus · Posters · and 40+ more
+            </p>
+          </div>
+          <div className="w-full max-w-xs rounded-lg border border-border bg-elevated p-4 shadow-sm md:w-80">
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { bg: 'linear-gradient(135deg, #C4704A, #d4966e)', label: 'Brand' },
+                { bg: 'linear-gradient(135deg, #0891b2, #164e63)', label: 'Tech' },
+                { bg: 'linear-gradient(135deg, #e91e63, #f48fb1)', label: 'Social' },
+                { bg: 'linear-gradient(135deg, #1a1510, #2d2520)', label: 'Dark' },
+                { bg: 'linear-gradient(135deg, #d4a853, #6b4226)', label: 'Gold' },
+                { bg: 'linear-gradient(135deg, #7a9a6a, #d4ccc4)', label: 'Sage' },
+              ].map((t) => (
+                <div key={t.label} className="aspect-square rounded" style={{ background: t.bg }} title={t.label} />
+              ))}
             </div>
-          ))}
+            <p className="mt-3 text-center text-xs text-text-tertiary">Template color palettes</p>
+          </div>
+        </div>
+
+        {/* Feature 2 — Canvas engine */}
+        <div className="mb-20 flex flex-col-reverse items-center gap-8 md:flex-row md:gap-12">
+          <div className="w-full max-w-xs rounded-lg border border-border bg-elevated p-4 shadow-sm md:w-80">
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2 text-text-secondary">
+                <span className="inline-block h-4 w-4 rounded-sm" style={{ background: 'linear-gradient(135deg, #C4704A, #e8956d)' }} />
+                Gradient fills (linear + radial)
+              </div>
+              <div className="flex items-center gap-2 text-text-secondary">
+                <span className="inline-block h-4 w-4 rounded-sm bg-text-primary" style={{ boxShadow: '2px 2px 4px rgba(0,0,0,0.3)' }} />
+                Drop shadows with color
+              </div>
+              <div className="flex items-center gap-2 text-text-secondary">
+                <span className="inline-block h-4 w-4 rounded-sm border border-border" />
+                13 shape types (hearts, stars, hexagons...)
+              </div>
+              <div className="flex items-center gap-2 text-text-secondary">
+                <span className="inline-block h-4 w-4 rounded-sm bg-accent opacity-50" />
+                Blend modes + opacity
+              </div>
+              <div className="flex items-center gap-2 text-text-secondary">
+                <span className="inline-block h-4 w-4 rounded-sm" style={{ background: 'repeating-linear-gradient(45deg, #ccc, #ccc 2px, #fff 2px, #fff 4px)' }} />
+                Non-destructive crop
+              </div>
+            </div>
+          </div>
+          <div className="flex-1">
+            <h3 className="mb-3 text-xl font-semibold text-text-primary">A real canvas engine</h3>
+            <p className="mb-4 text-base leading-relaxed text-text-secondary">
+              Built on Fabric.js with a full properties panel. Gradient fills, drop shadows,
+              text stroke, blend modes, clipping masks, non-destructive crop, 16 image filters.
+              Not a toy — this is what you need to make designs that look professional.
+            </p>
+            <p className="text-sm text-text-tertiary">
+              1,900+ Google Fonts · Font pairing suggestions · Color harmony · Brand kits
+            </p>
+          </div>
+        </div>
+
+        {/* Feature 3 — AI */}
+        <div className="mb-20 flex flex-col items-center gap-8 md:flex-row md:gap-12">
+          <div className="flex-1">
+            <h3 className="mb-3 text-xl font-semibold text-text-primary">AI that's actually optional</h3>
+            <p className="mb-4 text-base leading-relaxed text-text-secondary">
+              Bring your own Anthropic API key. Generate designs from text prompts,
+              rewrite copy, remove backgrounds, get design feedback — all powered by Claude.
+              Don't have a key? The app works 100% without it.
+              No vendor lock-in. No usage-based pricing.
+            </p>
+            <p className="text-sm text-text-tertiary">
+              Generate designs · Smart edit · Copy suggestions · Background removal (client-side ONNX)
+            </p>
+          </div>
+          <div className="w-full max-w-xs rounded-lg border border-border bg-elevated p-4 shadow-sm md:w-80">
+            <div className="mb-2 rounded bg-canvas p-3 font-mono text-xs text-text-secondary">
+              <span className="text-accent">&gt;</span> "Create a tech conference badge with teal accents"
+            </div>
+            <div className="rounded bg-accent-subtle p-3 text-xs text-text-secondary">
+              ✓ Generated 21-object design with gradient fills, role pill, QR code placeholder, and WiFi info
+            </div>
+          </div>
+        </div>
+
+        {/* Feature 4 — Export */}
+        <div className="flex flex-col-reverse items-center gap-8 md:flex-row md:gap-12">
+          <div className="w-full max-w-xs rounded-lg border border-border bg-elevated p-4 shadow-sm md:w-80">
+            <div className="space-y-2 text-sm text-text-secondary">
+              <div className="flex items-center justify-between"><span>PNG</span><span className="text-text-tertiary">Up to 3x resolution</span></div>
+              <div className="flex items-center justify-between"><span>PDF</span><span className="text-text-tertiary">Multi-page support</span></div>
+              <div className="flex items-center justify-between"><span>SVG</span><span className="text-text-tertiary">Vector output</span></div>
+              <div className="flex items-center justify-between"><span>JPG</span><span className="text-text-tertiary">Compressed</span></div>
+              <div className="h-px bg-border" />
+              <div className="flex items-center justify-between"><span>Transparent PNG</span><Check size={14} className="text-accent" /></div>
+              <div className="flex items-center justify-between"><span>Batch export (ZIP)</span><Check size={14} className="text-accent" /></div>
+            </div>
+          </div>
+          <div className="flex-1">
+            <h3 className="mb-3 text-xl font-semibold text-text-primary">Export everything, everywhere</h3>
+            <p className="mb-4 text-base leading-relaxed text-text-secondary">
+              PNG, JPG, SVG, and multi-page PDF. Transparent backgrounds. Up to 3x resolution.
+              Magic Resize scales your design to any format — batch export all sizes as a ZIP.
+              No watermarks. No "upgrade to download."
+            </p>
+            <p className="text-sm text-text-tertiary">
+              Multi-page PDF · Magic Resize · Batch ZIP export · .monet file format
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Self-Hosting ────────────────────────────────────── */}
+      <section
+        id="self-host"
+        ref={selfHostRef as React.RefObject<HTMLElement>}
+        className="border-t border-border bg-canvas"
+      >
+        <div className="mx-auto max-w-4xl px-6 py-24">
+          <h2 className="mb-4 text-center font-display text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">
+            Your designs. Your server.
+          </h2>
+          <p className="mx-auto mb-10 max-w-xl text-center text-base leading-relaxed text-text-secondary">
+            Deploy your own instance in under a minute.
+            SQLite database, no external dependencies. Docker or bare metal.
+          </p>
+
+          <div className="overflow-hidden rounded-lg border border-border shadow-sm">
+            {/* Terminal chrome */}
+            <div className="flex h-9 items-center gap-2 bg-elevated px-4">
+              <span className="h-2.5 w-2.5 rounded-full bg-border-strong" />
+              <span className="h-2.5 w-2.5 rounded-full bg-border-strong" />
+              <span className="h-2.5 w-2.5 rounded-full bg-border-strong" />
+              <span className="ml-3 flex items-center gap-1 text-xs text-text-tertiary">
+                <Terminal size={12} />
+                terminal
+              </span>
+            </div>
+            {/* Code block */}
+            <div className="bg-canvas p-6 font-mono text-sm leading-relaxed">
+              <div className="text-text-tertiary"># Clone and start</div>
+              <div className="mt-1">
+                <span className="text-accent">$</span>
+                <span className="text-text-primary"> git clone https://github.com/pj-casey/Monet.git</span>
+              </div>
+              <div className="mt-1">
+                <span className="text-accent">$</span>
+                <span className="text-text-primary"> cd Monet</span>
+              </div>
+              <div className="mt-1">
+                <span className="text-accent">$</span>
+                <span className="text-text-primary"> docker compose up</span>
+              </div>
+              <div className="mt-3 text-text-tertiary"># That's it. Open http://localhost:3000</div>
+            </div>
+          </div>
+
+          <div className="mt-6 text-center">
+            <a
+              href="https://github.com/pj-casey/Monet/blob/main/SELF-HOSTING.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-accent hover:text-accent-hover hover:underline"
+            >
+              Read the self-hosting guide →
+            </a>
+          </div>
         </div>
       </section>
 
@@ -330,16 +437,16 @@ export function LandingPage() {
       <section
         id="compare"
         ref={comparisonRef as React.RefObject<HTMLElement>}
-        className="mx-auto max-w-4xl px-6 pb-24"
+        className="mx-auto max-w-4xl px-6 py-24"
       >
         <h2 className="mb-4 text-center font-display text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">
           Honest comparison
         </h2>
         <p className="mx-auto mb-12 max-w-xl text-center text-base leading-relaxed text-text-secondary">
-          We believe in transparency. Here's how Monet stacks up.
+          We won't pretend we have 610K templates. Here's what we actually offer.
         </p>
 
-        <div className="overflow-hidden rounded-lg border border-border shadow-sm">
+        <div className="overflow-x-auto overflow-y-hidden rounded-lg border border-border shadow-sm">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-surface">
@@ -366,62 +473,6 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ─── Self-Hosting ────────────────────────────────────── */}
-      <section
-        id="self-host"
-        ref={selfHostRef as React.RefObject<HTMLElement>}
-        className="mx-auto max-w-4xl px-6 pb-24"
-      >
-        <h2 className="mb-4 text-center font-display text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">
-          Your designs. Your server.
-        </h2>
-        <p className="mx-auto mb-10 max-w-xl text-center text-base leading-relaxed text-text-secondary">
-          Deploy your own instance in under a minute.
-          SQLite database, no external dependencies.
-        </p>
-
-        <div className="overflow-hidden rounded-lg border border-border shadow-sm">
-          {/* Terminal chrome */}
-          <div className="flex h-9 items-center gap-2 bg-elevated px-4">
-            <span className="h-2.5 w-2.5 rounded-full bg-border-strong" />
-            <span className="h-2.5 w-2.5 rounded-full bg-border-strong" />
-            <span className="h-2.5 w-2.5 rounded-full bg-border-strong" />
-            <span className="ml-3 flex items-center gap-1 text-xs text-text-tertiary">
-              <Terminal size={12} />
-              terminal
-            </span>
-          </div>
-          {/* Code block */}
-          <div className="bg-canvas p-6 font-mono text-sm leading-relaxed">
-            <div className="text-text-tertiary"># Clone and start</div>
-            <div className="mt-1">
-              <span className="text-accent">$</span>
-              <span className="text-text-primary"> git clone https://github.com/pj-casey/Monet.git</span>
-            </div>
-            <div className="mt-1">
-              <span className="text-accent">$</span>
-              <span className="text-text-primary"> cd Monet</span>
-            </div>
-            <div className="mt-1">
-              <span className="text-accent">$</span>
-              <span className="text-text-primary"> docker compose up</span>
-            </div>
-            <div className="mt-3 text-text-tertiary"># That's it. Open http://localhost:3000</div>
-          </div>
-        </div>
-
-        <div className="mt-6 text-center">
-          <a
-            href="https://github.com/pj-casey/Monet/blob/main/SELF-HOSTING.md"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-medium text-accent hover:text-accent-hover hover:underline"
-          >
-            Read the self-hosting guide
-          </a>
-        </div>
-      </section>
-
       {/* ─── Open Source ─────────────────────────────────────── */}
       <section
         id="open-source"
@@ -432,29 +483,29 @@ export function LandingPage() {
           <h2 className="mb-4 font-display text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">
             Built in the open
           </h2>
-          <p className="mx-auto mb-8 max-w-xl text-base leading-relaxed text-text-secondary">
+          <p className="mx-auto mb-4 max-w-xl text-base leading-relaxed text-text-secondary">
             Monet is open source under the AGPLv3 license.
             Every line of code is public, auditable, and yours to modify.
           </p>
           <p className="mb-10 text-sm text-text-tertiary">
-            Built with Claude by Anthropic
+            React 18 · TypeScript · Fabric.js v6 · Tailwind CSS · Zustand · Vite · Built with Claude by Anthropic
           </p>
 
-          {/* GitHub badge placeholder */}
+          {/* GitHub badge */}
           <div className="mb-10 inline-flex items-center gap-2 rounded-full border border-border bg-elevated px-4 py-2 shadow-sm">
             <GithubIcon size={16} className="text-text-secondary" />
             <span className="text-sm font-medium text-text-primary">pj-casey/Monet</span>
             <span className="rounded-full bg-accent-subtle px-2 py-0.5 text-xs font-medium text-accent">
-              stars
+              AGPLv3
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-4">
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
             <a
               href="https://github.com/pj-casey/Monet"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-sm bg-accent px-5 py-2 text-sm font-medium text-accent-fg hover:bg-accent-hover"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-accent px-5 py-2 text-sm font-medium text-accent-fg hover:bg-accent-hover sm:w-auto"
             >
               <GithubIcon size={16} />
               View on GitHub
@@ -463,7 +514,7 @@ export function LandingPage() {
               href="https://github.com/pj-casey/Monet/blob/main/CONTRIBUTING.md"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-sm border border-border bg-elevated px-5 py-2 text-sm font-medium text-text-primary hover:bg-wash"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-border bg-elevated px-5 py-2 text-sm font-medium text-text-primary hover:bg-wash sm:w-auto"
             >
               Contributions welcome
             </a>
@@ -531,6 +582,39 @@ export function LandingPage() {
             <CryptoAddr label="BTC" address="bc1qws49067r4220vsf60ftg70fmnhmn2s24evnk8d" />
             <CryptoAddr label="ETH" address="0x149F845Cb27b0cFA7AFaFC893e8620228b052731" />
             <CryptoAddr label="SOL" address="8gRPQgjESd8cCWGtCnBv48FHeAAYaZVBdzzDqoJfN7Zr" />
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Final CTA ──────────────────────────────────────── */}
+      <section
+        ref={ctaRef as React.RefObject<HTMLElement>}
+        className="border-t border-border bg-canvas"
+      >
+        <div className="mx-auto max-w-4xl px-6 py-20 text-center">
+          <h2 className="mb-4 font-display text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">
+            Try it now
+          </h2>
+          <p className="mx-auto mb-8 max-w-md text-base leading-relaxed text-text-secondary">
+            No signup. No download. Just open the editor and start designing.
+          </p>
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+            <Link
+              to="/editor"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-accent px-8 py-3 text-base font-medium text-accent-fg shadow-sm hover:bg-accent-hover sm:w-auto"
+            >
+              Start Designing
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+            <a
+              href="https://github.com/pj-casey/Monet"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-border bg-elevated px-8 py-3 text-base font-medium text-text-primary shadow-sm hover:bg-wash sm:w-auto"
+            >
+              <GithubIcon size={16} />
+              View Source
+            </a>
           </div>
         </div>
       </section>
