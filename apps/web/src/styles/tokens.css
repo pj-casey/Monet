@@ -12,6 +12,8 @@
 /* LIGHT THEME                                                    */
 /* ═══════════════════════════════════════════════════════════════ */
 :root {
+  color-scheme: light;
+
   /* ─── Brand Accent — warm sienna ─── */
   --accent:             oklch(0.65 0.15 45);
   --accent-hover:       oklch(0.60 0.17 45);
@@ -122,6 +124,8 @@
 /* DARK THEME                                                     */
 /* ═══════════════════════════════════════════════════════════════ */
 .dark {
+  color-scheme: dark;
+
   /* ─── Surfaces ─── */
   --bg-canvas:          oklch(0.14 0.008 60);
   --bg-surface:         oklch(0.18 0.008 60);

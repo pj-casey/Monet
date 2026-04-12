@@ -89,12 +89,11 @@ const COMPARISON: CompRow[] = [
   { label: 'Account Required',   monet: false,          canvaFree: true,        canvaPro: true },
   { label: 'Open Source',        monet: true,           canvaFree: false,       canvaPro: false },
   { label: 'Self-Hostable',     monet: true,           canvaFree: false,       canvaPro: false },
-  { label: 'Templates',         monet: 'Hand-crafted', canvaFree: 'Generic',   canvaPro: '610K+' },
+  { label: 'AI Design Generation', monet: true,        canvaFree: false,       canvaPro: true },
   { label: 'Background Removal', monet: true,          canvaFree: false,       canvaPro: true },
   { label: 'Brand Kit',         monet: true,           canvaFree: false,       canvaPro: true },
-  { label: 'AI Features',       monet: 'BYOK',        canvaFree: 'Limited',   canvaPro: true },
   { label: 'Export (PNG/PDF/SVG)', monet: true,        canvaFree: 'Limited',   canvaPro: true },
-  { label: 'Watermarks',        monet: false,          canvaFree: false,       canvaPro: false },
+  { label: 'Watermarks',        monet: 'None',         canvaFree: 'On premium', canvaPro: 'None' },
 ];
 
 function CellDisplay({ value, label }: { value: CellValue; label: string }) {
@@ -182,14 +181,14 @@ export function LandingPage() {
         className="mx-auto max-w-4xl px-6 pb-20 pt-16 text-center sm:pb-28 sm:pt-24"
       >
         <h1 className="font-display text-4xl font-semibold leading-tight tracking-tight text-text-primary sm:text-5xl md:text-6xl">
-          The open-source{' '}
+          Design anything.{' '}
           <br className="hidden sm:block" />
-          Canva alternative
+          Free forever.
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-text-secondary sm:text-xl">
-          A free design tool that runs in your browser.
-          No account needed. 51 templates. Self-hostable.
-          Built with React, Fabric.js, and Claude.
+          Open-source graphic design for social posts, presentations, and
+          marketing materials. No signup, no watermarks, no paywalls
+          — just open your browser and start creating.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
           <Link
@@ -256,16 +255,87 @@ export function LandingPage() {
           Everything Canva Pro charges $15/month for. Free.
         </p>
 
-        {/* Feature 1 — Templates */}
+        {/* Feature 1 — AI Design Generation (most "wow" feature) */}
         <div className="mb-20 flex flex-col items-center gap-8 md:flex-row md:gap-12">
           <div className="flex-1">
-            <h3 className="mb-3 text-xl font-semibold text-text-primary">51 hand-crafted templates</h3>
+            <h3 className="mb-3 text-xl font-semibold text-text-primary">Describe it. Design it.</h3>
             <p className="mb-4 text-base leading-relaxed text-text-secondary">
-              Not generic filler. Every template was designed with real content — actual names, prices, dates — and uses advanced features like gradient fills, drop shadows, and 13 different shape types.
-              Social media, business documents, marketing materials, event invitations.
+              Type a description like "minimalist podcast cover with dark gradient and audio waveform"
+              and Claude generates a complete, editable design — with gradient fills, shadows, and
+              real content. Use your own Anthropic API key. Don't have one? The app works
+              100% without AI. No vendor lock-in. No usage-based pricing.
             </p>
             <p className="text-sm text-text-tertiary">
-              Instagram · YouTube · LinkedIn · Invoices · Resumes · Menus · Posters · and 40+ more
+              Generate designs · Rewrite copy · Remove backgrounds · Get design feedback
+            </p>
+          </div>
+          <div className="w-full max-w-xs rounded-lg border border-border bg-elevated p-4 shadow-sm md:w-80">
+            <div className="mb-2 rounded bg-canvas p-3 font-mono text-xs text-text-secondary">
+              <span className="text-accent">&gt;</span> "Create a tech conference badge with teal accents"
+            </div>
+            <div className="rounded bg-accent-subtle p-3 text-xs text-text-secondary">
+              ✓ Generated 21-object design with gradient fills, role pill, QR placeholder, and WiFi info
+            </div>
+            <p className="mt-3 text-center text-[10px] text-text-tertiary">Bring your own API key · works without AI too</p>
+          </div>
+        </div>
+
+        {/* Feature 2 — Canvas Engine (proves it's not a toy) */}
+        <div className="mb-20 flex flex-col-reverse items-center gap-8 md:flex-row md:gap-12">
+          <div className="w-full max-w-xs rounded-lg border border-border bg-elevated p-4 shadow-sm md:w-80">
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2 text-text-secondary">
+                <span className="inline-block h-4 w-4 rounded-sm" style={{ background: 'linear-gradient(135deg, #C4704A, #e8956d)' }} />
+                Gradient fills (linear + radial)
+              </div>
+              <div className="flex items-center gap-2 text-text-secondary">
+                <span className="inline-block h-4 w-4 rounded-sm bg-text-primary" style={{ boxShadow: '2px 2px 4px rgba(0,0,0,0.3)' }} />
+                Drop shadows with colored glow
+              </div>
+              <div className="flex items-center gap-2 text-text-secondary">
+                <span className="inline-block h-4 w-4 rounded-sm border border-border" />
+                13 shape types (hearts, stars, hexagons...)
+              </div>
+              <div className="flex items-center gap-2 text-text-secondary">
+                <span className="inline-block h-4 w-4 rounded-sm bg-accent opacity-50" />
+                Text effects, blend modes, opacity
+              </div>
+              <div className="flex items-center gap-2 text-text-secondary">
+                <span className="inline-block h-4 w-4 rounded-sm" style={{ background: 'repeating-linear-gradient(45deg, #ccc, #ccc 2px, #fff 2px, #fff 4px)' }} />
+                16 image filters + non-destructive crop
+              </div>
+              <div className="flex items-center gap-2 text-text-secondary">
+                <span className="inline-block h-4 w-4 rounded-sm border-2 border-accent" />
+                Multi-page designs + pen tool
+              </div>
+            </div>
+          </div>
+          <div className="flex-1">
+            <h3 className="mb-3 text-xl font-semibold text-text-primary">Professional-grade canvas</h3>
+            <p className="mb-4 text-base leading-relaxed text-text-secondary">
+              Built on Fabric.js with a full properties panel. Gradient fills, drop shadows,
+              text stroke, blend modes, clipping masks, non-destructive crop, 16 image filters,
+              multi-page designs, and a pen tool for vector paths.
+              Not a template-swapper — it's a real design editor.
+            </p>
+            <p className="text-sm text-text-tertiary">
+              1,900+ Google Fonts · Font pairing · Color harmony · Brand kits · Rulers · Smart guides
+            </p>
+          </div>
+        </div>
+
+        {/* Feature 3 — Templates (reframed as starting points) */}
+        <div className="mb-20 flex flex-col items-center gap-8 md:flex-row md:gap-12">
+          <div className="flex-1">
+            <h3 className="mb-3 text-xl font-semibold text-text-primary">Start with a template, or start from scratch</h3>
+            <p className="mb-4 text-base leading-relaxed text-text-secondary">
+              Hand-crafted designs across 8 categories — social media, business, marketing,
+              events, education, creative, food, and seasonal. Every template uses real content
+              and the full feature set: gradients, shadows, custom shapes. Fully editable
+              — change anything, or start with a blank canvas.
+            </p>
+            <p className="text-sm text-text-tertiary">
+              Instagram · YouTube · LinkedIn · Invoices · Resumes · Menus · Posters · and more
             </p>
           </div>
           <div className="w-full max-w-xs rounded-lg border border-border bg-elevated p-4 shadow-sm md:w-80">
@@ -281,70 +351,7 @@ export function LandingPage() {
                 <div key={t.label} className="aspect-square rounded" style={{ background: t.bg }} title={t.label} />
               ))}
             </div>
-            <p className="mt-3 text-center text-xs text-text-tertiary">Template color palettes</p>
-          </div>
-        </div>
-
-        {/* Feature 2 — Canvas engine */}
-        <div className="mb-20 flex flex-col-reverse items-center gap-8 md:flex-row md:gap-12">
-          <div className="w-full max-w-xs rounded-lg border border-border bg-elevated p-4 shadow-sm md:w-80">
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2 text-text-secondary">
-                <span className="inline-block h-4 w-4 rounded-sm" style={{ background: 'linear-gradient(135deg, #C4704A, #e8956d)' }} />
-                Gradient fills (linear + radial)
-              </div>
-              <div className="flex items-center gap-2 text-text-secondary">
-                <span className="inline-block h-4 w-4 rounded-sm bg-text-primary" style={{ boxShadow: '2px 2px 4px rgba(0,0,0,0.3)' }} />
-                Drop shadows with color
-              </div>
-              <div className="flex items-center gap-2 text-text-secondary">
-                <span className="inline-block h-4 w-4 rounded-sm border border-border" />
-                13 shape types (hearts, stars, hexagons...)
-              </div>
-              <div className="flex items-center gap-2 text-text-secondary">
-                <span className="inline-block h-4 w-4 rounded-sm bg-accent opacity-50" />
-                Blend modes + opacity
-              </div>
-              <div className="flex items-center gap-2 text-text-secondary">
-                <span className="inline-block h-4 w-4 rounded-sm" style={{ background: 'repeating-linear-gradient(45deg, #ccc, #ccc 2px, #fff 2px, #fff 4px)' }} />
-                Non-destructive crop
-              </div>
-            </div>
-          </div>
-          <div className="flex-1">
-            <h3 className="mb-3 text-xl font-semibold text-text-primary">A real canvas engine</h3>
-            <p className="mb-4 text-base leading-relaxed text-text-secondary">
-              Built on Fabric.js with a full properties panel. Gradient fills, drop shadows,
-              text stroke, blend modes, clipping masks, non-destructive crop, 16 image filters.
-              Not a toy — this is what you need to make designs that look professional.
-            </p>
-            <p className="text-sm text-text-tertiary">
-              1,900+ Google Fonts · Font pairing suggestions · Color harmony · Brand kits
-            </p>
-          </div>
-        </div>
-
-        {/* Feature 3 — AI */}
-        <div className="mb-20 flex flex-col items-center gap-8 md:flex-row md:gap-12">
-          <div className="flex-1">
-            <h3 className="mb-3 text-xl font-semibold text-text-primary">AI that's actually optional</h3>
-            <p className="mb-4 text-base leading-relaxed text-text-secondary">
-              Bring your own Anthropic API key. Generate designs from text prompts,
-              rewrite copy, remove backgrounds, get design feedback — all powered by Claude.
-              Don't have a key? The app works 100% without it.
-              No vendor lock-in. No usage-based pricing.
-            </p>
-            <p className="text-sm text-text-tertiary">
-              Generate designs · Smart edit · Copy suggestions · Background removal (client-side ONNX)
-            </p>
-          </div>
-          <div className="w-full max-w-xs rounded-lg border border-border bg-elevated p-4 shadow-sm md:w-80">
-            <div className="mb-2 rounded bg-canvas p-3 font-mono text-xs text-text-secondary">
-              <span className="text-accent">&gt;</span> "Create a tech conference badge with teal accents"
-            </div>
-            <div className="rounded bg-accent-subtle p-3 text-xs text-text-secondary">
-              ✓ Generated 21-object design with gradient fills, role pill, QR code placeholder, and WiFi info
-            </div>
+            <p className="mt-3 text-center text-xs text-text-tertiary">8 categories of hand-crafted templates</p>
           </div>
         </div>
 
@@ -443,7 +450,7 @@ export function LandingPage() {
           Honest comparison
         </h2>
         <p className="mx-auto mb-12 max-w-xl text-center text-base leading-relaxed text-text-secondary">
-          We won't pretend we have 610K templates. Here's what we actually offer.
+          We believe in transparency. Here's how Monet stacks up.
         </p>
 
         <div className="overflow-x-auto overflow-y-hidden rounded-lg border border-border shadow-sm">

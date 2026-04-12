@@ -281,6 +281,13 @@ button, [role="button"], a, select, input[type="color"] {
   transition-timing-function: var(--ease-default);
 }
 
+/* Style native <select> elements to match the design system */
+select {
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+
 /* ═══════════════════════════════════════════════════════════════ */
 /* Scrollbar                                                      */
 /* ═══════════════════════════════════════════════════════════════ */

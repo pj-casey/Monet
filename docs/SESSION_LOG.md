@@ -3595,3 +3595,39 @@ Stripped the landing page back to a clean open-source launch message. No pricing
 - Landing page not bundled with editor
 - prefers-reduced-motion respected
 - Build passes clean
+
+## Session 83 — 2026-04-12
+**Phase:** Phase 10 — Landing Page Hero Refinement + Dark Mode Fix
+**Completed:**
+- **Hero copy revised** — Headline reverted to "Design anything. Free forever." (user directive: do NOT name Canva in hero). New subheadline does the positioning work: "The free, open-source design tool for social posts, presentations, and marketing materials. 51 templates, 1,900+ fonts, AI-powered — no account needed."
+- **Dark mode dropdown fix** — Added `color-scheme: light` to `:root` and `color-scheme: dark` to `.dark` in tokens.css. This tells browsers to render native `<select>` dropdowns, scrollbars, and other form controls with appropriate dark/light backgrounds. Also added global `select` styling in index.css to use design token colors.
+- **OG meta tags updated** — Title: "Monet — Free Open-Source Design Tool". Description matches new subheadline.
+
+**Files Modified:**
+- `apps/web/src/components/LandingPage.tsx` — hero headline + subheadline revised
+- `apps/web/index.html` — updated og:title and og:description
+- `apps/web/src/styles/tokens.css` — added color-scheme: light/dark
+- `apps/web/src/index.css` — added select element styling for dark mode
+
+## Session 84 — 2026-04-12
+**Phase:** Phase 10 — Landing Page Strategic Restructure
+**Completed:**
+- **Subheadline rewritten** — removed specific numbers ("51 templates, 1,900+ fonts") that invite unfavorable comparison. New copy: "Open-source graphic design for social posts, presentations, and marketing materials. No signup, no watermarks, no paywalls — just open your browser and start creating." Leads with use-case positioning and zero-friction.
+- **Feature sections reordered by strength:**
+  1. AI Design Generation (was #3, now #1) — most "wow" feature, renamed "Describe it. Design it." with prompt→result demo
+  2. Canvas Engine (was #2, stays #2) — renamed "Professional-grade canvas", added multi-page and pen tool to capability list
+  3. Templates (was #1, now #3) — reframed from "51 hand-crafted templates" to "Start with a template, or start from scratch." No count in heading. Emphasis on 8 categories and full editability. Palette grid relabeled "8 categories of hand-crafted templates"
+  4. Export (unchanged at #4)
+- **Comparison table restructured** — removed template row entirely (was "Hand-crafted" vs "Generic" vs "610K+" — still an unfavorable comparison). Replaced with "AI Design Generation" row (Monet wins: true vs false vs true). Changed "Watermarks" row to use text values ("None" / "On premium" / "None") for clearer communication. Removed self-deprecating intro "We won't pretend we have 610K templates" → "We believe in transparency."
+- **OG description updated** to match new subheadline
+
+**Files Modified:**
+- `apps/web/src/components/LandingPage.tsx` — subheadline, feature reorder, comparison table
+- `apps/web/index.html` — updated og:description
+
+**Verified:**
+- Hero screenshot exists (452KB)
+- OG image exists (256KB)
+- All nav links point to existing section IDs
+- Mobile CTAs stack full-width
+- Build passes clean
