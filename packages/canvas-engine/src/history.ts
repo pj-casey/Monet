@@ -20,7 +20,7 @@
  */
 
 import { Canvas as FabricCanvas, type FabricObject, util } from 'fabric';
-import type { TaggedObject } from './tagged-object';
+import { isInfrastructure } from './tagged-object';
 
 /** Maximum number of undo steps to keep in memory */
 const MAX_HISTORY_SIZE = 50;
@@ -174,15 +174,9 @@ export class HistoryManager {
    */
   private serializeCanvas(): string {
     if (!this.canvas) return '{}';
-    // Filter out non-design objects (grid lines, guides, artboard bg)
+    // Filter out infrastructure objects (grid lines, guides, artboard bg, pen preview, crop overlay)
     const objects = this.canvas.getObjects().filter(
-      (obj) =>
-        !(obj as TaggedObject).__isGridLine &&
-        !(obj as TaggedObject).__isGuide &&
-        !(obj as TaggedObject).__isArtboard &&
-        !(obj as TaggedObject).__isBgImage &&
-        !(obj as TaggedObject).__isPenPreview &&
-        !(obj as TaggedObject).__isCropOverlay,
+      (obj) => !isInfrastructure(obj),
     );
     return JSON.stringify(objects.map((obj) => obj.toObject()));
   }
@@ -195,13 +189,9 @@ export class HistoryManager {
 
     this.isRestoring = true;
 
-    // Remove all user objects (keep grid, guides, artboard)
+    // Remove all user objects (keep infrastructure: grid, guides, artboard, bg image, pen preview, crop overlay)
     const toRemove = this.canvas.getObjects().filter(
-      (obj) =>
-        !(obj as TaggedObject).__isGridLine &&
-        !(obj as TaggedObject).__isGuide &&
-        !(obj as TaggedObject).__isArtboard &&
-        !(obj as TaggedObject).__isBgImage,
+      (obj) => !isInfrastructure(obj),
     );
     for (const obj of toRemove) {
       this.canvas.remove(obj);

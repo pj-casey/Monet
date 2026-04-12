@@ -609,11 +609,13 @@ function PhotosSection({ query, onOpenSettings }: { query: string; onOpenSetting
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [localQuery, setLocalQuery] = useState('');
+  const [photoError, setPhotoError] = useState('');
 
   const handleSearch = useCallback(async () => {
     const q = localQuery.trim() || query.trim();
     if (!q) return;
     setLoading(true);
+    setPhotoError('');
     try {
       let results: NormalizedPhoto[] = [];
       if (source === 'unsplash' && unsplashOk) {
@@ -625,8 +627,9 @@ function PhotosSection({ query, onOpenSettings }: { query: string; onOpenSetting
       }
       setPhotos(results);
       setSearched(true);
-    } catch {
+    } catch (err) {
       setPhotos([]);
+      setPhotoError(err instanceof Error ? err.message : 'Failed to search photos. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -701,7 +704,8 @@ function PhotosSection({ query, onOpenSettings }: { query: string; onOpenSetting
       </div>
 
       {loading && <p className="text-center text-xs text-text-tertiary">Searching...</p>}
-      {!loading && searched && photos.length === 0 && <p className="text-center text-xs text-text-tertiary">No photos found</p>}
+      {!loading && photoError && <p className="text-center text-xs text-danger">{photoError}</p>}
+      {!loading && !photoError && searched && photos.length === 0 && <p className="text-center text-xs text-text-tertiary">No photos found</p>}
 
       <div className="grid grid-cols-3 gap-1">
         {photos.map((photo) => (

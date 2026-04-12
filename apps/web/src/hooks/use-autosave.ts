@@ -25,6 +25,7 @@ export function useAutosave(isLoggedIn: boolean = false) {
   const [designName, setDesignName] = useState('Untitled Design');
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dirtyRef = useRef(false);
+  const savingRef = useRef(false);
 
   const artboardWidth = useEditorStore((s) => s.artboardWidth);
   const artboardHeight = useEditorStore((s) => s.artboardHeight);
@@ -55,37 +56,47 @@ export function useAutosave(isLoggedIn: boolean = false) {
   /** Perform the actual save to IndexedDB + optional server push */
   const doSave = useCallback(async () => {
     if (!engine.isInitialized()) return;
+    if (savingRef.current) return; // Prevent concurrent saves
+    savingRef.current = true;
 
-    setStatus('saving');
+    try {
+      setStatus('saving');
 
-    const doc = engine.toJSON(designName, currentId || undefined);
-    const id = currentId || doc.id;
-    if (!currentId) setCurrentId(id);
-    doc.id = id;
+      const doc = engine.toJSON(designName, currentId || undefined);
+      const id = currentId || doc.id;
+      if (!currentId) setCurrentId(id);
+      doc.id = id;
 
-    const thumbnail = generateThumbnail();
+      const thumbnail = generateThumbnail();
 
-    const record: SavedDesign = {
-      id,
-      name: designName,
-      updatedAt: doc.updatedAt,
-      createdAt: doc.createdAt || new Date().toISOString(),
-      thumbnail,
-      document: doc,
-    };
+      const record: SavedDesign = {
+        id,
+        name: designName,
+        updatedAt: doc.updatedAt,
+        createdAt: doc.createdAt || new Date().toISOString(),
+        thumbnail,
+        document: doc,
+      };
 
-    // Save to IndexedDB (always)
-    await saveDesign(record);
-    setCurrentDesignId(id);
-    dirtyRef.current = false;
+      // Save to IndexedDB (always)
+      await saveDesign(record);
+      setCurrentDesignId(id);
+      dirtyRef.current = false;
 
-    // Push to server if logged in
-    if (isLoggedIn) {
-      setStatus('syncing');
-      await pushDesignUpdate(record);
+      // Push to server if logged in
+      if (isLoggedIn) {
+        setStatus('syncing');
+        await pushDesignUpdate(record);
+      }
+
+      setStatus('saved');
+    } finally {
+      savingRef.current = false;
+      // If changes were made during save, re-trigger after debounce
+      if (dirtyRef.current) {
+        timerRef.current = setTimeout(() => { doSave(); }, DEBOUNCE_MS);
+      }
     }
-
-    setStatus('saved');
   }, [currentId, designName, generateThumbnail, isLoggedIn]);
 
   /** Mark the design as having unsaved changes and start debounce timer */

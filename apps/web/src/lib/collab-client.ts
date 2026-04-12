@@ -38,6 +38,7 @@ export interface CollabCallbacks {
   onYjsUpdate?: (update: number[]) => void;
   onYjsSync?: (state: number[]) => void;
   onViewportUpdate?: (data: { userId: string; viewport: { zoom: number; panX: number; panY: number } }) => void;
+  onConnectionError?: (message: string) => void;
 }
 
 let socket: Socket | null = null;
@@ -100,6 +101,16 @@ export function joinRoom(
     const c = localComments.find((c) => c.id === data.commentId);
     if (c) c.resolved = data.resolved;
     callbacks.onCommentsChange?.([...localComments]);
+  });
+
+  socket.on('connect_error', (err: Error) => {
+    callbacks.onConnectionError?.(`Connection failed: ${err.message}`);
+  });
+
+  socket.on('disconnect', (reason: string) => {
+    if (reason !== 'io client disconnect') {
+      callbacks.onConnectionError?.(`Disconnected: ${reason}`);
+    }
   });
 }
 

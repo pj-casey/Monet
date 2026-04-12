@@ -181,22 +181,30 @@ marketplaceRouter.post('/:id/vote', (c) => {
   if (!userId) return c.json({ error: 'Login required' }, 401);
   const id = c.req.param('id');
 
-  // Check if already voted
-  const check = getDB().prepare('SELECT 1 FROM template_votes WHERE user_id = ? AND template_id = ?');
-  check.bind([userId, id]);
-  const hasVoted = check.step();
-  check.free();
+  // Wrap in transaction to prevent race condition on vote toggle
+  getDB().run('BEGIN');
+  try {
+    // Check if already voted
+    const check = getDB().prepare('SELECT 1 FROM template_votes WHERE user_id = ? AND template_id = ?');
+    check.bind([userId, id]);
+    const hasVoted = check.step();
+    check.free();
 
-  if (hasVoted) {
-    getDB().run('DELETE FROM template_votes WHERE user_id = ? AND template_id = ?', [userId, id]);
-    getDB().run('UPDATE marketplace_templates SET upvotes = upvotes - 1 WHERE id = ?', [id]);
-  } else {
-    getDB().run('INSERT INTO template_votes (user_id, template_id) VALUES (?, ?)', [userId, id]);
-    getDB().run('UPDATE marketplace_templates SET upvotes = upvotes + 1 WHERE id = ?', [id]);
+    if (hasVoted) {
+      getDB().run('DELETE FROM template_votes WHERE user_id = ? AND template_id = ?', [userId, id]);
+      getDB().run('UPDATE marketplace_templates SET upvotes = MAX(0, upvotes - 1) WHERE id = ?', [id]);
+    } else {
+      getDB().run('INSERT INTO template_votes (user_id, template_id) VALUES (?, ?)', [userId, id]);
+      getDB().run('UPDATE marketplace_templates SET upvotes = upvotes + 1 WHERE id = ?', [id]);
+    }
+    getDB().run('COMMIT');
+    saveDB();
+
+    return c.json({ voted: !hasVoted });
+  } catch (e) {
+    getDB().run('ROLLBACK');
+    throw e;
   }
-  saveDB();
-
-  return c.json({ voted: !hasVoted });
 });
 
 // ─── Moderation ────────────────────────────────────────────────────
@@ -204,8 +212,14 @@ marketplaceRouter.post('/:id/vote', (c) => {
 marketplaceRouter.patch('/:id/moderate', async (c) => {
   const userId = getAuthUserId(c);
   if (!userId) return c.json({ error: 'Login required' }, 401);
-  // Simple admin check — first registered user is admin
-  // In production, use a proper admin role system
+
+  // Admin check — first registered user is admin
+  const firstUser = getDB().prepare('SELECT id FROM users ORDER BY rowid ASC LIMIT 1');
+  const isAdmin = firstUser.step();
+  const adminId = isAdmin ? (firstUser.getAsObject() as { id: string }).id : null;
+  firstUser.free();
+  if (userId !== adminId) return c.json({ error: 'Admin access required' }, 403);
+
   const body = await c.req.json();
   const status = body.status as string;
   const staffPick = body.staffPick ? 1 : 0;

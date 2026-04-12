@@ -113,7 +113,8 @@ export function TabSuggest() {
 
     try {
       const doc = engine.toJSON();
-      const allText = doc.objects
+      const allObjects = doc.pages?.flatMap((p: any) => p.objects) ?? doc.objects;
+      const allText = allObjects
         .filter((o: any) => o.type === 'textbox' && o.text?.trim())
         .map((o: any) => o.text)
         .slice(0, 5);

@@ -12,43 +12,10 @@
  */
 
 import type { DesignDocument } from '@monet/shared';
-import { callClaudeStream, isAIConfigured } from './ai-assistant';
+import { callClaudeStream, isAIConfigured, getApiKey, saveApiKey, clearApiKey } from './ai-assistant';
 
 // Re-export for backward compatibility
-export { isAIConfigured };
-
-const STORAGE_KEY = 'monet-anthropic-key';
-
-/** Get the stored API key from localStorage */
-function getApiKey(): string {
-  try {
-    return localStorage.getItem(STORAGE_KEY) ?? '';
-  } catch {
-    return '';
-  }
-}
-
-/** Save the user's API key to localStorage */
-export function saveApiKey(key: string): void {
-  try {
-    if (key.trim()) {
-      localStorage.setItem(STORAGE_KEY, key.trim());
-    } else {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  } catch {
-    // localStorage may be unavailable
-  }
-}
-
-/** Remove the stored API key */
-export function clearApiKey(): void {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch {
-    // localStorage may be unavailable
-  }
-}
+export { isAIConfigured, saveApiKey, clearApiKey };
 
 /**
  * System prompt that instructs Claude to generate a valid DesignDocument.
@@ -264,6 +231,7 @@ function validateDesignDocument(doc: unknown): DesignDocument {
   }
 
   const now = new Date().toISOString();
+  const objects = d.objects as Record<string, unknown>[];
   const result: DesignDocument = {
     version: 1,
     id: '',
@@ -275,7 +243,8 @@ function validateDesignDocument(doc: unknown): DesignDocument {
       height: dims.height as number,
     },
     background: validateBackground(d.background),
-    objects: d.objects as Record<string, unknown>[],
+    objects: [],
+    pages: [{ id: '', name: 'Page 1', objects }],
     metadata: {
       tags: Array.isArray((d.metadata as Record<string, unknown>)?.tags)
         ? (d.metadata as Record<string, unknown>).tags as string[]

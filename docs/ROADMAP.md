@@ -483,6 +483,65 @@ A free, open-source, web-based design tool that empowers non-designers to create
 - [x] Non-functional opacity slider removed from ColorPicker
 - [x] Hardcoded white in template skeleton → design token
 
+## QA Audit Findings (Session 73 — 5-Agent Team)
+
+**Goal:** Find and fix every bug before v1.0 launch.
+
+5 specialized QA agents read every file in the codebase. 140 issues found total.
+
+### P0 Bugs Fixed (11 of 16)
+- [x] `resizeDesign()` ignored `doc.pages` — multi-page designs lost all content on Magic Resize
+- [x] `export()`/`getArtboardDataURL()` had no try/finally — error permanently corrupted engine state
+- [x] `undo()`/`redo()` had no `isRestoring` guard — rapid double-undo caused race condition
+- [x] `onSelectionChange` was single-listener — AI tab overwrote App.tsx's listener, killed right sidebar
+- [x] `loadDesign()` called `engine.fromJSON()` before canvas mounted — crash on startup with saved design
+- [x] `handleOpenResized`/`handleImportFile` called `engine.fromJSON()` without init guard
+- [x] AI `callClaudeStream()` used `res.body!` — crash if response body is null
+- [x] AI SSE reader never released on error — connection leak
+- [x] AI "Make it pop" passed unvalidated Claude JSON to engine — arbitrary property injection
+- [x] `pnpm typecheck` broken for 3 workspace packages (missing typescript devDep)
+- [x] `getArtboardDataURL()` missing `__isPenPreview`/`__isCropOverlay` from infrastructure hiding
+
+### P0 Bugs Noted (not fixable in app code)
+- [ ] API server design/preferences/sharing routes have zero authentication — needs auth middleware
+- [ ] API server sharing endpoint exposes all designs without access control
+- [ ] `beforeunload` async save can lose data — browser won't wait for IndexedDB write
+- [ ] API preferences route has no authentication
+- [ ] Marketplace moderation PATCH has no admin role check
+
+### P1 Bugs (35 remaining — next priority)
+- [ ] `nudgeSelected()` has no undo history — arrow key moves can't be undone
+- [ ] `setBackground()` has no undo history
+- [ ] `toggleLayerLock()`/`toggleLayerVisibility()` have no undo history
+- [ ] Smart guides filter misses `__isGuide` and `__isBgImage` tags — guides snap to other guides
+- [ ] `getArtboardDataURL()` used to miss `__isPenPreview`/`__isCropOverlay` (FIXED)
+- [ ] `history.restoreState()` removes pen preview and crop overlay on undo — breaks crop mode
+- [ ] PenTool `deactivate()` misses `__isCropOverlay` in selectability restore
+- [ ] `updateSelectedObject()` silently ignores width for objects with `active.width === 0`
+- [ ] Montserrat font not preloaded — 30+ templates render in fallback font on first load
+- [ ] Collab client has no `connect_error` handler — hangs indefinitely with no feedback
+- [ ] Stock photo API errors silently swallowed — shows "no results" instead of error message
+- [ ] AI `normalizeDoc()` doesn't handle multi-page designs — AI edits lose all pages
+- [ ] AI `smartEdit()` system prompt doesn't mention multi-page
+- [ ] AI `generateDesign()` returns doc without `pages` field (inconsistent with current format)
+- [ ] AI chat history sends rendered `reply` text, not structured JSON — Claude loses context
+- [ ] AI feedback regex too narrow — misses valid phrasing like "Can you review my design?"
+- [ ] AI no 429 rate-limit handling — raw error body shown to user
+- [ ] `FocusTrap` queries focusable elements once on mount — dynamic content breaks trap
+- [ ] `CommandPalette` Escape closes during AI processing — loses in-progress edit
+- [ ] `FontBrowser` `useEffect` depends on `visibleItems` (reference changes every render)
+- [ ] `TabSuggest` accesses `doc.objects` not `doc.pages` — poor suggestions on multi-page
+- [ ] `serializeCanvas` sets `createdAt` to empty string on saves after the first
+- [ ] Auto-save race condition — concurrent `doSave()` calls can produce stale saves
+- [ ] Sync conflict boundary off-by-one — diff exactly 5000ms silently ignored
+- [ ] `ResizeDialog` imports old `apps/web/src/lib/resize.ts` (was double-scaling, now fixed)
+- [ ] Marketplace upvote counter can go negative on race condition
+- [ ] `PropertiesPanel` shows "Arrow" label for all grouped objects
+- [ ] AI duplicate `STORAGE_KEY`/`getApiKey()` in `ai-generate.ts` (redundant, risks divergence)
+- [ ] `ContextualAI` position doesn't account for HiDPI canvas scaling
+
+---
+
 ## Phase 10 — v1.0 Launch
 
 **Goal:** Ship it.

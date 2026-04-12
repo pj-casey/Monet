@@ -81,7 +81,7 @@ export function AIAssistantPanel({ onOpenSettings }: { onOpenSettings?: () => vo
 interface ChatViewProps { onDisconnect: () => void }
 
 /** Regex to detect feedback requests */
-const FEEDBACK_RE = /^(review|feedback|critique|analyze|check|look at|what do you think|how does).*(design|layout|look)/i;
+const FEEDBACK_RE = /\b(review|feedback|critique|analyze|check|look at|what do you think|how does|thoughts on|opinion on|improve|suggestions?|rate|is this good|any tips)\b/i;
 
 function ChatView({ onDisconnect }: ChatViewProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -214,7 +214,7 @@ function ChatView({ onDisconnect }: ChatViewProps) {
 
   const handleResponse = useCallback(async (response: ChatResponse, originalDoc: DesignDocument) => {
     const usage = formatUsage(response.inputTokens, response.outputTokens);
-    const assistantMsg: ChatMessage = { id: msgId(), role: 'assistant', text: response.reply, usage };
+    const assistantMsg: ChatMessage = { id: msgId(), role: 'assistant', text: response.reply, usage, rawResponse: response.rawResponse };
 
     if (response.action === 'modify' && response.design) {
       engine.saveHistoryCheckpoint();

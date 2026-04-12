@@ -512,12 +512,14 @@ export class CanvasEngine {
    */
   async setBackground(options: BackgroundOptions): Promise<void> {
     if (!this.canvas || !this.artboard) return;
+    this.history.saveCheckpoint();
     this.currentBackground = options;
     this.bgImage = await applyBackground(this.canvas, this.artboard, options);
     if (this.bgImage) {
       // Make sure artboard is still at the bottom
       this.canvas.sendObjectToBack(this.artboard);
     }
+    this.history.commit('Change background');
   }
 
   // ─── Text ──────────────────────────────────────────────────────────
@@ -1297,10 +1299,10 @@ export class CanvasEngine {
     if (props.top !== undefined) {
       active.set('top', props.top);
     }
-    if (props.width !== undefined && active.width) {
+    if (props.width !== undefined && active.width != null && active.width !== 0) {
       active.set('scaleX', props.width / active.width);
     }
-    if (props.height !== undefined && active.height) {
+    if (props.height !== undefined && active.height != null && active.height !== 0) {
       active.set('scaleY', props.height / active.height);
     }
     if (props.angle !== undefined) {
@@ -1836,6 +1838,7 @@ export class CanvasEngine {
     const obj = this.canvas.getObjects()[fabricIndex];
     if (!obj) return;
 
+    this.history.saveCheckpoint();
     const newLocked = obj.selectable !== false ? true : false;
     obj.set({
       selectable: !newLocked,
@@ -1849,6 +1852,7 @@ export class CanvasEngine {
     }
 
     this.canvas.requestRenderAll();
+    this.history.commit('Toggle lock');
     this.emitLayersChange();
   }
 
@@ -1858,8 +1862,10 @@ export class CanvasEngine {
     const obj = this.canvas.getObjects()[fabricIndex];
     if (!obj) return;
 
+    this.history.saveCheckpoint();
     obj.set('visible', !obj.visible);
     this.canvas.requestRenderAll();
+    this.history.commit('Toggle visibility');
     this.emitLayersChange();
   }
 
@@ -2080,12 +2086,14 @@ export class CanvasEngine {
     const active = this.canvas.getActiveObject();
     if (!active) return;
 
+    this.history.saveCheckpoint();
     active.set({
       left: (active.left ?? 0) + dx,
       top: (active.top ?? 0) + dy,
     });
     active.setCoords();
     this.canvas.requestRenderAll();
+    this.history.commit('Nudge');
   }
 
   // ─── Auto-Layout ──────────────────────────────────────────────────
@@ -2365,6 +2373,9 @@ export class CanvasEngine {
   /** Current background setting (tracked for serialization) */
   private currentBackground: BackgroundOptions = { type: 'solid', value: '#ffffff' };
 
+  /** Original createdAt timestamp (preserved across re-saves) */
+  private createdAt: string = '';
+
   /**
    * Save the current canvas state as a DesignDocument JSON.
    *
@@ -2383,6 +2394,7 @@ export class CanvasEngine {
     return serializeCanvas(
       this.canvas, this.artboardWidth, this.artboardHeight,
       this.currentBackground, name, this.pages, this.currentPageIndex, existingId,
+      this.createdAt,
     );
   }
 
@@ -2397,6 +2409,9 @@ export class CanvasEngine {
    */
   async fromJSON(doc: DesignDocument): Promise<void> {
     if (!this.canvas || !this.artboard) return;
+
+    // Preserve original creation timestamp for re-saves
+    if (doc.createdAt) this.createdAt = doc.createdAt;
 
     // Normalize pages (backward compat: wrap flat objects into page 1)
     this.pages = normalizePagesToArray(doc);

@@ -17,7 +17,7 @@ const API_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = 'claude-sonnet-4-20250514';
 const STORAGE_KEY = 'monet-anthropic-key';
 
-function getApiKey(): string {
+export function getApiKey(): string {
   try {
     return localStorage.getItem(STORAGE_KEY) ?? '';
   } catch {
@@ -28,6 +28,28 @@ function getApiKey(): string {
 /** Check if the user has connected their Claude account */
 export function isAIConfigured(): boolean {
   return !!getApiKey();
+}
+
+/** Save the user's API key to localStorage */
+export function saveApiKey(key: string): void {
+  try {
+    if (key.trim()) {
+      localStorage.setItem(STORAGE_KEY, key.trim());
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  } catch {
+    // localStorage may be unavailable
+  }
+}
+
+/** Remove the stored API key */
+export function clearApiKey(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // localStorage may be unavailable
+  }
 }
 
 /** @deprecated Use isAIConfigured instead */
@@ -85,6 +107,12 @@ export async function callClaudeStream(
   if (!res.ok) {
     const body = await res.text();
     if (res.status === 401) throw new Error('Invalid API key. Check your Claude connection.');
+    if (res.status === 429) {
+      const retryAfter = res.headers.get('retry-after');
+      throw new Error(retryAfter
+        ? `Rate limited. Please wait ${retryAfter} seconds and try again.`
+        : 'Rate limited. Please wait a moment and try again.');
+    }
     throw new Error(`API error (${res.status}): ${body}`);
   }
 
@@ -373,6 +401,8 @@ Rules:
 - Output ONLY the complete modified JSON. No explanation, no markdown.
 - Preserve all existing objects unless the instruction says to remove them.
 - Keep the same structure (version, id, name, dimensions, etc).
+- The design may have a "pages" array. Each page has { id, name, objects[] }. ALWAYS preserve and output the pages array. Edit the objects inside each page, not a top-level objects array.
+- If the input has no "pages" array, wrap all objects into pages: [{ id: "", name: "Page 1", objects: [...] }].
 - When adding objects, use the "recipe" format: { type, left, top, width, height, fill, ... }
 - Supported types: rect, circle, textbox, triangle, line
 - Available fonts: Inter, Roboto, Open Sans, Montserrat, Lato, Poppins, Playfair Display, Merriweather, Lora, Bebas Neue, Oswald, Anton, DM Sans
@@ -572,6 +602,8 @@ export interface ChatMessage {
   copySuggestions?: string[];
   /** Token usage info shown after the message */
   usage?: string;
+  /** Raw JSON response from Claude (used to preserve structured history for follow-up requests) */
+  rawResponse?: string;
 }
 
 const CHAT_SYSTEM = `You are Monet AI, a conversational design assistant for a web-based graphic design editor.
@@ -627,6 +659,8 @@ export interface ChatResponse {
   suggestions?: string[];
   inputTokens: number;
   outputTokens: number;
+  /** Raw JSON response string for preserving structured context in chat history */
+  rawResponse?: string;
 }
 
 /**
@@ -648,7 +682,8 @@ export async function chatWithClaude(
     if (msg.role === 'user') {
       apiMessages.push({ role: 'user', content: msg.text });
     } else {
-      apiMessages.push({ role: 'assistant', content: msg.text });
+      // Use raw JSON response if available to preserve structured context for follow-ups
+      apiMessages.push({ role: 'assistant', content: msg.rawResponse || msg.text });
     }
   }
 
@@ -690,6 +725,7 @@ export async function chatWithClaude(
       action: parsed.action || 'none',
       inputTokens,
       outputTokens,
+      rawResponse: cleaned,
     };
 
     if (parsed.action === 'modify' && parsed.design) {
@@ -715,6 +751,15 @@ export async function chatWithClaude(
 function normalizeDoc(doc: unknown): import('@monet/shared').DesignDocument {
   const d = (doc || {}) as Record<string, unknown>;
   const now = new Date().toISOString();
+  const objects = Array.isArray(d.objects) ? d.objects as Record<string, unknown>[] : [];
+  // Preserve pages if Claude returned them, otherwise wrap objects into a single page
+  const pages = Array.isArray(d.pages)
+    ? (d.pages as Array<Record<string, unknown>>).map((p, i) => ({
+        id: String(p.id || ''),
+        name: String(p.name || `Page ${i + 1}`),
+        objects: Array.isArray(p.objects) ? p.objects as Record<string, unknown>[] : [],
+      }))
+    : [{ id: '', name: 'Page 1', objects }];
   return {
     version: 1,
     id: '',
@@ -723,7 +768,8 @@ function normalizeDoc(doc: unknown): import('@monet/shared').DesignDocument {
     updatedAt: now,
     dimensions: (d.dimensions as { width: number; height: number }) || { width: 1080, height: 1080 },
     background: (d.background as { type: 'solid' | 'gradient' | 'image'; value: string }) || { type: 'solid', value: '#ffffff' },
-    objects: Array.isArray(d.objects) ? d.objects as Record<string, unknown>[] : [],
+    objects: [],
+    pages,
     metadata: { tags: [] },
   };
 }

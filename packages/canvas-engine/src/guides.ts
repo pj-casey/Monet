@@ -13,7 +13,7 @@
  */
 
 import { Canvas as FabricCanvas, Line, type FabricObject } from 'fabric';
-import type { TaggedObject } from './tagged-object';
+import { isInfrastructure, type TaggedObject } from './tagged-object';
 
 /** How close (in pixels) an object needs to be to trigger a guide */
 const SNAP_THRESHOLD = 5;
@@ -82,12 +82,7 @@ export function setupSmartGuides(
     // Get all other objects on the canvas (excluding the one being moved,
     // grid lines, and the artboard background)
     const others = canvas.getObjects().filter(
-      (obj) =>
-        obj !== target &&
-        !(obj as TaggedObject).__isGridLine &&
-        !(obj as TaggedObject).__isArtboard &&
-        !(obj as TaggedObject).__isPenPreview &&
-        !(obj as TaggedObject).__isCropOverlay,
+      (obj) => obj !== target && !isInfrastructure(obj),
     );
 
     if (others.length === 0) return;

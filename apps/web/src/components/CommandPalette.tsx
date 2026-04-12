@@ -136,6 +136,7 @@ export function CommandPalette({
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       e.preventDefault();
+      if (processing) return; // Don't close during AI processing
       onClose();
       return;
     }

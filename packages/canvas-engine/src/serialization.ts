@@ -16,7 +16,7 @@
  */
 
 import { Canvas as FabricCanvas, util, type FabricObject } from 'fabric';
-import type { TaggedObject } from './tagged-object';
+import { isInfrastructure } from './tagged-object';
 import type { DesignDocument, DesignPage, BackgroundOptions } from '@monet/shared';
 import { createObjectsFromRecipes } from './template-loader';
 
@@ -44,6 +44,7 @@ export function serializeCanvas(
   pages: DesignPage[],
   currentPageIndex: number,
   existingId?: string,
+  existingCreatedAt?: string,
 ): DesignDocument {
   // Serialize the current page's objects from the live canvas
   const userObjects = canvas.getObjects().filter(
@@ -65,7 +66,7 @@ export function serializeCanvas(
     version: 1,
     id: existingId ?? generateId(),
     name: docName,
-    createdAt: existingId ? '' : now,
+    createdAt: existingCreatedAt || now,
     updatedAt: now,
     dimensions: { width: artboardWidth, height: artboardHeight },
     background,
@@ -160,15 +161,4 @@ export function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
 }
 
-/** Check if an object is infrastructure (should be excluded from serialization) */
-function isInfrastructure(obj: FabricObject): boolean {
-  const tagged = obj as TaggedObject;
-  return !!(
-    tagged.__isArtboard ||
-    tagged.__isGridLine ||
-    tagged.__isGuide ||
-    tagged.__isBgImage ||
-    tagged.__isPenPreview ||
-    tagged.__isCropOverlay
-  );
-}
+// isInfrastructure imported from tagged-object.ts

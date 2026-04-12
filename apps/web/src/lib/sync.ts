@@ -131,7 +131,10 @@ export async function pullAndMerge(): Promise<SyncConflict[]> {
         const serverTime = new Date(serverMeta.updatedAt).getTime();
         const diff = Math.abs(localTime - serverTime);
 
-        if (diff < 5000 && diff > 0) {
+        if (diff === 0) {
+          // Identical timestamps — already in sync, skip
+          continue;
+        } else if (diff < 5000) {
           // Within 5 seconds — flag as conflict for user to resolve
           conflicts.push({
             designId: serverMeta.id,

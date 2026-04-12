@@ -208,7 +208,7 @@ export function FontBrowser({ fontFamily }: FontBrowserProps) {
   // Load font previews for visible fonts
   useEffect(() => {
     if (!open) return;
-    const visibleFonts = visibleItems
+    const visibleFonts = flatList.slice(startIdx, endIdx)
       .filter((item): item is FontItem => item.type === 'font')
       .map((item) => item.family);
 
@@ -219,7 +219,7 @@ export function FontBrowser({ fontFamily }: FontBrowserProps) {
         loadFontPreviewBatch(batch);
       }
     }
-  }, [open, startIdx, endIdx, visibleItems]);
+  }, [open, startIdx, endIdx]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleScroll = useCallback(() => {
     if (scrollRef.current) setScrollTop(scrollRef.current.scrollTop);

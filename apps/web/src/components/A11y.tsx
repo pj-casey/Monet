@@ -20,16 +20,15 @@ export function FocusTrap({ children, active = true }: { children: ReactNode; ac
     if (!active || !ref.current) return;
 
     const element = ref.current;
-    const focusable = element.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    if (focusable.length === 0) return;
-
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
+    const FOCUSABLE_SELECTOR = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return;
+      // Query on every Tab press to catch dynamically added elements
+      const focusable = element.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
       if (e.shiftKey) {
         if (document.activeElement === first) { e.preventDefault(); last.focus(); }
       } else {
@@ -37,8 +36,9 @@ export function FocusTrap({ children, active = true }: { children: ReactNode; ac
       }
     };
 
-    // Focus the first element
-    first.focus();
+    // Focus the first focusable element on mount
+    const initial = element.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+    if (initial.length > 0) initial[0].focus();
 
     element.addEventListener('keydown', handleKeyDown);
     return () => element.removeEventListener('keydown', handleKeyDown);

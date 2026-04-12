@@ -23,7 +23,7 @@ import {
   util,
   type FabricObject,
 } from 'fabric';
-import type { TaggedObject } from './tagged-object';
+import { isInfrastructure } from './tagged-object';
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -137,9 +137,8 @@ export class PenTool {
     // Restore selection
     this.canvas.selection = true;
     this.canvas.forEachObject((obj) => {
-      const tagged = obj as TaggedObject;
       // Don't make infrastructure objects selectable
-      if (tagged.__isArtboard || tagged.__isGridLine || tagged.__isGuide || tagged.__isBgImage || tagged.__isPenPreview) return;
+      if (isInfrastructure(obj)) return;
       (obj as FabricObject).selectable = true;
       (obj as FabricObject).evented = true;
     });

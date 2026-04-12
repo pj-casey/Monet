@@ -10,7 +10,7 @@
  */
 
 import { Textbox, type Canvas as FabricCanvas, type FabricObject } from 'fabric';
-import type { TaggedObject } from './tagged-object';
+import { isInfrastructure } from './tagged-object';
 import type { LayerInfo } from '@monet/shared';
 
 /**
@@ -74,19 +74,5 @@ export function getLayerName(obj: FabricObject): string {
   return nameMap[type] || type;
 }
 
-/**
- * Check if an object is infrastructure (artboard, grid, guide, etc.)
- * and should be excluded from the layer list.
- */
-function isInfrastructure(obj: FabricObject): boolean {
-  const tagged = obj as TaggedObject;
-  return !!(
-    tagged.__isArtboard ||
-    tagged.__isGridLine ||
-    tagged.__isGuide ||
-    tagged.__isBgImage ||
-    tagged.__isPenPreview ||
-    tagged.__isCropOverlay
-  );
-}
+// isInfrastructure imported from tagged-object.ts
 

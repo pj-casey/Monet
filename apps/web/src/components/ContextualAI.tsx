@@ -99,9 +99,13 @@ export function ContextualAI() {
     const canvasEl = canvas.getElement();
     const canvasRect = canvasEl.getBoundingClientRect();
 
+    // Account for HiDPI scaling: canvas internal pixels may differ from CSS pixels
+    const scaleX = canvasEl.clientWidth / (canvasEl.width || canvasEl.clientWidth);
+    const scaleY = canvasEl.clientHeight / (canvasEl.height || canvasEl.clientHeight);
+
     // Position above the object, centered horizontally
-    const x = canvasRect.left + (bound.left + bound.width / 2);
-    const y = canvasRect.top + bound.top - 12;
+    const x = canvasRect.left + (bound.left + bound.width / 2) * scaleX;
+    const y = canvasRect.top + bound.top * scaleY - 12;
 
     setPosition({ x, y });
   }, []);
