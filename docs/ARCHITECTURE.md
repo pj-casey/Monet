@@ -57,10 +57,14 @@ Plugin system (apps/web/src/):
 ├── plugins/chart-widget.tsx # Bar/Line/Pie chart SVG generator plugin
 └── components/PluginsPanel.tsx # Left sidebar panel — accordion layout for plugin panels
 
-New components (Sessions 55-59):
+Key UI components:
 ├── components/Tooltip.tsx       # Styled tooltip (dark pill, 500ms delay) — replaces native title=""
 ├── components/PageNavigator.tsx # Horizontal page thumbnail strip — switch/add/delete/duplicate/reorder pages
 ├── components/ColorPicker.tsx   # Custom color picker with eyedropper, document colors, recent colors, brand colors
+├── components/SettingsModal.tsx # Centralized API key management (Anthropic, Unsplash, Pexels)
+├── components/CommandPalette.tsx # Raycast-style command bar (/ or Cmd+K)
+├── components/ContextualAI.tsx  # Floating AI sparkle buttons near selected objects
+├── components/TabSuggest.tsx    # Tab-to-suggest AI copy for empty text objects
 ```
 
 ### Key types
@@ -468,42 +472,34 @@ interface CanvasObject {
 
 ## Template System
 
-Templates are static JSON files bundled with the app:
+50 built-in templates live in a single registry file using a `tpl()` helper for compact definitions:
 
 ```
-packages/templates/
-├── src/
-│   ├── index.ts                      # Template registry
-│   └── categories/
-│       ├── social-media/
-│       │   ├── instagram-post/
-│       │   │   ├── bold-announcement.json
-│       │   │   ├── bold-announcement.thumb.webp
-│       │   │   └── assets/           # Embedded images used by template
-│       │   └── ...
-│       ├── presentations/
-│       ├── print/
-│       └── marketing/
-├── schema.json                       # JSON Schema for template validation
-└── scripts/
-    └── generate-thumbnails.ts        # Auto-generate thumbs from templates
+packages/templates/src/
+├── types.ts         # Template interface definition
+├── registry.ts      # TEMPLATE_REGISTRY array — all 50 templates defined inline via tpl() helper
+└── index.ts         # Public exports (TEMPLATE_REGISTRY, getTemplateCategories, getTemplatesByCategory)
 ```
 
-Template JSON is a `DesignDocument` plus template metadata:
+Templates use a "recipe" format — simplified object definitions that `template-loader.ts` in canvas-engine converts to real Fabric.js objects. Thumbnails are rendered at runtime by `renderTemplateThumbnail()` using an offscreen Fabric.js canvas (no pre-built thumbnail images).
+
+User-created templates are stored in IndexedDB (`monet-user-templates` database) and shown in the template browser above built-in templates.
 
 ```typescript
 interface Template {
   templateId: string;
   name: string;
   description: string;
-  category: string;
-  subcategory?: string;
+  category: string;               // e.g., "Social Media", "Business", "Marketing"
+  subcategory?: string;           // e.g., "Instagram Post", "Business Card"
   tags: string[];
   dimensions: { width: number; height: number };
-  thumbnail: string;                  // Relative path to thumb
-  document: DesignDocument;           // The actual design
+  thumbnail: string;              // Empty string — thumbnails rendered at runtime
+  document: DesignDocument;       // The actual design as recipe-format JSON
 }
 ```
+
+Categories: Social Media (10), Business (9), Marketing (7), Events (7), Education (3), Creative (6), Food & Lifestyle (6), Seasonal (4).
 
 ---
 
@@ -545,24 +541,6 @@ DesignDocument
 ```
 
 Export runs in a Web Worker to avoid blocking the UI for large designs.
-
----
-
-## Feature Flags
-
-Use a simple feature flag system for progressive rollout:
-
-```typescript
-// packages/shared/src/features.ts
-export const FEATURES = {
-  BACKEND_SYNC: false,        // Phase 5
-  AI_BACKGROUND_REMOVE: false, // Phase 6
-  COLLABORATION: false,        // Phase 7
-  TEMPLATE_MARKETPLACE: false,  // Phase 8
-} as const;
-```
-
-Check in code: `if (FEATURES.AI_BACKGROUND_REMOVE) { ... }`
 
 ---
 

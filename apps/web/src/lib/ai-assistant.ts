@@ -88,40 +88,47 @@ export async function callClaudeStream(
     throw new Error(`API error (${res.status}): ${body}`);
   }
 
-  const reader = res.body!.getReader();
+  if (!res.body) {
+    throw new Error('Response body is empty');
+  }
+  const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let fullText = '';
   let inputTokens = 0;
   let outputTokens = 0;
   let buffer = '';
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
 
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || '';
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
 
-    for (const line of lines) {
-      if (!line.startsWith('data: ')) continue;
-      const jsonStr = line.slice(6).trim();
-      if (!jsonStr || jsonStr === '[DONE]') continue;
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const jsonStr = line.slice(6).trim();
+        if (!jsonStr || jsonStr === '[DONE]') continue;
 
-      try {
-        const event = JSON.parse(jsonStr);
-        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-          fullText += event.delta.text;
-          onDelta?.(event.delta.text);
-        } else if (event.type === 'message_start' && event.message?.usage) {
-          inputTokens = event.message.usage.input_tokens || 0;
-        } else if (event.type === 'message_delta' && event.usage) {
-          outputTokens = event.usage.output_tokens || 0;
+        try {
+          const event = JSON.parse(jsonStr);
+          if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+            fullText += event.delta.text;
+            onDelta?.(event.delta.text);
+          } else if (event.type === 'message_start' && event.message?.usage) {
+            inputTokens = event.message.usage.input_tokens || 0;
+          } else if (event.type === 'message_delta' && event.usage) {
+            outputTokens = event.usage.output_tokens || 0;
+          }
+        } catch {
+          /* skip malformed SSE data */
         }
-      } catch {
-        /* skip malformed SSE data */
       }
     }
+  } finally {
+    reader.releaseLock();
   }
 
   return { text: fullText, inputTokens, outputTokens };

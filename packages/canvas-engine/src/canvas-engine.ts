@@ -2652,11 +2652,13 @@ export class CanvasEngine {
       (this.artboard as TaggedObject).__isArtboard = false;
     }
 
-    exportCanvas(this.canvas, this.artboardWidth, this.artboardHeight, options);
-
-    // Re-tag the artboard
-    if (this.artboard) {
-      (this.artboard as TaggedObject).__isArtboard = true;
+    try {
+      exportCanvas(this.canvas, this.artboardWidth, this.artboardHeight, options);
+    } finally {
+      // Re-tag the artboard (even if export throws, so we don't leave it untagged)
+      if (this.artboard) {
+        (this.artboard as TaggedObject).__isArtboard = true;
+      }
     }
   }
 
@@ -2717,32 +2719,34 @@ export class CanvasEngine {
     // Un-tag artboard so it's included
     if (this.artboard) (this.artboard as TaggedObject).__isArtboard = false;
 
-    // Hide other infrastructure
+    // Hide other infrastructure (grid, guides, bg image, pen preview, crop overlay)
     const hidden: { obj: TaggedObject; wasVisible: boolean }[] = [];
     for (const obj of this.canvas.getObjects()) {
       const tagged = obj as TaggedObject;
-      if (tagged.__isGridLine || tagged.__isGuide || tagged.__isBgImage) {
+      if (tagged.__isGridLine || tagged.__isGuide || tagged.__isBgImage || tagged.__isPenPreview || tagged.__isCropOverlay) {
         hidden.push({ obj: tagged, wasVisible: tagged.visible ?? true });
         tagged.set('visible', false);
       }
     }
 
-    const dataURL = this.canvas.toDataURL({
-      format: 'png',
-      quality: 0.9,
-      multiplier,
-      left: 0, top: 0,
-      width: this.artboardWidth,
-      height: this.artboardHeight,
-    });
+    try {
+      const dataURL = this.canvas.toDataURL({
+        format: 'png',
+        quality: 0.9,
+        multiplier,
+        left: 0, top: 0,
+        width: this.artboardWidth,
+        height: this.artboardHeight,
+      });
 
-    // Restore
-    for (const { obj, wasVisible } of hidden) obj.set('visible', wasVisible);
-    if (this.artboard) (this.artboard as TaggedObject).__isArtboard = true;
-    this.canvas.setViewportTransform(vpt as typeof this.canvas.viewportTransform);
-    this.canvas.requestRenderAll();
-
-    return dataURL;
+      return dataURL;
+    } finally {
+      // Restore (even if toDataURL throws, so we don't leave canvas in broken state)
+      for (const { obj, wasVisible } of hidden) obj.set('visible', wasVisible);
+      if (this.artboard) (this.artboard as TaggedObject).__isArtboard = true;
+      this.canvas.setViewportTransform(vpt as typeof this.canvas.viewportTransform);
+      this.canvas.requestRenderAll();
+    }
   }
 
   // ─── Utilities ────────────────────────────────────────────────────

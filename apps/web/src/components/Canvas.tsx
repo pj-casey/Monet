@@ -34,24 +34,27 @@ export { engine };
 /**
  * Selection state — shared so other components (like PropertiesPanel)
  * can read what's currently selected on the canvas.
+ * Uses a Set of callbacks so multiple subscribers can listen simultaneously
+ * (e.g., App.tsx, ContextualAI.tsx, AIAssistantPanel.tsx).
  */
-let selectionListener: ((props: SelectedObjectProps | null) => void) | null = null;
+const selectionListeners: Set<(props: SelectedObjectProps | null) => void> = new Set();
 
 /** Register a listener for selection changes. Returns an unsubscribe function. */
 export function onSelectionChange(fn: (props: SelectedObjectProps | null) => void): () => void {
-  selectionListener = fn;
-  return () => { selectionListener = null; };
+  selectionListeners.add(fn);
+  return () => { selectionListeners.delete(fn); };
 }
 
 /**
  * Layer list state — shared so the LayerPanel can display the current layers.
+ * Uses a Set of callbacks so multiple subscribers can listen simultaneously.
  */
-let layersListener: ((layers: LayerInfo[]) => void) | null = null;
+const layersListeners: Set<(layers: LayerInfo[]) => void> = new Set();
 
 /** Register a listener for layer list changes. Returns an unsubscribe function. */
 export function onLayersChange(fn: (layers: LayerInfo[]) => void): () => void {
-  layersListener = fn;
-  return () => { layersListener = null; };
+  layersListeners.add(fn);
+  return () => { layersListeners.delete(fn); };
 }
 
 export function Canvas() {
@@ -99,11 +102,11 @@ export function Canvas() {
         setCanRedo(canRedo);
       },
       onSelectionChange: (props) => {
-        selectionListener?.(props);
+        selectionListeners.forEach(fn => fn(props));
       },
       getActiveTool: () => useEditorStore.getState().activeTool,
       onLayersChange: (newLayers) => {
-        layersListener?.(newLayers);
+        layersListeners.forEach(fn => fn(newLayers));
       },
       onPagesChange: (pages, currentIndex) => {
         useEditorStore.getState().setPagesState(pages, currentIndex);

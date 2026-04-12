@@ -10,5 +10,8 @@
   },
   "dependencies": {
     "@monet/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.2"
   }
 }

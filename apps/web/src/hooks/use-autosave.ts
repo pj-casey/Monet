@@ -105,12 +105,14 @@ export function useAutosave(isLoggedIn: boolean = false) {
     doSave();
   }, [doSave]);
 
-  /** Load a design into the editor */
+  /** Load a design into the editor.
+   * Note: does NOT call engine.fromJSON() — the caller (App.tsx) uses the
+   * pendingDoc pattern to defer loading until the Canvas component has mounted
+   * and the engine is initialized. */
   const loadDesign = useCallback((saved: SavedDesign) => {
     setCurrentId(saved.id);
     setDesignName(saved.name);
     setCurrentDesignId(saved.id);
-    engine.fromJSON(saved.document);
     setStatus('saved');
     dirtyRef.current = false;
   }, []);

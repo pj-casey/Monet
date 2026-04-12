@@ -116,7 +116,7 @@ export class HistoryManager {
    * Undo the last action — restores the canvas to its previous state.
    */
   undo(): void {
-    if (!this.canvas || this.undoStack.length === 0) return;
+    if (!this.canvas || this.undoStack.length === 0 || this.isRestoring) return;
 
     const command = this.undoStack.pop()!;
     this.redoStack.push(command);
@@ -131,7 +131,7 @@ export class HistoryManager {
    * Redo a previously undone action — restores the canvas to its "after" state.
    */
   redo(): void {
-    if (!this.canvas || this.redoStack.length === 0) return;
+    if (!this.canvas || this.redoStack.length === 0 || this.isRestoring) return;
 
     const command = this.redoStack.pop()!;
     this.undoStack.push(command);

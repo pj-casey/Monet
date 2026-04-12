@@ -162,9 +162,20 @@ export function ContextualAI() {
         cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
       }
 
+      const ALLOWED_POP_KEYS = new Set([
+        'shadow', 'opacity', 'charSpacing', 'fontSize', 'fill', 'stroke', 'strokeWidth',
+        'fontWeight', 'lineHeight',
+      ]);
+
       try {
         const updates = JSON.parse(cleaned);
-        engine.updateSelectedObject(updates);
+        const safeUpdates: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(updates)) {
+          if (ALLOWED_POP_KEYS.has(key)) {
+            safeUpdates[key] = value;
+          }
+        }
+        engine.updateSelectedObject(safeUpdates);
       } catch {
         // Could not parse — ignore
       }

@@ -189,6 +189,13 @@ function App() {
   const handleOpenDesign = useCallback((saved: import('./lib/db').SavedDesign) => {
     autosave.loadDesign(saved);
     setArtboardDimensions(saved.document.dimensions.width, saved.document.dimensions.height);
+    // If engine is already initialized (e.g., opening from My Designs while in editor),
+    // load directly. Otherwise defer via pendingDoc (e.g., opening from Welcome Screen).
+    if (engine.isInitialized()) {
+      engine.fromJSON(saved.document);
+    } else {
+      pendingDoc.current = saved.document;
+    }
     setView('editor');
     setMyDesignsOpen(false);
   }, [autosave, setArtboardDimensions]);
@@ -267,7 +274,11 @@ function App() {
     autosave.newDesign();
     autosave.setDesignName(doc.name);
     setArtboardDimensions(doc.dimensions.width, doc.dimensions.height);
-    engine.fromJSON(doc);
+    if (engine.isInitialized()) {
+      engine.fromJSON(doc);
+    } else {
+      pendingDoc.current = doc;
+    }
   }, [autosave, setArtboardDimensions]);
 
   /** Use a marketplace template — load it as a new design */
@@ -275,7 +286,11 @@ function App() {
     autosave.newDesign();
     autosave.setDesignName(doc.name || 'From Marketplace');
     setArtboardDimensions(doc.dimensions.width, doc.dimensions.height);
-    engine.fromJSON(doc);
+    if (engine.isInitialized()) {
+      engine.fromJSON(doc);
+    } else {
+      pendingDoc.current = doc;
+    }
     setView('editor');
   }, [autosave, setArtboardDimensions]);
 
@@ -292,7 +307,11 @@ function App() {
       autosave.newDesign();
       autosave.setDesignName(doc.name);
       setArtboardDimensions(doc.dimensions.width, doc.dimensions.height);
-      engine.fromJSON(doc);
+      if (engine.isInitialized()) {
+        engine.fromJSON(doc);
+      } else {
+        pendingDoc.current = doc;
+      }
       setView('editor');
     }
   }, [autosave, setArtboardDimensions]);
