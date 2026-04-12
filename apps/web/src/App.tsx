@@ -79,6 +79,7 @@ function App() {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [newDesignConfirmOpen, setNewDesignConfirmOpen] = useState(false);
 
   const { isDark, toggleTheme } = useTheme();
   const autosave = useAutosave(!!authUser);
@@ -192,19 +193,30 @@ function App() {
     setMyDesignsOpen(false);
   }, [autosave, setArtboardDimensions]);
 
-  /** Handle creating a new design — go to editor and show template browser */
+  /** Handle creating a new design — confirm first if canvas has content */
   const handleNewDesign = useCallback(() => {
-    // If in editor with content, go to welcome screen to pick a template or blank
+    if (view === 'editor' && layers.length > 0) {
+      setNewDesignConfirmOpen(true);
+      return;
+    }
+    // No content or on welcome screen — proceed directly
     if (view === 'editor') {
       autosave.saveNow();
       autosave.newDesign();
       setView('welcome');
     } else {
       autosave.newDesign();
-      setView('editor');
-      setTemplateBrowserOpen(true);
+      setView('welcome');
     }
-  }, [autosave, view]);
+  }, [autosave, view, layers.length]);
+
+  /** Confirmed new design — save current and go to welcome screen */
+  const confirmNewDesign = useCallback(() => {
+    autosave.saveNow();
+    autosave.newDesign();
+    setNewDesignConfirmOpen(false);
+    setView('welcome');
+  }, [autosave]);
 
   // Pending document to load after canvas mounts (used by welcome screen flows)
   const pendingDoc = useRef<import('@monet/shared').DesignDocument | null>(null);
@@ -297,7 +309,9 @@ function App() {
           onStartBlank={handleStartBlank}
           isDark={isDark}
           onToggleTheme={toggleTheme}
+          onOpenSettings={() => setSettingsOpen(true)}
         />
+        <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
       </div>
     );
   }
@@ -350,6 +364,7 @@ function App() {
               onOpenTemplates={() => setTemplateBrowserOpen(true)}
               onOpenResize={() => setResizeDialogOpen(true)}
               onSaveAsTemplate={() => setSaveTemplateOpen(true)}
+              onOpenSettings={() => setSettingsOpen(true)}
             />
           </div>
         </ErrorBoundary>
@@ -398,7 +413,7 @@ function App() {
       <BottomBar />
 
       {/* Modals */}
-      <TemplateBrowser isOpen={templateBrowserOpen} initialTab={templateBrowserTab} onClose={() => { setTemplateBrowserOpen(false); setTemplateBrowserTab(undefined); }} />
+      <TemplateBrowser isOpen={templateBrowserOpen} initialTab={templateBrowserTab} onClose={() => { setTemplateBrowserOpen(false); setTemplateBrowserTab(undefined); }} onOpenSettings={() => { setTemplateBrowserOpen(false); setSettingsOpen(true); }} />
       <ExportDialog isOpen={exportDialogOpen} onClose={() => setExportDialogOpen(false)} />
       <ShortcutSheet isOpen={shortcutSheetOpen} onClose={() => setShortcutSheetOpen(false)} />
       <MyDesigns isOpen={myDesignsOpen} onClose={() => setMyDesignsOpen(false)} onOpenDesign={handleOpenDesign} />
@@ -419,6 +434,30 @@ function App() {
         }} />
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <Onboarding />
+
+      {/* New Design confirmation dialog */}
+      {newDesignConfirmOpen && (
+        <div
+          className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={() => setNewDesignConfirmOpen(false)}
+          role="dialog" aria-modal="true" aria-label="New design confirmation"
+        >
+          <div className="animate-scale-up w-full max-w-xs rounded-lg bg-overlay p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="mb-2 text-sm font-semibold text-text-primary">Start a new design?</h3>
+            <p className="mb-5 text-xs text-text-secondary">Your current design will be saved automatically. You can find it in My Designs.</p>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setNewDesignConfirmOpen(false)}
+                className="flex-1 rounded-sm border border-border px-3 py-2 text-xs font-medium text-text-secondary hover:bg-wash">
+                Cancel
+              </button>
+              <button type="button" onClick={confirmNewDesign}
+                className="flex-1 rounded-sm bg-accent px-3 py-2 text-xs font-medium text-accent-fg hover:bg-accent-hover">
+                New Design
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Command Palette — opens on / or Cmd+K */}
       <CommandPalette

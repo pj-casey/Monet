@@ -27,9 +27,11 @@ interface TemplateBrowserProps {
   onClose: () => void;
   /** Which tab to show first when opening */
   initialTab?: 'templates' | 'blank' | 'ai';
+  /** Open the global settings modal (for API key entry) */
+  onOpenSettings?: () => void;
 }
 
-export function TemplateBrowser({ isOpen, onClose, initialTab }: TemplateBrowserProps) {
+export function TemplateBrowser({ isOpen, onClose, initialTab, onOpenSettings }: TemplateBrowserProps) {
   const [activeTab, setActiveTab] = useState<'blank' | 'templates' | 'ai'>('templates');
 
   // Sync to initialTab when the modal opens
@@ -214,7 +216,7 @@ export function TemplateBrowser({ isOpen, onClose, initialTab }: TemplateBrowser
           )}
 
           {activeTab === 'ai' && (
-            <AIGenerateInline onDone={onClose} />
+            <AIGenerateInline onDone={onClose} onOpenSettings={onOpenSettings} />
           )}
         </div>
 
@@ -424,7 +426,7 @@ function TabButton({ active, onClick, children }: {
 
 // ─── AI Generate (inline in the tab, not a separate modal) ──────
 
-function AIGenerateInline({ onDone }: { onDone: () => void }) {
+function AIGenerateInline({ onDone, onOpenSettings }: { onDone: () => void; onOpenSettings?: () => void }) {
   const [connected, setConnected] = useState(isAIConfigured());
   const [keyInput, setKeyInput] = useState('');
   const [prompt, setPrompt] = useState('');
@@ -488,9 +490,15 @@ function AIGenerateInline({ onDone }: { onDone: () => void }) {
           autoFocus
         />
         <button type="button" onClick={handleConnect} disabled={!keyInput.trim()}
-          className="w-full rounded-lg bg-accent py-2.5 text-sm font-medium text-accent-fg hover:bg-accent-hover disabled:opacity-50">
+          className="mb-2 w-full rounded-lg bg-accent py-2.5 text-sm font-medium text-accent-fg hover:bg-accent-hover disabled:opacity-50">
           Connect
         </button>
+        {onOpenSettings && (
+          <button type="button" onClick={onOpenSettings}
+            className="w-full rounded-lg border border-border py-2 text-sm font-medium text-text-secondary hover:bg-wash">
+            Open Settings
+          </button>
+        )}
       </div>
     );
   }

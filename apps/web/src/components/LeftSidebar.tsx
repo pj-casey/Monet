@@ -41,9 +41,10 @@ interface LeftSidebarProps {
   onOpenTemplates?: () => void;
   onOpenResize?: () => void;
   onSaveAsTemplate?: () => void;
+  onOpenSettings?: () => void;
 }
 
-export function LeftSidebar({ onOpenTemplates, onOpenResize, onSaveAsTemplate }: LeftSidebarProps) {
+export function LeftSidebar({ onOpenTemplates, onOpenResize, onSaveAsTemplate, onOpenSettings }: LeftSidebarProps) {
   const [activeTab, setActiveTab] = useState<SidebarTab>('elements');
   return (
     <div className="flex h-full w-[280px] flex-col border-r border-border bg-surface shadow-sm">
@@ -65,10 +66,10 @@ export function LeftSidebar({ onOpenTemplates, onOpenResize, onSaveAsTemplate }:
             onSaveAsTemplate={onSaveAsTemplate}
           />
         )}
-        {activeTab === 'elements' && <ElementsTab />}
+        {activeTab === 'elements' && <ElementsTab onOpenSettings={onOpenSettings} />}
         {activeTab === 'text' && <TextTab />}
         {activeTab === 'upload' && <UploadTab />}
-        {activeTab === 'ai' && <AITab />}
+        {activeTab === 'ai' && <AITab onOpenSettings={onOpenSettings} />}
       </div>
     </div>
   );
@@ -213,7 +214,7 @@ function BrandKitPanelInline() {
 
 type ElementSection = 'all' | 'shapes' | 'photos' | 'icons' | 'illus';
 
-function ElementsTab() {
+function ElementsTab({ onOpenSettings }: { onOpenSettings?: () => void }) {
   const [section, setSection] = useState<ElementSection>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -252,7 +253,7 @@ function ElementsTab() {
           <IllustrationsSection query={searchQuery} />
         )}
         {(section === 'all' || section === 'photos') && (
-          <PhotosSection query={searchQuery} />
+          <PhotosSection query={searchQuery} onOpenSettings={onOpenSettings} />
         )}
       </div>
     </div>
@@ -598,7 +599,7 @@ function normalizePexels(photos: PexelsPhoto[]): NormalizedPhoto[] {
   }));
 }
 
-function PhotosSection({ query }: { query: string }) {
+function PhotosSection({ query, onOpenSettings }: { query: string; onOpenSettings?: () => void }) {
   const unsplashOk = isUnsplashConfigured();
   const pexelsOk = isPexelsConfigured();
   const hasAny = unsplashOk || pexelsOk;
@@ -646,20 +647,28 @@ function PhotosSection({ query }: { query: string }) {
         </div>
         <p className="mb-1 text-xs font-medium text-text-primary">Add stock photos</p>
         <p className="mb-4 max-w-[200px] text-[10px] leading-relaxed text-text-tertiary">
-          Add your Unsplash or Pexels API key in Settings (toolbar menu) to browse free stock photos, or upload your own.
+          Add your Unsplash or Pexels API key in Settings to browse free stock photos, or upload your own.
         </p>
-        <label className="cursor-pointer rounded-sm bg-accent px-4 py-1.5 text-[10px] font-medium text-accent-fg hover:bg-accent-hover">
-          Upload Image
-          <input type="file" accept="image/*" multiple className="hidden"
-            onChange={(e) => {
-              const files = e.target.files;
-              if (!files) return;
-              for (let i = 0; i < files.length; i++) {
-                if (files[i].type.startsWith('image/')) engine.addImageFromFile(files[i]);
-              }
-            }}
-          />
-        </label>
+        <div className="flex flex-col gap-2">
+          {onOpenSettings && (
+            <button type="button" onClick={onOpenSettings}
+              className="rounded-sm bg-accent px-4 py-1.5 text-[10px] font-medium text-accent-fg hover:bg-accent-hover">
+              Open Settings
+            </button>
+          )}
+          <label className="cursor-pointer rounded-sm border border-border px-4 py-1.5 text-[10px] font-medium text-text-secondary hover:bg-wash">
+            Upload Image
+            <input type="file" accept="image/*" multiple className="hidden"
+              onChange={(e) => {
+                const files = e.target.files;
+                if (!files) return;
+                for (let i = 0; i < files.length; i++) {
+                  if (files[i].type.startsWith('image/')) engine.addImageFromFile(files[i]);
+                }
+              }}
+            />
+          </label>
+        </div>
       </div>
     );
   }
@@ -816,10 +825,10 @@ function UploadTab() {
 // AI TAB — wraps the existing AI assistant panel
 // ═══════════════════════════════════════════════════════════════════
 
-function AITab() {
+function AITab({ onOpenSettings }: { onOpenSettings?: () => void }) {
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <AIAssistantPanel />
+      <AIAssistantPanel onOpenSettings={onOpenSettings} />
     </div>
   );
 }

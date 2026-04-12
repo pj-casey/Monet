@@ -28,9 +28,16 @@ import type { SelectedObjectProps, DesignDocument } from '@monet/shared';
 let nextId = 1;
 function msgId(): string { return `msg-${nextId++}`; }
 
-export function AIAssistantPanel() {
+export function AIAssistantPanel({ onOpenSettings }: { onOpenSettings?: () => void } = {}) {
   const [connected, setConnected] = useState(isAIConfigured());
   const [keyInput, setKeyInput] = useState('');
+
+  // Re-check connection when settings are saved
+  useEffect(() => {
+    const handler = () => setConnected(isAIConfigured());
+    window.addEventListener('monet-settings-changed', handler);
+    return () => window.removeEventListener('monet-settings-changed', handler);
+  }, []);
 
   if (!connected) {
     return (
@@ -50,11 +57,17 @@ export function AIAssistantPanel() {
         <button type="button"
           onClick={() => { if (keyInput.trim()) { saveApiKey(keyInput); setConnected(true); setKeyInput(''); } }}
           disabled={!keyInput.trim()}
-          className="w-full rounded-lg bg-accent px-4 py-2.5 text-xs font-medium text-accent-fg shadow-sm hover:bg-accent-hover disabled:opacity-40">
+          className="mb-2 w-full rounded-lg bg-accent px-4 py-2.5 text-xs font-medium text-accent-fg shadow-sm hover:bg-accent-hover disabled:opacity-40">
           Connect Claude
         </button>
+        {onOpenSettings && (
+          <button type="button" onClick={onOpenSettings}
+            className="w-full rounded-lg border border-border px-4 py-2 text-xs font-medium text-text-secondary hover:bg-wash">
+            Open Settings
+          </button>
+        )}
         <p className="mt-3 text-[10px] text-text-tertiary">
-          Get a key at <span className="text-accent">console.anthropic.com</span>
+          Get a key at <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">console.anthropic.com</a>
         </p>
       </div>
     );

@@ -16,12 +16,7 @@ import type { ArtboardPreset } from '@monet/shared';
 import { TEMPLATE_REGISTRY } from '@monet/templates';
 import type { Template } from '@monet/templates';
 import { getAllDesigns, deleteDesign, type SavedDesign } from '../lib/db';
-import { isAIConfigured, generateDesign, saveApiKey } from '../lib/ai-generate';
-
-function saveApiKeyAndReload(key: string): void {
-  saveApiKey(key);
-  window.location.reload();
-}
+import { isAIConfigured, generateDesign } from '../lib/ai-generate';
 import { renderTemplateThumbnail } from '@monet/canvas-engine';
 import { useEditorStore } from '../stores/editor-store';
 
@@ -54,11 +49,12 @@ interface WelcomeScreenProps {
   onStartBlank: (preset: ArtboardPreset) => void;
   isDark: boolean;
   onToggleTheme: () => void;
+  onOpenSettings?: () => void;
 }
 
 export function WelcomeScreen({
   onOpenDesign, onNewDesign, onStartFromTemplate, onStartBlank,
-  isDark, onToggleTheme,
+  isDark, onToggleTheme, onOpenSettings,
 }: WelcomeScreenProps) {
   const [designs, setDesigns] = useState<SavedDesign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -205,6 +201,13 @@ export function WelcomeScreen({
           Monet
         </h1>
         <div className="flex items-center gap-3">
+          {onOpenSettings && (
+            <button type="button" onClick={onOpenSettings}
+              className="flex h-8 w-8 items-center justify-center rounded-sm text-text-tertiary hover:bg-wash"
+              aria-label="Settings">
+              <SettingsGearIcon />
+            </button>
+          )}
           <button type="button" onClick={onToggleTheme}
             className="flex h-8 w-8 items-center justify-center rounded-sm text-text-tertiary hover:bg-wash"
             aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
@@ -293,17 +296,14 @@ export function WelcomeScreen({
                 ) : (
                   <div className="flex flex-1 items-center justify-between">
                     <span className="text-sm text-text-tertiary">Describe a design to generate with AI</span>
-                    <button type="button"
-                      onClick={() => {
-                        const key = prompt('Paste your Anthropic API key (sk-ant-...)');
-                        if (key?.trim()) {
-                          saveApiKeyAndReload(key);
-
-                        }
-                      }}
-                      className="ml-3 shrink-0 rounded-md bg-accent px-3 py-1 text-xs font-medium text-accent-fg hover:bg-accent-hover">
-                      Connect Claude
-                    </button>
+                    {onOpenSettings ? (
+                      <button type="button" onClick={onOpenSettings}
+                        className="ml-3 shrink-0 rounded-md bg-accent px-3 py-1 text-xs font-medium text-accent-fg hover:bg-accent-hover">
+                        Connect Claude
+                      </button>
+                    ) : (
+                      <span className="ml-3 text-xs text-text-tertiary">Add API key in Settings</span>
+                    )}
                   </div>
                 )}
                 {aiLoading && (
@@ -544,6 +544,10 @@ function BlankCanvasButton({ onStartBlank }: { onStartBlank: (preset: ArtboardPr
       )}
     </div>
   );
+}
+
+function SettingsGearIcon() {
+  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
 }
 
 function SearchIcon() {

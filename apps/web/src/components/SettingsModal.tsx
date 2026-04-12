@@ -65,6 +65,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         localStorage.removeItem(cfg.id);
       }
     }
+    // Dispatch a custom event so components can re-check their API key state
+    window.dispatchEvent(new Event('monet-settings-changed'));
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }, [keys]);

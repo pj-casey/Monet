@@ -175,23 +175,23 @@ export function Toolbar({
           {menuOpen && (
             <div className="animate-scale-up absolute right-0 top-full z-50 mt-1.5 w-56 rounded-xl border border-border bg-surface py-1.5 shadow-xl">
               {onNewDesign && (
-                <MenuItem onClick={() => { onNewDesign(); setMenuOpen(false); }}>
-                  New Design
+                <MenuItem onClick={() => { onNewDesign(); setMenuOpen(false); }} shortcut="Ctrl+N">
+                  <NewDesignIcon /> New Design
                 </MenuItem>
               )}
               {onMyDesigns && (
                 <MenuItem onClick={() => { onMyDesigns(); setMenuOpen(false); }}>
-                  My Designs
+                  <MyDesignsIcon /> My Designs
                 </MenuItem>
               )}
               {onSaveFile && (
                 <MenuItem onClick={() => { onSaveFile(); setMenuOpen(false); }}>
-                  Save as .monet File
+                  <SaveFileIcon /> Save as .monet
                 </MenuItem>
               )}
               {onOpenFile && (
                 <MenuItem onClick={() => { onOpenFile(); setMenuOpen(false); }}>
-                  Open .monet File
+                  <OpenFileIcon /> Open .monet
                 </MenuItem>
               )}
               <MenuDivider />
@@ -201,18 +201,18 @@ export function Toolbar({
               <MenuToggle label="Rulers" active={rulersVisible} onClick={() => { toggleRulers(); }} />
               <MenuDivider />
               {onSettings && (
-                <MenuItem onClick={() => { onSettings(); setMenuOpen(false); }}>
-                  Settings
+                <MenuItem onClick={() => { onSettings(); setMenuOpen(false); }} shortcut="Ctrl+,">
+                  <SettingsIcon /> Settings
                 </MenuItem>
               )}
               {onToggleTheme && (
                 <MenuItem onClick={() => { onToggleTheme(); setMenuOpen(false); }}>
-                  {isDark ? 'Light Mode' : 'Dark Mode'}
+                  {isDark ? <><SunMenuIcon /> Light Mode</> : <><MoonMenuIcon /> Dark Mode</>}
                 </MenuItem>
               )}
               {onShowShortcuts && (
-                <MenuItem onClick={() => { onShowShortcuts(); setMenuOpen(false); }}>
-                  Keyboard Shortcuts
+                <MenuItem onClick={() => { onShowShortcuts(); setMenuOpen(false); }} shortcut="?">
+                  <ShortcutsIcon /> Keyboard Shortcuts
                 </MenuItem>
               )}
               {(userName || onLogin) && <MenuDivider />}
@@ -239,11 +239,12 @@ export function Toolbar({
 
 // ─── Menu components ──────────────────────────────────────────────
 
-function MenuItem({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+function MenuItem({ onClick, children, shortcut }: { onClick: () => void; children: React.ReactNode; shortcut?: string }) {
   return (
     <button type="button" onClick={onClick}
-      className="flex w-full items-center px-3 py-2 text-left text-xs text-text-primary hover:bg-canvas">
-      {children}
+      className="flex w-full items-center justify-between px-3 py-2 text-left text-xs text-text-primary hover:bg-canvas">
+      <span className="flex items-center gap-2">{children}</span>
+      {shortcut && <kbd className="text-[10px] text-text-tertiary">{shortcut}</kbd>}
     </button>
   );
 }
@@ -329,4 +330,38 @@ function FitIcon() {
 
 function MoreIcon() {
   return <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="3" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="8" cy="13" r="1.5"/></svg>;
+}
+
+// ─── Menu item icons ─────────────────────────────────────────────
+
+function NewDesignIcon() {
+  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M8 7v4M6 9h4"/></svg>;
+}
+
+function MyDesignsIcon() {
+  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>;
+}
+
+function SaveFileIcon() {
+  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M8 3v7M5 7l3 3 3-3"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2"/></svg>;
+}
+
+function OpenFileIcon() {
+  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M2 4h5l2 2h5a1 1 0 011 1v6a1 1 0 01-1 1H2a1 1 0 01-1-1V5a1 1 0 011-1z"/></svg>;
+}
+
+function SettingsIcon() {
+  return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
+}
+
+function SunMenuIcon() {
+  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M3.5 12.5l1.4-1.4M11.1 4.9l1.4-1.4"/></svg>;
+}
+
+function MoonMenuIcon() {
+  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M13.5 8.5a5.5 5.5 0 01-6-6 5.5 5.5 0 106 6z"/></svg>;
+}
+
+function ShortcutsIcon() {
+  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="4" width="14" height="9" rx="2"/><path d="M4 7h1M7 7h2M11 7h1M4 10h8"/></svg>;
 }
