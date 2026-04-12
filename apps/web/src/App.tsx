@@ -50,6 +50,7 @@ import { TabSuggest } from './components/TabSuggest';
 import { SettingsModal } from './components/SettingsModal';
 import { SkipLink, LiveRegion } from './components/A11y';
 import { ToastContainer } from './components/Toast';
+import { useActivityStore } from './stores/activity-store';
 import { migrateFromOpenCanvas } from './lib/migrate-storage';
 import { useTheme } from './hooks/use-theme';
 import { useAutosave } from './hooks/use-autosave';
@@ -84,6 +85,7 @@ function App() {
   const [newDesignConfirmOpen, setNewDesignConfirmOpen] = useState(false);
 
   const { isDark, toggleTheme } = useTheme();
+  const setActivity = useActivityStore((s) => s.setActivity);
   const autosave = useAutosave(!!authUser);
   const collab = useCollaboration();
 
@@ -240,16 +242,17 @@ function App() {
     if (!pendingDoc.current) { setCanvasReady(true); return; }
     const doc = pendingDoc.current;
     pendingDoc.current = null;
+    setActivity('loading');
     // Wait for Canvas component to mount and initialize the engine
     const tryLoad = () => {
       if (engine.isInitialized()) {
-        engine.fromJSON(doc).then(() => setCanvasReady(true));
+        engine.fromJSON(doc).then(() => { setCanvasReady(true); setActivity('idle'); });
       } else {
         setTimeout(tryLoad, 50);
       }
     };
     setTimeout(tryLoad, 50);
-  }, [view]);
+  }, [view, setActivity]);
 
   /** Start from a template (from welcome screen category grid) */
   const handleStartFromTemplate = useCallback((template: Template) => {

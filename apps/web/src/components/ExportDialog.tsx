@@ -15,6 +15,7 @@ import { engine } from './Canvas';
 import { useEditorStore } from '../stores/editor-store';
 import { FocusTrap } from './A11y';
 import { showToast } from './Toast';
+import { useActivityStore } from '../stores/activity-store';
 
 type ExportFormat = 'png' | 'jpg' | 'svg' | 'pdf';
 
@@ -24,6 +25,7 @@ interface ExportDialogProps {
 }
 
 export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
+  const setActivity = useActivityStore((s) => s.setActivity);
   const [format, setFormat] = useState<ExportFormat>('png');
   const [quality, setQuality] = useState(92);
   const [multiplier, setMultiplier] = useState(1);
@@ -43,6 +45,8 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
   const outputHeight = artboardHeight * multiplier;
 
   const handleExport = async () => {
+    setActivity('processing');
+    try {
     if (format === 'pdf' && allPages && pageCount > 1) {
       setExporting(true);
       await engine.exportAllPagesAsPDF({ quality: quality / 100, multiplier, filename });
@@ -74,8 +78,12 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
         transparent: format === 'png' ? transparent : false,
       });
     }
+    setActivity('success');
     showToast(`Exported as ${format.toUpperCase()}`);
     onClose();
+    } catch {
+      setActivity('error');
+    }
   };
 
   return (

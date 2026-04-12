@@ -23,6 +23,7 @@ import {
 } from '../lib/ai-assistant';
 import { saveApiKey, clearApiKey } from '../lib/ai-generate';
 import { estimateCallCost } from '../lib/token-estimator';
+import { useActivityStore } from '../stores/activity-store';
 import type { SelectedObjectProps, DesignDocument } from '@monet/shared';
 
 let nextId = 1;
@@ -88,6 +89,7 @@ function ChatView({ onDisconnect }: ChatViewProps) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
+  const setActivity = useActivityStore((s) => s.setActivity);
   const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [selectedText, setSelectedText] = useState<string | null>(null);
   const [translateLang, setTranslateLang] = useState('es');
@@ -141,6 +143,7 @@ function ChatView({ onDisconnect }: ChatViewProps) {
   /** Streaming feedback — text appears word-by-word */
   const handleStreamingFeedback = useCallback(async (_userMsg: ChatMessage) => {
     setStreaming(true);
+    setActivity('processing');
     const assistantMsgId = msgId();
 
     // Add empty assistant message that we'll fill via streaming
@@ -176,12 +179,14 @@ function ChatView({ onDisconnect }: ChatViewProps) {
       ));
     } finally {
       setStreaming(false);
+      setActivity('idle');
     }
-  }, []);
+  }, [setActivity]);
 
   /** Standard chat message — JSON response collected and parsed */
   const handleChatMessage = useCallback(async (userMsg: ChatMessage, text: string, image?: string) => {
     setLoading(true);
+    setActivity('processing');
 
     try {
       const currentDoc = engine.toJSON();
@@ -209,8 +214,9 @@ function ChatView({ onDisconnect }: ChatViewProps) {
       setMessages((prev) => [...prev, errMsg]);
     } finally {
       setLoading(false);
+      setActivity('idle');
     }
-  }, [messages]);
+  }, [messages, setActivity]);
 
   const handleResponse = useCallback(async (response: ChatResponse, originalDoc: DesignDocument) => {
     const usage = formatUsage(response.inputTokens, response.outputTokens);

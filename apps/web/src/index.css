@@ -152,6 +152,67 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════ */
+/* Monet Living Wordmark — variable font activity animations      */
+/* Uses Fraunces variable axes: wght (100-900), opsz (9-144)      */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* Base: fixed width to prevent layout shift during weight changes */
+.monet-wordmark {
+  letter-spacing: 0.01em;
+}
+.monet-letter {
+  display: inline-block;
+  font-variation-settings: 'wght' 400, 'opsz' 24;
+  will-change: font-variation-settings, text-shadow;
+}
+
+/* ─── Idle: nearly imperceptible breathing ─── */
+@keyframes wordmark-breathe {
+  0%, 100% { font-variation-settings: 'wght' 400, 'opsz' 24; }
+  50%      { font-variation-settings: 'wght' 440, 'opsz' 28; }
+}
+.wordmark-idle .monet-letter {
+  animation: wordmark-breathe 6s ease-in-out infinite;
+  text-shadow: none;
+}
+
+/* ─── Loading: gentle wave ─── */
+@keyframes wordmark-load {
+  0%, 100% { font-variation-settings: 'wght' 400, 'opsz' 24; text-shadow: 0 0 0 transparent; }
+  50%      { font-variation-settings: 'wght' 520, 'opsz' 36; text-shadow: 0 0 8px oklch(0.65 0.15 45 / 0.3); }
+}
+.wordmark-loading .monet-letter {
+  animation: wordmark-load 2s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 120ms);
+}
+
+/* ─── Processing: stronger wave + glow ─── */
+@keyframes wordmark-process {
+  0%, 100% { font-variation-settings: 'wght' 400, 'opsz' 24; text-shadow: 0 0 4px oklch(0.65 0.15 45 / 0.2); }
+  50%      { font-variation-settings: 'wght' 600, 'opsz' 48; text-shadow: 0 0 14px oklch(0.65 0.15 45 / 0.5); }
+}
+.wordmark-processing .monet-letter {
+  animation: wordmark-process 1.5s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 100ms);
+}
+
+/* ─── Success: single flash, then settle back via transition ─── */
+.wordmark-success .monet-letter {
+  animation: none;
+  font-variation-settings: 'wght' 600, 'opsz' 36;
+  text-shadow: 0 0 12px oklch(0.65 0.15 45 / 0.6);
+  transition: font-variation-settings 1.5s ease-out, text-shadow 1.5s ease-out;
+}
+
+/* ─── Error: single danger flash, then settle back ─── */
+.wordmark-error .monet-letter {
+  animation: none;
+  font-variation-settings: 'wght' 600, 'opsz' 36;
+  text-shadow: 0 0 12px var(--danger);
+  transition: font-variation-settings 1.5s ease-out, text-shadow 1.5s ease-out;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
 /* Smooth Global Transitions                                      */
 /* ═══════════════════════════════════════════════════════════════ */
 button, [role="button"], a, select, input[type="color"] {
@@ -179,6 +240,10 @@ button, [role="button"], a, select, input[type="color"] {
   .animate-tooltip-pop,
   .animate-toast-up {
     animation: none !important;
+  }
+  .monet-letter {
+    animation: none !important;
+    transition: none !important;
   }
   button, [role="button"], a, select, input[type="color"] {
     transition-duration: 0ms !important;

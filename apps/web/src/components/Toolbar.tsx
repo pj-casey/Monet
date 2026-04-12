@@ -11,6 +11,7 @@ import { useEditorStore } from '../stores/editor-store';
 import { useHistoryStore } from '../stores/history-store';
 import { engine } from './Canvas';
 import { Tooltip } from './Tooltip';
+import { MonetWordmark } from './MonetWordmark';
 
 import type { SaveStatus } from '../hooks/use-autosave';
 
@@ -86,9 +87,9 @@ export function Toolbar({
 
       {/* ─── Left: Logo + Undo/Redo + Save badge ─── */}
       <div className="flex items-center gap-2">
-        <h1 className="flex items-center gap-1.5 font-display text-base font-semibold text-text-primary">
+        <h1 className="flex items-center gap-1.5">
           <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" width="18" height="18" className="block" aria-hidden="true" />
-          Monet
+          <MonetWordmark />
         </h1>
         <Divider />
         <TbBtn label="Undo" shortcut="Ctrl+Z" onClick={() => engine.undo()} disabled={!canUndo}>

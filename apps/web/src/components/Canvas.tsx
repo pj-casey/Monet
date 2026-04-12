@@ -14,6 +14,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { CanvasEngine } from '@monet/canvas-engine';
 import { showToast, ClipboardIcon, ImageIcon } from './Toast';
+import { useActivityStore } from '../stores/activity-store';
 import type { SelectedObjectProps, LayerInfo } from '@monet/shared';
 import { useEditorStore } from '../stores/editor-store';
 import { useHistoryStore } from '../stores/history-store';
@@ -63,6 +64,8 @@ export function Canvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   /** Reference to the container div (to measure its size) */
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const setActivity = useActivityStore((s) => s.setActivity);
 
   /** Read artboard dimensions from the editor store */
   const artboardWidth = useEditorStore((s) => s.artboardWidth);
@@ -340,11 +343,13 @@ export function Canvas() {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (file.type.startsWith('image/')) {
+        setActivity('loading');
         engine.addImageAtPosition(file, x, y);
         showToast('Image added', <ImageIcon />);
+        setActivity('idle');
       }
     }
-  }, []);
+  }, [setActivity]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault(); // Required to allow drop
