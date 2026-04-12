@@ -45,7 +45,7 @@ export function Tooltip({ label, shortcut, position = 'top', children }: Tooltip
           <span className="flex items-center gap-1.5">
             {label}
             {shortcut && (
-              <kbd className="rounded bg-white/15 px-1 py-px text-[9px] font-normal">{shortcut}</kbd>
+              <kbd className="rounded bg-white/20 px-1 py-px text-[9px] font-normal">{shortcut}</kbd>
             )}
           </span>
         </div>

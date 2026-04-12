@@ -112,6 +112,7 @@ export function useAutosave(isLoggedIn: boolean = false) {
 
   /** Save immediately (for Ctrl+S or before-unload) */
   const saveNow = useCallback(() => {
+    if (!dirtyRef.current) return;
     if (timerRef.current) clearTimeout(timerRef.current);
     doSave();
   }, [doSave]);

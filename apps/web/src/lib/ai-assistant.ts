@@ -433,17 +433,10 @@ export async function smartEdit(
     cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
   }
 
-  const result = JSON.parse(cleaned);
-
-  if (!result?.dimensions || !Array.isArray(result?.objects)) {
-    throw new Error('Invalid design returned by AI.');
-  }
-
-  result.version = 1;
+  const parsed = JSON.parse(cleaned);
+  const result = normalizeDoc(parsed);
   result.id = doc.id;
-  result.updatedAt = new Date().toISOString();
-
-  return result as import('@monet/shared').DesignDocument;
+  return result;
 }
 
 // ─── 5. Extract Brand ────────────────────────────────────────────
