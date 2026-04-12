@@ -13,6 +13,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { CanvasEngine } from '@monet/canvas-engine';
+import { showToast, ClipboardIcon, ImageIcon } from './Toast';
 import type { SelectedObjectProps, LayerInfo } from '@monet/shared';
 import { useEditorStore } from '../stores/editor-store';
 import { useHistoryStore } from '../stores/history-store';
@@ -220,18 +221,21 @@ export function Canvas() {
     if (mod && e.key === 'c') {
       e.preventDefault();
       engine.copySelected();
+      showToast('Copied', <ClipboardIcon />);
       return;
     }
     // Ctrl+V = Paste
     if (mod && e.key === 'v') {
       e.preventDefault();
       engine.pasteClipboard();
+      showToast('Pasted');
       return;
     }
     // Ctrl+D = Duplicate
     if (mod && e.key === 'd') {
       e.preventDefault();
       engine.duplicateSelected();
+      showToast('Duplicated');
       return;
     }
     // Ctrl+G = Group
@@ -257,6 +261,7 @@ export function Canvas() {
       e.preventDefault();
       engine.copySelected();
       engine.deleteSelectedObjects();
+      showToast('Cut');
       return;
     }
     // Alt+Shift+C = Copy style
@@ -336,6 +341,7 @@ export function Canvas() {
       const file = files[i];
       if (file.type.startsWith('image/')) {
         engine.addImageAtPosition(file, x, y);
+        showToast('Image added', <ImageIcon />);
       }
     }
   }, []);
@@ -348,7 +354,7 @@ export function Canvas() {
   return (
     <div
       ref={containerRef}
-      className="relative flex-1 overflow-hidden bg-wash"
+      className="canvas-pasteboard relative flex-1 overflow-hidden bg-wash"
       onKeyDown={handleKeyDown}
       onDrop={handleDrop}
       onDragOver={handleDragOver}

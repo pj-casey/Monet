@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { engine } from './Canvas';
 import { useEditorStore } from '../stores/editor-store';
 import { FocusTrap } from './A11y';
+import { showToast } from './Toast';
 
 type ExportFormat = 'png' | 'jpg' | 'svg' | 'pdf';
 
@@ -73,6 +74,7 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
         transparent: format === 'png' ? transparent : false,
       });
     }
+    showToast(`Exported as ${format.toUpperCase()}`);
     onClose();
   };
 

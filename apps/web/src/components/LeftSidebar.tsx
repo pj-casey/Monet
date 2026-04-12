@@ -60,16 +60,18 @@ export function LeftSidebar({ onOpenTemplates, onOpenResize, onSaveAsTemplate, o
       {/* Tab content */}
       <div className="flex-1 overflow-hidden">
         {activeTab === 'design' && (
-          <DesignTab
-            onOpenTemplates={onOpenTemplates}
-            onOpenResize={onOpenResize}
-            onSaveAsTemplate={onSaveAsTemplate}
-          />
+          <div className="animate-fade-in h-full">
+            <DesignTab
+              onOpenTemplates={onOpenTemplates}
+              onOpenResize={onOpenResize}
+              onSaveAsTemplate={onSaveAsTemplate}
+            />
+          </div>
         )}
-        {activeTab === 'elements' && <ElementsTab onOpenSettings={onOpenSettings} />}
-        {activeTab === 'text' && <TextTab />}
-        {activeTab === 'upload' && <UploadTab />}
-        {activeTab === 'ai' && <AITab onOpenSettings={onOpenSettings} />}
+        {activeTab === 'elements' && <div className="animate-fade-in h-full"><ElementsTab onOpenSettings={onOpenSettings} /></div>}
+        {activeTab === 'text' && <div className="animate-fade-in h-full"><TextTab /></div>}
+        {activeTab === 'upload' && <div className="animate-fade-in h-full"><UploadTab /></div>}
+        {activeTab === 'ai' && <div className="animate-fade-in h-full"><AITab onOpenSettings={onOpenSettings} /></div>}
       </div>
     </div>
   );

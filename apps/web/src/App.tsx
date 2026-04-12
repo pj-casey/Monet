@@ -49,6 +49,7 @@ import { ContextualAI } from './components/ContextualAI';
 import { TabSuggest } from './components/TabSuggest';
 import { SettingsModal } from './components/SettingsModal';
 import { SkipLink, LiveRegion } from './components/A11y';
+import { ToastContainer } from './components/Toast';
 import { migrateFromOpenCanvas } from './lib/migrate-storage';
 import { useTheme } from './hooks/use-theme';
 import { useAutosave } from './hooks/use-autosave';
@@ -447,6 +448,7 @@ function App() {
 
       <PageNavigator />
       <BottomBar />
+      <ToastContainer />
 
       {/* Modals */}
       {templateBrowserOpen && (

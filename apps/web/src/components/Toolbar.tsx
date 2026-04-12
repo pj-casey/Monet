@@ -91,10 +91,10 @@ export function Toolbar({
           Monet
         </h1>
         <Divider />
-        <TbBtn label="Undo (Ctrl+Z)" onClick={() => engine.undo()} disabled={!canUndo}>
+        <TbBtn label="Undo" shortcut="Ctrl+Z" onClick={() => engine.undo()} disabled={!canUndo}>
           <UndoIcon />
         </TbBtn>
-        <TbBtn label="Redo (Ctrl+Y)" onClick={() => engine.redo()} disabled={!canRedo}>
+        <TbBtn label="Redo" shortcut="Ctrl+Y" onClick={() => engine.redo()} disabled={!canRedo}>
           <RedoIcon />
         </TbBtn>
         {/* Auto-save badge with pulse animation */}
@@ -116,7 +116,8 @@ export function Toolbar({
         {/* Tool switcher */}
         <div className="flex rounded-lg border border-border">
           <ToolBtn
-            label="Select (V)"
+            label="Select"
+            shortcut="V"
             active={activeTool === 'select'}
             onClick={() => setActiveTool('select')}
             first
@@ -124,14 +125,16 @@ export function Toolbar({
             <SelectIcon />
           </ToolBtn>
           <ToolBtn
-            label="Draw (D)"
+            label="Draw"
+            shortcut="D"
             active={activeTool === 'draw'}
             onClick={() => setActiveTool(activeTool === 'draw' ? 'select' : 'draw')}
           >
             <DrawIcon />
           </ToolBtn>
           <ToolBtn
-            label="Pen (P)"
+            label="Pen"
+            shortcut="P"
             active={activeTool === 'pen'}
             onClick={() => setActiveTool(activeTool === 'pen' ? 'select' : 'pen')}
             last
@@ -154,16 +157,20 @@ export function Toolbar({
       {/* ─── Right: Share + Export + overflow menu ─── */}
       <div className="flex items-center gap-2">
         {onShareLink && (
-          <button type="button" onClick={onShareLink}
-            className="rounded-lg border border-border-strong px-3.5 py-1.5 text-xs font-medium text-text-secondary hover:bg-wash">
-            Share
-          </button>
+          <Tooltip label="Share design" position="bottom">
+            <button type="button" onClick={onShareLink}
+              className="rounded-lg border border-border-strong px-3.5 py-1.5 text-xs font-medium text-text-secondary hover:bg-wash">
+              Share
+            </button>
+          </Tooltip>
         )}
         {onExport && (
-          <button type="button" onClick={onExport}
-            className="rounded-lg bg-accent px-3.5 py-1.5 text-xs font-medium text-accent-fg shadow-sm hover:bg-accent-hover hover:shadow-md">
-            Export
-          </button>
+          <Tooltip label="Export" shortcut="Ctrl+E" position="bottom">
+            <button type="button" onClick={onExport}
+              className="rounded-lg bg-accent px-3.5 py-1.5 text-xs font-medium text-accent-fg shadow-sm hover:bg-accent-hover hover:shadow-md">
+              Export
+            </button>
+          </Tooltip>
         )}
 
         {/* Overflow menu */}
@@ -265,11 +272,11 @@ function MenuDivider() {
 
 // ─── Toolbar buttons ──────────────────────────────────────────────
 
-function TbBtn({ label, onClick, disabled, children }: {
-  label: string; onClick: () => void; disabled?: boolean; children: React.ReactNode;
+function TbBtn({ label, shortcut, onClick, disabled, children }: {
+  label: string; shortcut?: string; onClick: () => void; disabled?: boolean; children: React.ReactNode;
 }) {
   return (
-    <Tooltip label={label}>
+    <Tooltip label={label} shortcut={shortcut}>
       <button type="button" aria-label={label} onClick={onClick} disabled={disabled}
         className="flex h-8 w-8 items-center justify-center rounded text-text-secondary hover:bg-wash disabled:opacity-30 disabled:hover:bg-transparent">
         {children}
@@ -278,12 +285,12 @@ function TbBtn({ label, onClick, disabled, children }: {
   );
 }
 
-function ToolBtn({ label, active, onClick, children, first, last }: {
-  label: string; active: boolean; onClick: () => void; children: React.ReactNode;
+function ToolBtn({ label, shortcut, active, onClick, children, first, last }: {
+  label: string; shortcut?: string; active: boolean; onClick: () => void; children: React.ReactNode;
   first?: boolean; last?: boolean;
 }) {
   return (
-    <Tooltip label={label}>
+    <Tooltip label={label} shortcut={shortcut}>
       <button type="button" aria-label={label} aria-pressed={active} onClick={onClick}
         className={`flex h-8 w-8 items-center justify-center ${
           first ? 'rounded-l-md' : ''

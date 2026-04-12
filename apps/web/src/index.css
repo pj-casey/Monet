@@ -134,6 +134,23 @@ body {
   animation: tooltip-pop var(--duration-slow) var(--ease-spring);
 }
 
+@keyframes toast-up {
+  0%   { transform: translateY(8px); opacity: 0; }
+  100% { transform: translateY(0);    opacity: 1; }
+}
+.animate-toast-up {
+  animation: toast-up var(--duration-normal) var(--ease-out);
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* Canvas Pasteboard — subtle dot grid texture (Figma-style)      */
+/* ═══════════════════════════════════════════════════════════════ */
+.canvas-pasteboard {
+  background-image: radial-gradient(circle, var(--border-default) 0.5px, transparent 0.5px);
+  background-size: 20px 20px;
+  background-position: 0 0;
+}
+
 /* ═══════════════════════════════════════════════════════════════ */
 /* Smooth Global Transitions                                      */
 /* ═══════════════════════════════════════════════════════════════ */
@@ -159,7 +176,8 @@ button, [role="button"], a, select, input[type="color"] {
   .animate-slide-in-right,
   .animate-fade-in,
   .animate-scale-up,
-  .animate-tooltip-pop {
+  .animate-tooltip-pop,
+  .animate-toast-up {
     animation: none !important;
   }
   button, [role="button"], a, select, input[type="color"] {

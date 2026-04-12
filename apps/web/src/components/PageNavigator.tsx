@@ -13,6 +13,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useEditorStore } from '../stores/editor-store';
 import { engine } from './Canvas';
+import { Tooltip } from './Tooltip';
 
 export function PageNavigator() {
   const pages = useEditorStore((s) => s.pages);
@@ -176,18 +177,19 @@ export function PageNavigator() {
           ))}
 
           {/* Add page button */}
-          <button
-            type="button"
-            onClick={handleAddPage}
-            className="flex flex-shrink-0 items-center justify-center rounded border-2 border-dashed border-border text-text-tertiary hover:border-accent hover:text-accent"
-            style={{ width: thumbWidth * 0.5, height: thumbHeight }}
-            title="Add page"
-            aria-label="Add new page"
-          >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M10 4v12M4 10h12" />
-            </svg>
-          </button>
+          <Tooltip label="Add page">
+            <button
+              type="button"
+              onClick={handleAddPage}
+              className="flex flex-shrink-0 items-center justify-center rounded border-2 border-dashed border-border text-text-tertiary hover:border-accent hover:text-accent"
+              style={{ width: thumbWidth * 0.5, height: thumbHeight }}
+              aria-label="Add new page"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M10 4v12M4 10h12" />
+              </svg>
+            </button>
+          </Tooltip>
         </div>
 
         {/* Page count */}
