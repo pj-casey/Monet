@@ -1841,7 +1841,7 @@ export class CanvasEngine {
   toggleLayerLock(fabricIndex: number): void {
     if (!this.canvas) return;
     const obj = this.canvas.getObjects()[fabricIndex];
-    if (!obj) return;
+    if (!obj || isInfrastructure(obj)) return;
 
     this.history.saveCheckpoint();
     const newLocked = obj.selectable !== false ? true : false;
@@ -1865,7 +1865,7 @@ export class CanvasEngine {
   toggleLayerVisibility(fabricIndex: number): void {
     if (!this.canvas) return;
     const obj = this.canvas.getObjects()[fabricIndex];
-    if (!obj) return;
+    if (!obj || isInfrastructure(obj)) return;
 
     this.history.saveCheckpoint();
     obj.set('visible', !obj.visible);
@@ -1878,7 +1878,7 @@ export class CanvasEngine {
   deleteLayerByIndex(fabricIndex: number): void {
     if (!this.canvas) return;
     const obj = this.canvas.getObjects()[fabricIndex];
-    if (!obj) return;
+    if (!obj || isInfrastructure(obj)) return;
 
     this.history.saveCheckpoint();
     this.canvas.remove(obj);

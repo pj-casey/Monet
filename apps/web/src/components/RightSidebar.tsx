@@ -7,7 +7,7 @@
  * 2. Layers: layer list with reorder/lock/visibility controls
  *
  * When nothing is selected, this sidebar is hidden, giving more canvas space.
- * Uses CSS transitions for smooth slide-in/out (200ms ease-out).
+ * Uses CSS transitions for smooth slide-in/out (300ms ease-in-out).
  */
 
 import { useState } from 'react';
