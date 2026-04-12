@@ -1,5 +1,5 @@
 /**
- * Template Registry — 50 world-class built-in templates.
+ * Template Registry — 53 built-in templates.
  *
  * Organized into 8 categories:
  * - Social Media (10): Podcast, Instagram, YouTube, LinkedIn, Twitter, Pinterest, TikTok, Facebook, Discord

@@ -578,7 +578,7 @@ function CryptoAddr({ label, address }: { label: string; address: string }) {
       className="flex items-center gap-1.5 text-xs text-text-tertiary hover:text-text-secondary">
       <span className="font-medium text-text-secondary">{label}</span>
       <span className="font-mono">{short}</span>
-      <span className="text-[10px]">{copied ? '✓' : '⧉'}</span>
+      <span className="text-[10px]" aria-label={copied ? 'Copied' : 'Copy'}>{copied ? '✓' : '⧉'}</span>
     </button>
   );
 }

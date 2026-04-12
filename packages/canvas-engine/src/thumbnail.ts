@@ -21,8 +21,10 @@ FabricObjectClass.ownDefaults.originY = 'top';
 
 // ─── Font preloading (singleton) ────────────────────────────────────
 
-/** Fonts used across templates — Montserrat now preloaded in index.html */
-const TEMPLATE_FONTS = ['Playfair Display', 'Inter'];
+/** Fonts used across templates — all now preloaded in index.html.
+ * This list is kept for the rare case where fonts haven't finished loading
+ * by the time thumbnails render (e.g. slow network). */
+const TEMPLATE_FONTS: string[] = [];
 
 let _fontLoadPromise: Promise<void> | null = null;
 

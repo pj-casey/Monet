@@ -76,6 +76,8 @@ export function ShortcutSheet({ isOpen, onClose }: ShortcutSheetProps) {
           <Shortcut keys="Middle mouse drag" desc="Pan canvas" />
           <Shortcut keys="Arrow keys" desc="Nudge 1px" />
           <Shortcut keys="Shift + arrows" desc="Nudge 10px" />
+          <Shortcut keys="Page Down" desc="Next page" />
+          <Shortcut keys="Page Up" desc="Previous page" />
         </ShortcutGroup>
 
         <ShortcutGroup title="General">
