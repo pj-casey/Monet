@@ -863,7 +863,7 @@ function TextOutlineSection({ stroke, strokeWidth }: {
     <div>
       <label className="mb-1 block text-xs font-medium text-text-secondary">Text Outline</label>
       <div className="flex items-center gap-2">
-        <ColorPicker value={stroke || '#2d2a26'} onChange={(c) => engine.updateSelectedObject({ textStroke: c, textStrokeWidth: strokeWidth || 1 })} />
+        <ColorPicker value={stroke || '#2d2a26'} onChange={(c) => engine.updateSelectedObject({ textStroke: c, textStrokeWidth: strokeWidth > 0 ? strokeWidth : 1 })} />
         <input type="range" min={0} max={5} step={0.5} value={strokeWidth}
           onChange={(e) => engine.updateSelectedObject({ textStrokeWidth: Number(e.target.value) })}
           className="flex-1" aria-label="Text outline width" />

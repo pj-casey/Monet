@@ -177,8 +177,9 @@ export function applyFilters(img: FabricImage, values: ImageFilterValues): void 
     filterList.push(new filters.Vibrance({ vibrance: values.vibrance }));
   }
   if (values.gamma !== 0) {
-    // Map our -1..1 range to Fabric's 0.01..2.2 (1 = neutral)
-    const g = Math.max(0.01, 1 + values.gamma * 1.2);
+    // Map our -1..1 range to Fabric's 0.01..1.99 (1 = neutral)
+    // Using 0.99 multiplier so -1 maps to exactly 0.01 (no clamping loss)
+    const g = Math.max(0.01, 1 + values.gamma * 0.99);
     filterList.push(new filters.Gamma({ gamma: [g, g, g] }));
   }
   if (values.pixelate > 0) {
@@ -231,9 +232,9 @@ export function readFilterValues(img: FabricImage): ImageFilterValues {
     } else if (filter instanceof filters.Vibrance) {
       result.vibrance = (filter as unknown as { vibrance: number }).vibrance ?? 0;
     } else if (filter instanceof filters.Gamma) {
-      // Reverse-map from Fabric's [g,g,g] (0.01..2.2) back to our -1..1 range
+      // Reverse-map from Fabric's [g,g,g] (0.01..1.99) back to our -1..1 range
       const g = ((filter as unknown as { gamma: number[] }).gamma ?? [1, 1, 1])[0];
-      result.gamma = (g - 1) / 1.2;
+      result.gamma = (g - 1) / 0.99;
     } else if (filter instanceof filters.Pixelate) {
       result.pixelate = (filter as unknown as { blocksize: number }).blocksize ?? 0;
     } else if (filter instanceof filters.Grayscale) {

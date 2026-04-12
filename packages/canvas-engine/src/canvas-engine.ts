@@ -59,7 +59,7 @@ import { getLayerList } from './layers';
 import { serializeCanvas, deserializeCanvas, deserializeObjects, serializeCurrentPageObjects, normalizePagesToArray, generateId } from './serialization';
 import { exportCanvas } from './export';
 import type { ExportOptions } from './export';
-import type { TaggedObject } from './tagged-object';
+import { isInfrastructure, type TaggedObject } from './tagged-object';
 import { PenTool, EditPointsMode } from './pen-tool';
 
 /** Options for initializing the canvas */
@@ -1662,8 +1662,7 @@ export class CanvasEngine {
     this.canvas.on('mouse:down', (opt) => {
       if (!opt.e.altKey || !opt.target || !this.canvas) return;
       // Skip infrastructure objects
-      const tagged = opt.target as TaggedObject;
-      if (tagged.__isArtboard || tagged.__isGridLine || tagged.__isGuide || tagged.__isBgImage || tagged.__isPenPreview || tagged.__isCropOverlay) return;
+      if (isInfrastructure(opt.target)) return;
 
       const original = opt.target;
 
@@ -1692,7 +1691,7 @@ export class CanvasEngine {
       const target = e.target as TaggedObject | undefined;
       if (!target) return;
       // Skip infrastructure objects and currently selected objects
-      if (target.__isArtboard || target.__isGridLine || target.__isGuide || target.__isBgImage || target.__isPenPreview || target.__isCropOverlay) return;
+      if (isInfrastructure(target)) return;
       if (this.canvas?.getActiveObject() === target) return;
       // Restore previous hover target
       if (hoveredObj) {
@@ -2028,8 +2027,7 @@ export class CanvasEngine {
   selectAllObjects(): void {
     if (!this.canvas) return;
     const objs = this.canvas.getObjects().filter((o) => {
-      const t = o as TaggedObject;
-      return o.selectable && !t.__isArtboard && !t.__isGridLine && !t.__isGuide && !t.__isBgImage && !t.__isPenPreview && !t.__isCropOverlay;
+      return o.selectable && !isInfrastructure(o);
     });
     if (objs.length === 0) return;
     this.canvas.discardActiveObject();
@@ -2056,6 +2054,7 @@ export class CanvasEngine {
     // Remove the individual objects and add the group
     for (const obj of objects) this.canvas.remove(obj);
     this.canvas.add(group);
+    group.setCoords();
     this.canvas.setActiveObject(group);
     this.canvas.requestRenderAll();
     this.history.commit('Group');
