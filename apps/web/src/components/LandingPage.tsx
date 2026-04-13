@@ -9,6 +9,8 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { TEMPLATE_REGISTRY } from '@monet/templates';
+import { renderTemplateThumbnail } from '@monet/canvas-engine';
 import {
   Check, X, Terminal, Heart, ArrowRight, Sun, Moon, Users,
 } from 'lucide-react';
@@ -338,20 +340,8 @@ export function LandingPage() {
               Instagram · YouTube · LinkedIn · Invoices · Resumes · Menus · Posters · and more
             </p>
           </div>
-          <div className="w-full max-w-xs rounded-lg border border-border bg-elevated p-4 shadow-sm md:w-80">
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { bg: 'linear-gradient(135deg, #C4704A, #d4966e)', label: 'Brand' },
-                { bg: 'linear-gradient(135deg, #0891b2, #164e63)', label: 'Tech' },
-                { bg: 'linear-gradient(135deg, #e91e63, #f48fb1)', label: 'Social' },
-                { bg: 'linear-gradient(135deg, #1a1510, #2d2520)', label: 'Dark' },
-                { bg: 'linear-gradient(135deg, #d4a853, #6b4226)', label: 'Gold' },
-                { bg: 'linear-gradient(135deg, #7a9a6a, #d4ccc4)', label: 'Sage' },
-              ].map((t) => (
-                <div key={t.label} className="aspect-square rounded" style={{ background: t.bg }} title={t.label} />
-              ))}
-            </div>
-            <p className="mt-3 text-center text-xs text-text-tertiary">8 categories of hand-crafted templates</p>
+          <div className="w-full max-w-xs md:w-80">
+            <TemplatePreviews />
           </div>
         </div>
 
@@ -671,5 +661,74 @@ function CryptoAddr({ label, address }: { label: string; address: string }) {
       <span className="font-mono">{short}</span>
       <span className="text-[10px]" aria-label={copied ? 'Copied' : 'Copy'}>{copied ? '✓' : '⧉'}</span>
     </button>
+  );
+}
+
+// ─── Template previews for the "Start with a template" section ─────────
+
+/** Pick 6 diverse templates from the registry (one per unique category) */
+const PREVIEW_TEMPLATES = (() => {
+  const seen = new Set<string>();
+  const picks: typeof TEMPLATE_REGISTRY = [];
+  for (const t of TEMPLATE_REGISTRY) {
+    const cat = t.category || 'Other';
+    if (!seen.has(cat) && picks.length < 6) {
+      seen.add(cat);
+      picks.push(t);
+    }
+  }
+  // Fill remaining slots if fewer than 6 categories
+  for (const t of TEMPLATE_REGISTRY) {
+    if (picks.length >= 6) break;
+    if (!picks.includes(t)) picks.push(t);
+  }
+  return picks;
+})();
+
+const _lpThumbCache = new Map<string, string>();
+
+function TemplatePreviews() {
+  const [thumbs, setThumbs] = useState<Map<string, string>>(_lpThumbCache);
+
+  useEffect(() => {
+    if (_lpThumbCache.size >= PREVIEW_TEMPLATES.length) return;
+    let cancelled = false;
+    (async () => {
+      for (const t of PREVIEW_TEMPLATES) {
+        if (_lpThumbCache.has(t.templateId) || cancelled) continue;
+        try {
+          const url = await renderTemplateThumbnail(t.document, 300);
+          if (url && !cancelled) {
+            _lpThumbCache.set(t.templateId, url);
+            setThumbs(new Map(_lpThumbCache));
+          }
+        } catch { /* skip failed renders */ }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  return (
+    <div className="rounded-lg border border-border bg-elevated p-3 shadow-sm">
+      <div className="grid grid-cols-3 gap-2">
+        {PREVIEW_TEMPLATES.map((t) => {
+          const thumb = thumbs.get(t.templateId);
+          const bg = t.document.background;
+          const fallback = bg.type === 'solid' ? bg.value : '#e5ddd5';
+          return (
+            <div key={t.templateId} className="aspect-square overflow-hidden rounded" style={{ backgroundColor: fallback }}>
+              {thumb ? (
+                <img src={thumb} alt={t.name} className="h-full w-full object-cover" loading="lazy" />
+              ) : (
+                <div className="h-full w-full animate-pulse" style={{ backgroundColor: fallback }} />
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <p className="mt-3 text-center text-xs text-text-tertiary">
+        {TEMPLATE_REGISTRY.length}+ templates across 8 categories
+      </p>
+    </div>
   );
 }
