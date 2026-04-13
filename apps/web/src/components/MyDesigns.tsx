@@ -8,6 +8,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getAllDesigns, deleteDesign, saveDesign, type SavedDesign } from '../lib/db';
 import { FocusTrap } from './A11y';
+import { useEscapeClose } from '../hooks/use-escape-close';
 
 interface MyDesignsProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ interface MyDesignsProps {
 }
 
 export function MyDesigns({ isOpen, onClose, onOpenDesign }: MyDesignsProps) {
+  useEscapeClose(isOpen, onClose);
   const [designs, setDesigns] = useState<SavedDesign[]>([]);
   const [renaming, setRenaming] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');

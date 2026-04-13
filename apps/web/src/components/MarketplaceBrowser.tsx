@@ -9,6 +9,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { DesignDocument } from '@monet/shared';
 import { FocusTrap } from './A11y';
+import { useEscapeClose } from '../hooks/use-escape-close';
 
 const API_BASE = 'http://localhost:3001';
 
@@ -35,6 +36,7 @@ interface MarketplaceBrowserProps {
 }
 
 export function MarketplaceBrowser({ isOpen, onClose, onUseTemplate }: MarketplaceBrowserProps) {
+  useEscapeClose(isOpen, onClose);
   const [templates, setTemplates] = useState<MarketplaceTemplate[]>([]);
   const [total, setTotal] = useState(0);
   const [query, setQuery] = useState('');
@@ -101,7 +103,7 @@ export function MarketplaceBrowser({ isOpen, onClose, onUseTemplate }: Marketpla
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
           <h2 className="text-xl font-semibold text-text-primary">Template Marketplace</h2>
-          <button type="button" onClick={onClose}
+          <button type="button" onClick={onClose} aria-label="Close"
             className="flex h-7 w-7 items-center justify-center rounded-full text-text-tertiary hover:bg-wash">&#x2715;</button>
         </div>
 

@@ -79,6 +79,7 @@ import {
   getCurvedTextMeta,
 } from './curved-text';
 import { extractPaletteFromFabricImage, extractPaletteFromUrl } from './color-extraction';
+import { createFrame, fillFrameWithImage, isFrame, type FrameShape } from './frames';
 import type { CurvedTextOptions } from './curved-text';
 import { getLayerList } from './layers';
 import { serializeCanvas, deserializeCanvas, deserializeObjects, serializeCurrentPageObjects, normalizePagesToArray, generateId } from './serialization';
@@ -674,6 +675,13 @@ export class CanvasEngine {
   async addImageAtPosition(file: File, screenX: number, screenY: number): Promise<void> {
     if (!this.canvas) return;
 
+    // Check if dropping onto a frame placeholder
+    const frame = this.getFrameAtPoint(screenX, screenY);
+    if (frame) {
+      await this.fillFrameWithFile(file, frame);
+      return;
+    }
+
     const vpt = this.canvas.viewportTransform;
     const invertedVpt = util.invertTransform(vpt);
     const point = util.transformPoint(new Point(screenX, screenY), invertedVpt);
@@ -1083,6 +1091,90 @@ export class CanvasEngine {
     this.emitSelectionChange();
   }
 
+  // ─── Frames ──────────────────────────────────────────────────────
+
+  /**
+   * Add a frame placeholder to the canvas center.
+   * Frames are shaped placeholders that clip images to a shape (circle, star, etc.).
+   */
+  addFrame(shape: FrameShape): void {
+    if (!this.canvas) return;
+    const cx = this.artboardWidth / 2;
+    const cy = this.artboardHeight / 2;
+    const frame = createFrame(shape, cx, cy);
+
+    this.history.saveCheckpoint();
+    this.canvas.add(frame);
+    this.canvas.setActiveObject(frame);
+    this.canvas.requestRenderAll();
+    this.history.commit('Add frame');
+    this.emitSelectionChange();
+    this.emitLayersChange();
+  }
+
+  /**
+   * Check if the currently selected object is a frame placeholder.
+   */
+  isFrameSelected(): boolean {
+    if (!this.canvas) return false;
+    const active = this.canvas.getActiveObject();
+    return active ? isFrame(active) : false;
+  }
+
+  /**
+   * Fill the currently selected frame with an image from a URL.
+   */
+  async fillSelectedFrameWithUrl(url: string): Promise<void> {
+    if (!this.canvas) return;
+    const active = this.canvas.getActiveObject();
+    if (!active || !isFrame(active)) return;
+
+    this.history.saveCheckpoint();
+    await fillFrameWithImage(this.canvas, active, url);
+    this.history.commit('Fill frame');
+    this.emitSelectionChange();
+    this.emitLayersChange();
+  }
+
+  /**
+   * Fill a specific frame with an image from a File object.
+   */
+  async fillFrameWithFile(file: File, frame: FabricObject): Promise<void> {
+    if (!this.canvas) return;
+    const dataUrl = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(file);
+    });
+
+    this.history.saveCheckpoint();
+    await fillFrameWithImage(this.canvas, frame, dataUrl);
+    this.history.commit('Fill frame');
+    this.emitSelectionChange();
+    this.emitLayersChange();
+  }
+
+  /**
+   * Find a frame placeholder at the given canvas coordinates.
+   * Used by the drop handler to detect if a dropped image should fill a frame.
+   */
+  getFrameAtPoint(screenX: number, screenY: number): FabricObject | null {
+    if (!this.canvas) return null;
+    const vpt = this.canvas.viewportTransform;
+    const invertedVpt = util.invertTransform(vpt);
+    const point = util.transformPoint(new Point(screenX, screenY), invertedVpt);
+
+    // Search objects from top to bottom (last added = top of stack)
+    const objects = this.canvas.getObjects();
+    for (let i = objects.length - 1; i >= 0; i--) {
+      const obj = objects[i];
+      if (isFrame(obj) && obj.containsPoint(point)) {
+        return obj;
+      }
+    }
+    return null;
+  }
+
   /**
    * Add an SVG icon to the canvas center.
    *
@@ -1165,6 +1257,9 @@ export class CanvasEngine {
     } else {
       icon = new Group(validObjects);
     }
+
+    // Tag as monochrome icon so we know to propagate color changes to children
+    (icon as any).__isMonochromeIcon = true;
 
     // Scale icon to ~100px (Lucide icons are 24×24 viewBox)
     const iconScale = 100 / 24;
@@ -1310,9 +1405,22 @@ export class CanvasEngine {
 
     if (props.fill !== undefined) {
       active.set('fill', props.fill);
+      // For monochrome icons (Lucide): propagate fill to all children as stroke
+      // (Lucide icons are stroke-based, so "fill color" in the UI maps to stroke on children)
+      if ((active as any).__isMonochromeIcon && active instanceof Group) {
+        active.getObjects().forEach((child) => {
+          child.set('stroke', props.fill);
+        });
+      }
     }
     if (props.stroke !== undefined) {
       active.set('stroke', props.stroke);
+      // Propagate stroke to icon group children
+      if ((active as any).__isMonochromeIcon && active instanceof Group) {
+        active.getObjects().forEach((child) => {
+          child.set('stroke', props.stroke);
+        });
+      }
     }
     if (props.strokeWidth !== undefined) {
       active.set('strokeWidth', props.strokeWidth);
@@ -1554,7 +1662,17 @@ export class CanvasEngine {
     const active = this.canvas.getActiveObject();
     if (!active) return null;
 
-    const fillValue = active.fill;
+    let fillValue = active.fill;
+
+    // For monochrome icons: read the stroke color from the first child
+    // (icons are stroke-based with fill='none', so the "color" is the stroke)
+    if ((active as any).__isMonochromeIcon && active instanceof Group) {
+      const firstChild = active.getObjects()[0];
+      if (firstChild) {
+        fillValue = firstChild.stroke as string || '#2d2a26';
+      }
+    }
+
     let fillStr = '';
     if (typeof fillValue === 'string') {
       fillStr = fillValue;

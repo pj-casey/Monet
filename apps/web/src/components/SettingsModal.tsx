@@ -7,6 +7,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { FocusTrap } from './A11y';
+import { useEscapeClose } from '../hooks/use-escape-close';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -41,6 +42,7 @@ const KEY_CONFIGS = [
 ] as const;
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+  useEscapeClose(isOpen, onClose);
   const [keys, setKeys] = useState<Record<string, string>>({});
   const [visible, setVisible] = useState<Record<string, boolean>>({});
   const [saved, setSaved] = useState(false);

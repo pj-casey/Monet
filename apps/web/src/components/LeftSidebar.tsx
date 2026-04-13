@@ -13,7 +13,7 @@
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useEditorStore } from '../stores/editor-store';
-import type { EditorTool } from '../stores/editor-store';
+
 import type { ShapeType } from '@monet/shared';
 import { engine } from './Canvas';
 import { BrandKitPanel } from './BrandKitPanel';
@@ -35,7 +35,7 @@ import {
   type Illustration,
 } from '../lib/illustrations';
 
-export type SidebarTab = 'design' | 'elements' | 'text' | 'upload' | 'ai';
+export type SidebarTab = 'templates' | 'elements' | 'text' | 'upload' | 'ai';
 
 interface LeftSidebarProps {
   onOpenTemplates?: () => void;
@@ -48,18 +48,18 @@ export function LeftSidebar({ onOpenTemplates, onOpenResize, onSaveAsTemplate, o
   const [activeTab, setActiveTab] = useState<SidebarTab>('elements');
   return (
     <div className="flex h-full w-[280px] flex-col border-r border-border bg-surface shadow-sm">
-      {/* Tab bar */}
+      {/* Tab bar — all 5 tabs always visible, no scrolling */}
       <div className="flex border-b border-border px-1">
-        <SidebarTabBtn active={activeTab === 'design'} onClick={() => setActiveTab('design')}>Design</SidebarTabBtn>
-        <SidebarTabBtn active={activeTab === 'elements'} onClick={() => setActiveTab('elements')}>Elements</SidebarTabBtn>
-        <SidebarTabBtn active={activeTab === 'text'} onClick={() => setActiveTab('text')}>Text</SidebarTabBtn>
-        <SidebarTabBtn active={activeTab === 'upload'} onClick={() => setActiveTab('upload')}>Upload</SidebarTabBtn>
-        <SidebarTabBtn active={activeTab === 'ai'} onClick={() => setActiveTab('ai')}>AI</SidebarTabBtn>
+        <SidebarTabBtn icon={<TabTemplatesIcon />} active={activeTab === 'templates'} onClick={() => setActiveTab('templates')}>Templates</SidebarTabBtn>
+        <SidebarTabBtn icon={<TabElementsIcon />} active={activeTab === 'elements'} onClick={() => setActiveTab('elements')}>Elements</SidebarTabBtn>
+        <SidebarTabBtn icon={<TabTextIcon />} active={activeTab === 'text'} onClick={() => setActiveTab('text')}>Text</SidebarTabBtn>
+        <SidebarTabBtn icon={<TabUploadIcon />} active={activeTab === 'upload'} onClick={() => setActiveTab('upload')}>Upload</SidebarTabBtn>
+        <SidebarTabBtn icon={<TabAIIcon />} active={activeTab === 'ai'} onClick={() => setActiveTab('ai')}>AI</SidebarTabBtn>
       </div>
 
       {/* Tab content */}
       <div className="flex-1 overflow-hidden">
-        {activeTab === 'design' && (
+        {activeTab === 'templates' && (
           <div className="animate-fade-in h-full">
             <DesignTab
               onOpenTemplates={onOpenTemplates}
@@ -79,23 +79,44 @@ export function LeftSidebar({ onOpenTemplates, onOpenResize, onSaveAsTemplate, o
 
 // ─── Tab Button ───────────────────────────────────────────────────
 
-function SidebarTabBtn({ active, onClick, children }: {
-  active: boolean; onClick: () => void; children: React.ReactNode;
+function SidebarTabBtn({ icon, active, onClick, children }: {
+  icon?: React.ReactNode; active: boolean; onClick: () => void; children: React.ReactNode;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex-1 border-b-2 py-2.5 text-xs font-medium transition-colors ${
+      aria-pressed={active}
+      className={`flex flex-1 flex-col items-center gap-0.5 border-b-2 py-2 text-[10px] font-medium transition-colors ${
         active
           ? 'border-accent text-accent'
           : 'border-transparent text-text-secondary hover:text-text-primary'
       }`}
     >
+      {icon}
       {children}
     </button>
   );
 }
+
+/* ─── Tab icons (14x14 SVGs) ──────────────────────────────────── */
+
+function TabTemplatesIcon() {
+  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="12" height="5" rx="1"/></svg>;
+}
+function TabElementsIcon() {
+  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="5" r="3.5"/><rect x="2" y="10" width="12" height="4" rx="1"/></svg>;
+}
+function TabTextIcon() {
+  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 3h10M8 3v10M5.5 13h5"/></svg>;
+}
+function TabUploadIcon() {
+  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 3v7M5 5l3-3 3 3"/><path d="M2 10v3a1 1 0 001 1h10a1 1 0 001-1v-3"/></svg>;
+}
+function TabAIIcon() {
+  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 1l1.5 3.5L13 6l-3.5 1.5L8 11 6.5 7.5 3 6l3.5-1.5z"/><path d="M12 10l.75 1.75L14.5 12.5l-1.75.75L12 15l-.75-1.75L9.5 12.5l1.75-.75z"/></svg>;
+}
+
 
 // ═══════════════════════════════════════════════════════════════════
 // DESIGN TAB — templates, brand kits, resize
@@ -137,43 +158,54 @@ function DesignTab({ onOpenTemplates, onOpenResize, onSaveAsTemplate }: {
   }
 
   return (
-    <div className="flex flex-col gap-1.5 overflow-y-auto p-4">
+    <div className="flex flex-col overflow-y-auto p-3">
+      {/* Primary: Browse Templates button */}
       {onOpenTemplates && (
-        <DesignActionBtn
-          icon={<TemplateIcon />}
-          label="Browse Templates"
-          description="Start from a pre-made design"
+        <button
+          type="button"
           onClick={onOpenTemplates}
-        />
+          className="mb-3 flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-xs font-medium text-accent-fg shadow-sm hover:bg-accent-hover"
+        >
+          <TemplateIcon /> Browse Templates
+        </button>
       )}
-      {onOpenResize && (
+
+      {/* Divider */}
+      <div className="mb-2 border-b border-border pb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">Tools</p>
+      </div>
+
+      {/* Secondary: tools */}
+      <div className="space-y-1">
+        {onOpenResize && (
+          <DesignActionBtn
+            icon={<ResizeIcon />}
+            label="Magic Resize"
+            description="Resize to different formats"
+            onClick={onOpenResize}
+          />
+        )}
+        {onSaveAsTemplate && (
+          <DesignActionBtn
+            icon={<SaveTemplateIcon />}
+            label="Save as Template"
+            description="Reuse this design later"
+            onClick={onSaveAsTemplate}
+          />
+        )}
         <DesignActionBtn
-          icon={<ResizeIcon />}
-          label="Magic Resize"
-          description="Resize to different formats"
-          onClick={onOpenResize}
+          icon={<BrandIcon />}
+          label="Brand Kit"
+          description="Colors, fonts, and logos"
+          onClick={() => setSection('brand')}
         />
-      )}
-      {onSaveAsTemplate && (
         <DesignActionBtn
-          icon={<SaveTemplateIcon />}
-          label="Save as Template"
-          description="Reuse this design later"
-          onClick={onSaveAsTemplate}
+          icon={<PluginsIcon />}
+          label="Plugins"
+          description="QR codes, charts, lorem ipsum"
+          onClick={() => setSection('plugins')}
         />
-      )}
-      <DesignActionBtn
-        icon={<BrandIcon />}
-        label="Brand Kit"
-        description="Colors, fonts, and logos"
-        onClick={() => setSection('brand')}
-      />
-      <DesignActionBtn
-        icon={<PluginsIcon />}
-        label="Plugins"
-        description="QR codes, charts, lorem ipsum"
-        onClick={() => setSection('plugins')}
-      />
+      </div>
     </div>
   );
 }
@@ -214,7 +246,7 @@ function BrandKitPanelInline() {
 // ELEMENTS TAB — shapes + icons + illustrations + photos with unified search
 // ═══════════════════════════════════════════════════════════════════
 
-type ElementSection = 'all' | 'shapes' | 'photos' | 'icons' | 'illus';
+type ElementSection = 'all' | 'shapes' | 'photos' | 'icons' | 'illus' | 'frames';
 
 function ElementsTab({ onOpenSettings }: { onOpenSettings?: () => void }) {
   const [section, setSection] = useState<ElementSection>('all');
@@ -238,6 +270,7 @@ function ElementsTab({ onOpenSettings }: { onOpenSettings?: () => void }) {
       <div className="flex gap-1.5 overflow-x-auto border-b border-border px-4 py-2.5 scrollbar-none">
         <FilterChip active={section === 'all'} onClick={() => setSection('all')}>All</FilterChip>
         <FilterChip active={section === 'shapes'} onClick={() => setSection('shapes')}>Shapes</FilterChip>
+        <FilterChip active={section === 'frames'} onClick={() => setSection('frames')}>Frames</FilterChip>
         <FilterChip active={section === 'icons'} onClick={() => setSection('icons')}>Icons</FilterChip>
         <FilterChip active={section === 'illus'} onClick={() => setSection('illus')}>Illus</FilterChip>
         <FilterChip active={section === 'photos'} onClick={() => setSection('photos')}>Photos</FilterChip>
@@ -247,6 +280,9 @@ function ElementsTab({ onOpenSettings }: { onOpenSettings?: () => void }) {
       <div className="flex-1 overflow-y-auto p-3">
         {(section === 'all' || section === 'shapes') && (
           <ShapesSection collapsed={section !== 'shapes' && section !== 'all'} />
+        )}
+        {(section === 'all' || section === 'frames') && (
+          <FramesSection />
         )}
         {(section === 'all' || section === 'icons') && (
           <IconsSection query={searchQuery} fullHeight={section === 'icons'} />
@@ -280,6 +316,75 @@ function FilterChip({ active, onClick, children }: {
   );
 }
 
+// ─── Frames ───────────────────────────────────────────────────────
+
+type FrameShapeId = 'circle' | 'rounded-rect' | 'star' | 'heart' | 'hexagon' | 'arch';
+
+const FRAME_SHAPES: { id: FrameShapeId; label: string; preview: React.ReactNode }[] = [
+  {
+    id: 'circle', label: 'Circle',
+    preview: <circle cx="32" cy="32" r="28" />,
+  },
+  {
+    id: 'rounded-rect', label: 'Rounded Rect',
+    preview: <rect x="4" y="4" width="56" height="56" rx="10" />,
+  },
+  {
+    id: 'star', label: 'Star',
+    preview: <polygon points="32,4 38,22 56,22 42,32 47,50 32,40 17,50 22,32 8,22 26,22" />,
+  },
+  {
+    id: 'heart', label: 'Heart',
+    preview: <path d="M32 52C32 52 8 38 8 22C8 14 14 8 22 8C26 8 32 12 32 12C32 12 38 8 42 8C50 8 56 14 56 22C56 38 32 52 32 52Z" />,
+  },
+  {
+    id: 'hexagon', label: 'Hexagon',
+    preview: <polygon points="48,8 58,32 48,56 16,56 6,32 16,8" />,
+  },
+  {
+    id: 'arch', label: 'Arch',
+    preview: <path d="M8 56 L8 28 C8 14 18 4 32 4 C46 4 56 14 56 28 L56 56 Z" />,
+  },
+];
+
+function FramesSection() {
+  return (
+    <div className="mb-4">
+      <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+        Image Frames
+      </h4>
+      <p className="mb-2 text-[10px] text-text-tertiary">
+        Click to add a frame, then select it and add an image to fill it.
+      </p>
+      <div className="grid grid-cols-3 gap-2">
+        {FRAME_SHAPES.map((f) => (
+          <button
+            key={f.id}
+            type="button"
+            onClick={() => engine.addFrame(f.id)}
+            title={f.label}
+            aria-label={`Add ${f.label} frame`}
+            className="flex flex-col items-center gap-1 rounded-lg p-2 hover:bg-wash"
+          >
+            <svg viewBox="0 0 64 64" className="h-12 w-12">
+              <defs>
+                <linearGradient id={`frame-grad-${f.id}`} x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#e8d5b7" />
+                  <stop offset="100%" stopColor="#c4704a" />
+                </linearGradient>
+              </defs>
+              <g fill={`url(#frame-grad-${f.id})`} stroke="var(--border-strong)" strokeWidth="1">
+                {f.preview}
+              </g>
+            </svg>
+            <span className="text-[9px] text-text-secondary">{f.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Shapes ───────────────────────────────────────────────────────
 
 function ShapesSection(_props: { collapsed?: boolean }) {
@@ -291,31 +396,20 @@ function ShapesSection(_props: { collapsed?: boolean }) {
   };
 
   return (
-    <div className="mb-4">
-      <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
-        Shapes
-      </h4>
-      <div className="grid grid-cols-6 gap-1">
+    <div className="mb-4 space-y-1">
+      {/* Basic */}
+      <ShapeCategory label="Basic" defaultOpen>
         <ShapeBtn label="Rectangle" onClick={() => addShape('rectangle')}>
           <svg viewBox="0 0 32 32" className="h-6 w-6"><rect x="4" y="8" width="24" height="16" rx="2" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Rounded Rect" onClick={() => addShape('rounded-rect')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><rect x="4" y="8" width="24" height="16" rx="6" fill="var(--accent)" /></svg>
         </ShapeBtn>
         <ShapeBtn label="Circle" onClick={() => addShape('circle')}>
           <svg viewBox="0 0 32 32" className="h-6 w-6"><circle cx="16" cy="16" r="11" fill="var(--accent)" /></svg>
         </ShapeBtn>
         <ShapeBtn label="Triangle" onClick={() => addShape('triangle')}>
           <svg viewBox="0 0 32 32" className="h-6 w-6"><polygon points="16,4 28,28 4,28" fill="var(--accent)" /></svg>
-        </ShapeBtn>
-        <ShapeBtn label="Line" onClick={() => addShape('line')}>
-          <svg viewBox="0 0 32 32" className="h-6 w-6"><line x1="4" y1="28" x2="28" y2="4" stroke="var(--text-secondary)" strokeWidth="2.5" /></svg>
-        </ShapeBtn>
-        <ShapeBtn label="Arrow" onClick={() => addShape('arrow')}>
-          <svg viewBox="0 0 32 32" className="h-6 w-6"><line x1="4" y1="16" x2="22" y2="16" stroke="var(--text-secondary)" strokeWidth="2.5" /><polygon points="20,10 28,16 20,22" fill="var(--text-secondary)" /></svg>
-        </ShapeBtn>
-        <ShapeBtn label="Star" onClick={() => addShape('star')}>
-          <svg viewBox="0 0 32 32" className="h-6 w-6"><polygon points="16,2 19.5,12 30,12 22,18 24.5,28 16,22 7.5,28 10,18 2,12 12.5,12" fill="var(--accent)" /></svg>
-        </ShapeBtn>
-        <ShapeBtn label="Rounded Rectangle" onClick={() => addShape('rounded-rect')}>
-          <svg viewBox="0 0 32 32" className="h-6 w-6"><rect x="4" y="8" width="24" height="16" rx="6" fill="var(--accent)" /></svg>
         </ShapeBtn>
         <ShapeBtn label="Diamond" onClick={() => addShape('diamond')}>
           <svg viewBox="0 0 32 32" className="h-6 w-6"><polygon points="16,3 29,16 16,29 3,16" fill="var(--accent)" /></svg>
@@ -326,33 +420,143 @@ function ShapesSection(_props: { collapsed?: boolean }) {
         <ShapeBtn label="Hexagon" onClick={() => addShape('hexagon')}>
           <svg viewBox="0 0 32 32" className="h-6 w-6"><polygon points="24,5 30,16 24,27 8,27 2,16 8,5" fill="var(--accent)" /></svg>
         </ShapeBtn>
-        <ShapeBtn label="Heart" onClick={() => addShape('heart')}>
-          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M16 28C16 28 3 20 3 11C3 6 7 3 11 3C13.5 3 16 5 16 5C16 5 18.5 3 21 3C25 3 29 6 29 11C29 20 16 28 16 28Z" fill="var(--accent)" /></svg>
+        <ShapeBtn label="Line" onClick={() => addShape('line')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><line x1="4" y1="28" x2="28" y2="4" stroke="var(--text-secondary)" strokeWidth="2.5" /></svg>
         </ShapeBtn>
+        <ShapeBtn label="Arrow" onClick={() => addShape('arrow')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><line x1="4" y1="16" x2="22" y2="16" stroke="var(--text-secondary)" strokeWidth="2.5" /><polygon points="20,10 28,16 20,22" fill="var(--text-secondary)" /></svg>
+        </ShapeBtn>
+      </ShapeCategory>
+
+      {/* Stars & Badges */}
+      <ShapeCategory label="Stars & Badges">
+        <ShapeBtn label="Star" onClick={() => addShape('star')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><polygon points="16,2 19.5,12 30,12 22,18 24.5,28 16,22 7.5,28 10,18 2,12 12.5,12" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="4-Point Star" onClick={() => addShape('star-4')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><polygon points="16,2 19,13 30,16 19,19 16,30 13,19 2,16 13,13" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="6-Point Star" onClick={() => addShape('star-6')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><polygon points="16,2 20,10 29,6 24,14 30,22 22,20 16,30 10,20 2,22 8,14 3,6 12,10" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="8-Point Star" onClick={() => addShape('star-8')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><polygon points="16,2 19,10 28,6 22,13 30,16 22,19 28,26 19,22 16,30 13,22 4,26 10,19 2,16 10,13 4,6 13,10" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Starburst" onClick={() => addShape('starburst')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><polygon points="16,1 18,11 27,5 21,13 31,13 23,17 31,21 21,19 27,27 18,21 16,31 14,21 5,27 11,19 1,21 9,17 1,13 11,13 5,5 14,11" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Badge" onClick={() => addShape('badge-circle')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><circle cx="16" cy="16" r="12" fill="var(--accent)" /><circle cx="16" cy="16" r="10" fill="none" stroke="var(--accent)" strokeWidth="1" strokeDasharray="2,1" /></svg>
+        </ShapeBtn>
+      </ShapeCategory>
+
+      {/* Arrows */}
+      <ShapeCategory label="Arrows">
         <ShapeBtn label="Arrow Right" onClick={() => addShape('arrow-right')}>
           <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M4 11V21H18V26L28 16L18 6V11H4Z" fill="var(--accent)" /></svg>
         </ShapeBtn>
+        <ShapeBtn label="Arrow Left" onClick={() => addShape('arrow-left')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M28 11V21H14V26L4 16L14 6V11H28Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Arrow Up" onClick={() => addShape('arrow-up')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M11 28H21V14H26L16 4L6 14H11V28Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Arrow Down" onClick={() => addShape('arrow-down')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M11 4H21V18H26L16 28L6 18H11V4Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Double Arrow" onClick={() => addShape('arrow-double')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M2 16L9 9V13H23V9L30 16L23 23V19H9V23Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Curved Arrow" onClick={() => addShape('arrow-curved')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M5 26Q5 10 16 8V3L27 11L16 19V14Q10 15 9 26Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Chevron" onClick={() => addShape('chevron-right')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M8 4L22 16L8 28L13 16Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+      </ShapeCategory>
+
+      {/* Callouts */}
+      <ShapeCategory label="Callouts">
         <ShapeBtn label="Speech Bubble" onClick={() => addShape('speech-bubble')}>
           <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M5 4H27C28.1 4 29 4.9 29 6V20C29 21.1 28.1 22 27 22H12L6 28V22H5C3.9 22 3 21.1 3 20V6C3 4.9 3.9 4 5 4Z" fill="var(--accent)" /></svg>
         </ShapeBtn>
-      </div>
+        <ShapeBtn label="Round Bubble" onClick={() => addShape('speech-bubble-round')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M16 4C24 4 29 9 29 15C29 21 24 26 16 26C14 26 12 25.5 11 25L6 29L7 24C4 22 3 18 3 15C3 9 8 4 16 4Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Thought Bubble" onClick={() => addShape('thought-bubble')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><ellipse cx="16" cy="13" rx="13" ry="10" fill="var(--accent)" /><circle cx="9" cy="25" r="2.5" fill="var(--accent)" /><circle cx="5" cy="29" r="1.5" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Callout Box" onClick={() => addShape('callout-box')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M3 4H29V22H16L9 29L11 22H3Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+      </ShapeCategory>
 
-      {/* Drawing tools */}
-      <div className="mt-2 flex gap-1">
-        <DrawToolBtn tool="draw" label="Freehand Draw" />
-        <DrawToolBtn tool="pen" label="Pen Tool" />
-      </div>
+      {/* Banners */}
+      <ShapeCategory label="Banners">
+        <ShapeBtn label="Ribbon" onClick={() => addShape('banner-ribbon')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M2 10L6 6V9H26V6L30 10L26 14V18H6V14Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Scroll" onClick={() => addShape('banner-scroll')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M5 6Q3 6 3 9V25Q3 28 7 26L7 10H25V26Q25 28 29 26V9Q29 6 27 6Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+      </ShapeCategory>
 
-      {/* Brush type selector — shown when freehand draw is active */}
-      <BrushPanelWrapper />
+      {/* Decorative */}
+      <ShapeCategory label="Decorative">
+        <ShapeBtn label="Heart" onClick={() => addShape('heart')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M16 28C16 28 3 20 3 11C3 6 7 3 11 3C13.5 3 16 5 16 5C16 5 18.5 3 21 3C25 3 29 6 29 11C29 20 16 28 16 28Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Cloud" onClick={() => addShape('cloud')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M8 24C4 24 2 22 2 19C2 16 4 14 6 13C5 11 6 8 9 7C11 4 15 3 19 4C21 2 25 3 27 5C29 5 30 7 30 9C30 13 27 14 25 14C27 16 26 20 23 21C24 23 22 25 19 25Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Teardrop" onClick={() => addShape('teardrop')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M16 3C16 3 27 16 27 21C27 27 22 30 16 30C10 30 5 27 5 21C5 16 16 3 16 3Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Cross" onClick={() => addShape('cross')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M12 3H20V12H29V20H20V29H12V20H3V12H12Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Crescent" onClick={() => addShape('crescent')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M20 3C13 3 4 8 4 16C4 24 13 29 20 29C15 26 12 21 12 16C12 11 15 6 20 3Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Lightning" onClick={() => addShape('lightning')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M18 3L9 15H14L7 29L25 14H17L24 3Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Leaf" onClick={() => addShape('leaf')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M16 3C24 6 29 14 29 22C29 27 25 30 20 30C15 30 11 28 9 24C5 18 4 11 16 3Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Cog" onClick={() => addShape('cog')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M14 3H18L19 7L22 6L24 9L21 11L23 14L27 13L28 17L24 18L26 21L23 23L21 21L19 24L21 26L19 29L16 27L14 29L12 26L13 24L11 21L9 23L6 21L8 18L4 17L5 13L9 14L11 11L8 9L10 6L13 7Z" fill="var(--accent)" /><circle cx="16" cy="16" r="4" fill="var(--bg-surface)" /></svg>
+        </ShapeBtn>
+        <ShapeBtn label="Blob" onClick={() => addShape('blob')}>
+          <svg viewBox="0 0 32 32" className="h-6 w-6"><path d="M20 4C27 3 30 9 28 15C31 21 27 28 21 29C16 31 9 30 5 25C1 21 1 13 5 9C8 5 14 5 20 4Z" fill="var(--accent)" /></svg>
+        </ShapeBtn>
+      </ShapeCategory>
     </div>
   );
 }
 
-function BrushPanelWrapper() {
-  const activeTool = useEditorStore((s) => s.activeTool);
-  if (activeTool !== 'draw') return null;
-  return <BrushPanel />;
+function ShapeCategory({ label, defaultOpen, children }: {
+  label: string; defaultOpen?: boolean; children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen ?? false);
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center justify-between py-1.5 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary hover:text-text-secondary"
+        aria-expanded={open}
+      >
+        {label}
+        <span className={`text-[8px] transition-transform ${open ? 'rotate-90' : ''}`}>&#9654;</span>
+      </button>
+      {open && (
+        <div className="grid grid-cols-6 gap-1 pb-1">
+          {children}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function ShapeBtn({ label, onClick, children }: {
@@ -371,234 +575,17 @@ function ShapeBtn({ label, onClick, children }: {
   );
 }
 
-/* ─── Brush Panel — shown when freehand draw is active ──────────── */
-
-type BrushTypeOption = 'pen' | 'marker' | 'highlighter' | 'glow';
-
-const BRUSH_TYPES: { type: BrushTypeOption; label: string; preview: string }[] = [
-  { type: 'pen', label: 'Pen', preview: 'M2 14 Q6 6 10 8 Q14 10 18 4 Q22 1 26 6' },
-  { type: 'marker', label: 'Marker', preview: 'M2 10 Q8 6 14 8 Q20 10 26 7' },
-  { type: 'highlighter', label: 'Highlight', preview: 'M2 8 L26 8' },
-  { type: 'glow', label: 'Glow', preview: 'M2 14 Q6 6 10 8 Q14 10 18 4 Q22 1 26 6' },
-];
-
-const BRUSH_COLORS = ['#2d2a26', '#C4704A', '#e53935', '#1e88e5', '#43a047', '#8e24aa', '#ff6d00', '#ffffff'];
-
-function BrushPanel() {
-  const [brushType, setBrushType] = useState<BrushTypeOption>('pen');
-  const [color, setColor] = useState('#2d2a26');
-  const [width, setWidth] = useState(4);
-  const [eraserWidth, setEraserWidth] = useState(20);
-  const [isEraser, setIsEraser] = useState(false);
-
-  // Sync freehand brush settings — only when NOT in eraser mode
-  useEffect(() => { if (!isEraser) engine.setDrawingBrushType(brushType); }, [brushType, isEraser]);
-  useEffect(() => { if (!isEraser) engine.setDrawingColor(color); }, [color, isEraser]);
-  useEffect(() => { if (!isEraser) engine.setDrawingWidth(width); }, [width, isEraser]);
-
-  // Sync eraser width when in eraser mode
-  useEffect(() => { if (isEraser) engine.setEraserWidth(eraserWidth); }, [eraserWidth, isEraser]);
-
-  const handleBrushTypeClick = (type: BrushTypeOption) => {
-    setBrushType(type);
-    if (isEraser) {
-      setIsEraser(false);
-      // Switch from eraser back to freehand drawing
-      engine.disableEraser();
-      engine.enableDrawing(color, width, type);
-    }
-  };
-
-  const handleColorClick = (c: string) => {
-    setColor(c);
-    if (isEraser) {
-      setIsEraser(false);
-      engine.disableEraser();
-      engine.enableDrawing(c, width, brushType);
-    }
-  };
-
-  const handleEraserClick = () => {
-    if (isEraser) {
-      // Toggle off — switch back to freehand
-      setIsEraser(false);
-      engine.disableEraser();
-      engine.enableDrawing(color, width, brushType);
-    } else {
-      setIsEraser(true);
-      engine.enableEraser(eraserWidth);
-    }
-  };
-
-  return (
-    <div className="mt-3 space-y-3 border-t border-border pt-3">
-      {/* Brush type buttons */}
-      <div>
-        <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">Brush</p>
-        <div className="grid grid-cols-4 gap-1">
-          {BRUSH_TYPES.map((b) => (
-            <button
-              key={b.type}
-              type="button"
-              onClick={() => handleBrushTypeClick(b.type)}
-              className={`flex flex-col items-center gap-1 rounded-md px-1 py-1.5 text-[9px] font-medium ${
-                !isEraser && brushType === b.type
-                  ? 'bg-accent-subtle text-accent'
-                  : 'text-text-secondary hover:bg-wash'
-              }`}
-              title={b.label}
-            >
-              <svg viewBox="0 0 28 16" className="h-3 w-7">
-                <path
-                  d={b.preview}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={b.type === 'marker' ? 4 : b.type === 'highlighter' ? 6 : 2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  opacity={b.type === 'highlighter' ? 0.4 : 1}
-                  filter={b.type === 'glow' ? 'url(#glow-filter)' : undefined}
-                />
-              </svg>
-              {b.label}
-            </button>
-          ))}
-        </div>
-        {/* SVG filter for glow preview */}
-        <svg className="absolute h-0 w-0">
-          <defs>
-            <filter id="glow-filter">
-              <feGaussianBlur stdDeviation="1.5" result="blur" />
-              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-            </filter>
-          </defs>
-        </svg>
-      </div>
-
-      {/* Color picker — hidden when eraser active */}
-      {!isEraser && (
-        <div>
-          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">Color</p>
-          <div className="flex flex-wrap gap-1">
-            {BRUSH_COLORS.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => handleColorClick(c)}
-                className={`h-6 w-6 rounded-full border-2 ${
-                  color === c ? 'border-accent' : 'border-border'
-                }`}
-                style={{ backgroundColor: c }}
-                title={c}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Width slider — controls brush size or eraser size */}
-      <div>
-        <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
-          {isEraser ? 'Eraser' : 'Brush'} Size: {isEraser ? eraserWidth : width}px
-        </p>
-        <input
-          type="range"
-          min={1}
-          max={100}
-          value={isEraser ? eraserWidth : width}
-          onChange={(e) => {
-            const v = Number(e.target.value);
-            if (isEraser) setEraserWidth(v);
-            else setWidth(v);
-          }}
-          className="w-full accent-accent"
-        />
-      </div>
-
-      {/* Eraser button */}
-      <button
-        type="button"
-        onClick={handleEraserClick}
-        className={`flex w-full items-center justify-center gap-1.5 rounded-md py-1.5 text-[10px] font-medium ${
-          isEraser
-            ? 'bg-accent-subtle text-accent'
-            : 'bg-wash text-text-secondary hover:bg-border'
-        }`}
-        title="Eraser — truly erases content, showing the background through"
-        aria-pressed={isEraser}
-      >
-        <EraserIcon />
-        Eraser{isEraser ? ' (active)' : ''}
-      </button>
-    </div>
-  );
-}
-
-function EraserIcon() {
-  return (
-    <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M11 2l3 3-7 7H4l-1-1 .5-.5L11 2z" />
-      <path d="M3.5 11.5L7 15" />
-    </svg>
-  );
-}
-
-function DrawToolBtn({ tool, label }: { tool: EditorTool; label: string }) {
-  const activeTool = useEditorStore((s) => s.activeTool);
-  const setActiveTool = useEditorStore((s) => s.setActiveTool);
-  const isActive = activeTool === tool;
-
-  // Enable/disable drawing or pen tool mode on the canvas engine
-  useEffect(() => {
-    if (tool === 'draw') {
-      if (activeTool === 'draw') {
-        engine.enableDrawing('#2d2a26', 4, 'pen');
-      } else {
-        engine.disableDrawing();
-      }
-    }
-    if (tool === 'pen') {
-      if (activeTool === 'pen') {
-        engine.enablePenTool();
-      } else {
-        engine.disablePenTool();
-        if (engine.isEditPointsActive()) {
-          engine.exitEditPoints();
-        }
-      }
-    }
-    // Cleanup on unmount
-    return () => {
-      if (tool === 'draw') engine.disableDrawing();
-      if (tool === 'pen') { engine.disablePenTool(); if (engine.isEditPointsActive()) engine.exitEditPoints(); }
-    };
-  }, [activeTool, tool]);
-
-  return (
-    <button
-      type="button"
-      onClick={() => setActiveTool(isActive ? 'select' : tool)}
-      aria-pressed={isActive}
-      className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-medium transition-colors ${
-        isActive
-          ? 'bg-accent-subtle text-accent'
-          : 'bg-wash text-text-secondary hover:bg-wash'
-      }`}
-    >
-      {tool === 'draw' ? <DrawIcon /> : <PenToolIcon />}
-      {label}
-    </button>
-  );
-}
-
 // ─── Icons ────────────────────────────────────────────────────────
 
 const ICON_COLS = 6;
 const ICON_CELL_SIZE = 44;
 
+const ICON_COLORS = ['#2d2a26', '#C4704A', '#e53935', '#1e88e5', '#43a047', '#8e24aa', '#ff6d00', '#ffffff'];
+
 function IconsSection({ query, fullHeight }: { query: string; fullHeight?: boolean }) {
   const [loading, setLoading] = useState(!isLoaded());
   const [category, setCategory] = useState('All');
+  const [iconColor, setIconColor] = useState('#2d2a26');
   const [, forceRender] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
@@ -631,8 +618,8 @@ function IconsSection({ query, fullHeight }: { query: string; fullHeight?: boole
 
   const handleInsert = useCallback((icon: LucideIcon) => {
     const svg = buildSvgString(icon.nodes);
-    engine.addSvgFromString(svg);
-  }, []);
+    engine.addSvgFromString(svg, iconColor);
+  }, [iconColor]);
 
   if (loading) {
     return <p className="py-4 text-center text-xs text-text-tertiary">Loading icons...</p>;
@@ -654,6 +641,24 @@ function IconsSection({ query, fullHeight }: { query: string; fullHeight?: boole
             <option key={cat} value={cat}>{cat}</option>
           ))}
         </select>
+      </div>
+
+      {/* Icon color picker — choose color before inserting */}
+      <div className="mb-2 flex items-center gap-1">
+        <span className="text-[10px] text-text-tertiary">Color:</span>
+        {ICON_COLORS.map((c) => (
+          <button
+            key={c}
+            type="button"
+            onClick={() => setIconColor(c)}
+            className={`h-5 w-5 rounded-full border ${
+              iconColor === c ? 'border-accent ring-1 ring-accent' : 'border-border'
+            }`}
+            style={{ backgroundColor: c }}
+            title={c}
+            aria-label={`Icon color ${c}`}
+          />
+        ))}
       </div>
 
       <div
@@ -820,7 +825,12 @@ function PhotosSection({ query, onOpenSettings }: { query: string; onOpenSetting
 
   const handleInsert = useCallback(async (photo: NormalizedPhoto) => {
     if (photo.unsplashPhoto) trackDownload(photo.unsplashPhoto);
-    await engine.addImageFromUrl(photo.regular);
+    // If a frame is selected, fill it with the photo instead of adding standalone
+    if (engine.isFrameSelected()) {
+      await engine.fillSelectedFrameWithUrl(photo.regular);
+    } else {
+      await engine.addImageFromUrl(photo.regular);
+    }
   }, []);
 
   if (!hasAny) {
@@ -1042,10 +1052,3 @@ function PluginsIcon() {
   return <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="5" height="5" rx="1" /><rect x="10" y="3" width="5" height="5" rx="1" /><rect x="3" y="10" width="5" height="5" rx="1" /><circle cx="12.5" cy="12.5" r="2.5" /></svg>;
 }
 
-function DrawIcon() {
-  return <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 15l3-1L14.5 5.5a1.4 1.4 0 00-2-2L4 12z" /><path d="M11.5 4.5l2 2" /></svg>;
-}
-
-function PenToolIcon() {
-  return <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 15 Q5 10 9 9 Q13 8 15 3" /><circle cx="3" cy="15" r="1.5" fill="currentColor" /><circle cx="9" cy="9" r="1.5" fill="currentColor" /><circle cx="15" cy="3" r="1.5" fill="currentColor" /></svg>;
-}

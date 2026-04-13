@@ -218,6 +218,7 @@ export function Canvas() {
     if (e.key === 'Delete' || e.key === 'Backspace') {
       e.preventDefault();
       engine.deleteSelectedObjects();
+      showToast('Deleted \u2014 Ctrl+Z to undo');
       return;
     }
     // Ctrl+C = Copy
@@ -295,11 +296,18 @@ export function Canvas() {
         return;
       }
     }
-    // Escape = Deselect all
+    // Escape = Exit current mode → deselect
     if (e.key === 'Escape') {
       e.preventDefault();
-      fabricCanvas?.discardActiveObject();
-      fabricCanvas?.requestRenderAll();
+      const { activeTool, setActiveTool } = useEditorStore.getState();
+      if (activeTool !== 'select') {
+        // Return to select tool from any drawing/pen/other mode
+        setActiveTool('select');
+      } else {
+        // Already in select mode — deselect objects
+        fabricCanvas?.discardActiveObject();
+        fabricCanvas?.requestRenderAll();
+      }
       return;
     }
     // PageDown / Ctrl+] = Next page
@@ -358,6 +366,7 @@ export function Canvas() {
 
   return (
     <div
+      id="canvas-area"
       ref={containerRef}
       className="canvas-pasteboard relative flex-1 overflow-hidden bg-wash"
       onKeyDown={handleKeyDown}

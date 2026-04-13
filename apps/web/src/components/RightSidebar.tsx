@@ -38,6 +38,7 @@ export function RightSidebar({ selection, layers, selectedIndex }: RightSidebarP
             <button
               type="button"
               onClick={() => setActiveTab('properties')}
+              aria-pressed={activeTab === 'properties'}
               className={`flex-1 border-b-2 py-2.5 text-xs font-medium transition-colors ${
                 activeTab === 'properties'
                   ? 'border-accent text-accent'
@@ -49,6 +50,7 @@ export function RightSidebar({ selection, layers, selectedIndex }: RightSidebarP
             <button
               type="button"
               onClick={() => setActiveTab('layers')}
+              aria-pressed={activeTab === 'layers'}
               className={`flex-1 border-b-2 py-2.5 text-xs font-medium transition-colors ${
                 activeTab === 'layers'
                   ? 'border-accent text-accent'

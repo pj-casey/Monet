@@ -8,6 +8,7 @@
 import { useState, useCallback } from 'react';
 import { ARTBOARD_PRESETS } from '@monet/shared';
 import { FocusTrap } from './A11y';
+import { useEscapeClose } from '../hooks/use-escape-close';
 import type { ArtboardPreset, DesignDocument } from '@monet/shared';
 import { resizeDesign } from '../lib/resize';
 import { engine } from './Canvas';
@@ -20,6 +21,7 @@ interface ResizeDialogProps {
 }
 
 export function ResizeDialog({ isOpen, onClose, onOpenResized }: ResizeDialogProps) {
+  useEscapeClose(isOpen, onClose);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [exporting, setExporting] = useState(false);
   const artboardWidth = useEditorStore((s) => s.artboardWidth);

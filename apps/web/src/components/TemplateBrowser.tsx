@@ -9,9 +9,10 @@
  * When they pick a blank canvas, we resize the artboard and clear everything.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { ARTBOARD_PRESETS } from '@monet/shared';
 import { FocusTrap } from './A11y';
+import { useEscapeClose } from '../hooks/use-escape-close';
 import type { ArtboardPreset } from '@monet/shared';
 import { TEMPLATE_REGISTRY, getTemplateCategories } from '@monet/templates';
 import type { Template } from '@monet/templates';
@@ -19,6 +20,10 @@ import { engine } from './Canvas';
 import { useEditorStore } from '../stores/editor-store';
 import { isAIConfigured, saveApiKey, clearApiKey, generateDesign, EXAMPLE_PROMPTS } from '../lib/ai-generate';
 import { getAllUserTemplates, deleteUserTemplate, type UserTemplate } from '../lib/user-templates';
+import { renderTemplateThumbnail } from '@monet/canvas-engine';
+
+/** Shared thumbnail cache — persists across modal open/close */
+const _thumbCache = new Map<string, string>();
 
 interface TemplateBrowserProps {
   /** Whether the modal is open */
@@ -32,6 +37,7 @@ interface TemplateBrowserProps {
 }
 
 export function TemplateBrowser({ isOpen, onClose, initialTab, onOpenSettings }: TemplateBrowserProps) {
+  useEscapeClose(isOpen, onClose);
   const [activeTab, setActiveTab] = useState<'blank' | 'templates' | 'ai'>(initialTab || 'templates');
   const [customWidth, setCustomWidth] = useState(800);
   const [customHeight, setCustomHeight] = useState(600);
@@ -343,10 +349,30 @@ function TemplatesSection({
 }
 
 function TemplateCard({ template, onSelect }: { template: Template; onSelect: () => void }) {
-  // Determine background color from the template for the preview card
-  const bgColor = template.document.background.type === 'solid'
-    ? template.document.background.value
-    : '#f5f0eb';
+  const [thumb, setThumb] = useState<string | undefined>(_thumbCache.get(template.templateId));
+  const rendered = useRef(false);
+
+  // Render thumbnail on mount if not cached
+  useEffect(() => {
+    if (thumb || rendered.current) return;
+    rendered.current = true;
+    renderTemplateThumbnail(template.document, 400).then((url) => {
+      if (url) {
+        _thumbCache.set(template.templateId, url);
+        setThumb(url);
+      }
+    }).catch(() => { /* ignore render failures */ });
+  }, [template, thumb]);
+
+  // Fallback background for skeleton
+  const bg = template.document.background;
+  const fallbackBg = bg.type === 'gradient' && bg.value.startsWith('linear:')
+    ? (() => {
+        const parts = bg.value.split(':');
+        const dir = (parts[1] || 'to-bottom').replace(/-/g, ' ');
+        return { background: `linear-gradient(${dir}, ${parts[2] || '#888'}, ${parts[3] || '#444'})` };
+      })()
+    : { backgroundColor: bg.value || '#e5ddd5' };
 
   return (
     <button
@@ -354,21 +380,21 @@ function TemplateCard({ template, onSelect }: { template: Template; onSelect: ()
       onClick={onSelect}
       className="group flex flex-col overflow-hidden rounded-lg border border-border text-left hover:border-accent hover:shadow-md"
     >
-      {/* Color preview area */}
       <div
-        className="flex h-32 items-center justify-center"
-        style={{ backgroundColor: bgColor }}
+        className="relative w-full overflow-hidden"
+        style={{ aspectRatio: `${template.dimensions.width} / ${template.dimensions.height}`, maxHeight: '200px', minHeight: '80px' }}
       >
-        <span className="text-xs font-medium text-accent-fg/80 drop-shadow">
-          {template.dimensions.width} × {template.dimensions.height}
-        </span>
+        {thumb ? (
+          <img src={thumb} alt={template.name} className="h-full w-full object-cover" loading="lazy" />
+        ) : (
+          <div className="h-full w-full animate-pulse" style={fallbackBg} />
+        )}
       </div>
-      {/* Info */}
-      <div className="p-3">
-        <p className="text-sm font-medium text-text-primary group-hover:text-accent">
+      <div className="p-2.5">
+        <p className="truncate text-xs font-medium text-text-primary group-hover:text-accent">
           {template.name}
         </p>
-        <p className="mt-0.5 text-xs text-text-tertiary">
+        <p className="text-[10px] text-text-tertiary">
           {template.subcategory || template.category}
         </p>
       </div>

@@ -6,6 +6,7 @@
  */
 
 import { FocusTrap } from './A11y';
+import { useEscapeClose } from '../hooks/use-escape-close';
 
 interface ShortcutSheetProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface ShortcutSheetProps {
 }
 
 export function ShortcutSheet({ isOpen, onClose }: ShortcutSheetProps) {
+  useEscapeClose(isOpen, onClose);
   if (!isOpen) return null;
 
   return (

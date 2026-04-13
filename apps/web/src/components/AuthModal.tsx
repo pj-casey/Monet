@@ -13,6 +13,7 @@
 
 import { useState } from 'react';
 import { FocusTrap } from './A11y';
+import { useEscapeClose } from '../hooks/use-escape-close';
 
 const API_BASE = 'http://localhost:3001';
 
@@ -29,6 +30,7 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
+  useEscapeClose(isOpen, onClose);
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

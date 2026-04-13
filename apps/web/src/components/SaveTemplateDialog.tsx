@@ -10,6 +10,7 @@ import { useState, useCallback } from 'react';
 import { engine } from './Canvas';
 import { saveUserTemplate } from '../lib/user-templates';
 import { FocusTrap } from './A11y';
+import { useEscapeClose } from '../hooks/use-escape-close';
 
 const CATEGORY_OPTIONS = [
   'Social Media',
@@ -27,6 +28,7 @@ interface SaveTemplateDialogProps {
 }
 
 export function SaveTemplateDialog({ onClose }: SaveTemplateDialogProps) {
+  useEscapeClose(true, onClose);
   const [name, setName] = useState('');
   const [category, setCategory] = useState('Social Media');
   const [tagsInput, setTagsInput] = useState('');

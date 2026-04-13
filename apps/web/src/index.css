@@ -273,6 +273,21 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════ */
+/* Focus Indicators — visible focus rings for keyboard navigation */
+/* ═══════════════════════════════════════════════════════════════ */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+/* Inputs that use focus:outline-none in Tailwind get a ring instead */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
 /* Smooth Global Transitions                                      */
 /* ═══════════════════════════════════════════════════════════════ */
 button, [role="button"], a, select, input[type="color"] {

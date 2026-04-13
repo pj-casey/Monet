@@ -13,6 +13,8 @@ import { engine } from './Canvas';
 import { Tooltip } from './Tooltip';
 import { MonetWordmark } from './MonetWordmark';
 import { useActivityStore } from '../stores/activity-store';
+import { DrawToolPopout } from './DrawToolPopout';
+import { PenToolPopout } from './PenToolPopout';
 
 import type { SaveStatus } from '../hooks/use-autosave';
 
@@ -76,16 +78,23 @@ export function Toolbar({
     prevStatus.current = saveStatus;
   }, [saveStatus]);
 
-  // Close overflow menu on outside click
+  // Close overflow menu on outside click or Escape
   useEffect(() => {
     if (!menuOpen) return;
-    const handler = (e: MouseEvent) => {
+    const handleClick = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { e.preventDefault(); setMenuOpen(false); }
+    };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+    };
   }, [menuOpen]);
 
   const zoomPercent = `${Math.round(zoom * 100)}%`;
@@ -124,34 +133,40 @@ export function Toolbar({
 
       {/* ─── Center: Tool switcher + zoom ─── */}
       <div className="flex items-center gap-1">
-        {/* Tool switcher */}
-        <div className="flex rounded-lg border border-border">
-          <ToolBtn
-            label="Select"
-            shortcut="V"
-            active={activeTool === 'select'}
-            onClick={() => setActiveTool('select')}
-            first
-          >
-            <SelectIcon />
-          </ToolBtn>
-          <ToolBtn
-            label="Draw"
-            shortcut="D"
-            active={activeTool === 'draw'}
-            onClick={() => setActiveTool(activeTool === 'draw' ? 'select' : 'draw')}
-          >
-            <DrawIcon />
-          </ToolBtn>
-          <ToolBtn
-            label="Pen"
-            shortcut="P"
-            active={activeTool === 'pen'}
-            onClick={() => setActiveTool(activeTool === 'pen' ? 'select' : 'pen')}
-            last
-          >
-            <PenIcon />
-          </ToolBtn>
+        {/* Tool switcher — relative for popout positioning */}
+        <div className="relative">
+          <div className="flex rounded-lg border border-border">
+            <ToolBtn
+              label="Select"
+              shortcut="V"
+              active={activeTool === 'select'}
+              onClick={() => setActiveTool('select')}
+              first
+            >
+              <SelectIcon />
+            </ToolBtn>
+            <ToolBtn
+              label="Draw"
+              shortcut="D"
+              active={activeTool === 'draw'}
+              onClick={() => setActiveTool(activeTool === 'draw' ? 'select' : 'draw')}
+            >
+              <DrawIcon />
+            </ToolBtn>
+            <ToolBtn
+              label="Pen"
+              shortcut="P"
+              active={activeTool === 'pen'}
+              onClick={() => setActiveTool(activeTool === 'pen' ? 'select' : 'pen')}
+              last
+            >
+              <PenIcon />
+            </ToolBtn>
+          </div>
+
+          {/* Tool popouts — anchored below the tool switcher */}
+          {activeTool === 'draw' && <DrawToolPopout />}
+          {activeTool === 'pen' && <PenToolPopout />}
         </div>
 
         <Divider />
@@ -191,7 +206,7 @@ export function Toolbar({
           </TbBtn>
 
           {menuOpen && (
-            <div className="animate-scale-up absolute right-0 top-full z-50 mt-1.5 w-56 rounded-xl border border-border bg-surface py-1.5 shadow-xl">
+            <div className="animate-scale-up absolute right-0 top-full z-50 mt-1.5 w-56 rounded-lg border border-border bg-elevated py-1.5 shadow-lg">
               {onNewDesign && (
                 <MenuItem onClick={() => { onNewDesign(); setMenuOpen(false); }} shortcut="Ctrl+N">
                   <NewDesignIcon /> New Design
@@ -287,9 +302,9 @@ function TbBtn({ label, shortcut, onClick, disabled, children }: {
   label: string; shortcut?: string; onClick: () => void; disabled?: boolean; children: React.ReactNode;
 }) {
   return (
-    <Tooltip label={label} shortcut={shortcut}>
+    <Tooltip label={label} shortcut={shortcut} position="bottom">
       <button type="button" aria-label={label} onClick={onClick} disabled={disabled}
-        className="flex h-8 w-8 items-center justify-center rounded text-text-secondary hover:bg-wash disabled:opacity-30 disabled:hover:bg-transparent">
+        className="flex h-9 w-9 items-center justify-center rounded text-text-secondary hover:bg-wash disabled:opacity-30 disabled:hover:bg-transparent">
         {children}
       </button>
     </Tooltip>
@@ -301,9 +316,9 @@ function ToolBtn({ label, shortcut, active, onClick, children, first, last }: {
   first?: boolean; last?: boolean;
 }) {
   return (
-    <Tooltip label={label} shortcut={shortcut}>
+    <Tooltip label={label} shortcut={shortcut} position="bottom">
       <button type="button" aria-label={label} aria-pressed={active} onClick={onClick}
-        className={`flex h-8 w-8 items-center justify-center ${
+        className={`flex h-9 w-9 items-center justify-center ${
           first ? 'rounded-l-md' : ''
         } ${last ? 'rounded-r-md' : ''} ${
           active

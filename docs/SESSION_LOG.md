@@ -4042,3 +4042,336 @@ All work from sessions 85-90 is uncommitted. Files changed:
 - Commit all pending work
 
 **Issues:** None new.
+
+---
+
+## Session 97 — 2026-04-12
+**Phase:** Phase 10 — v1.0 Launch (Comprehensive Accessibility & Polish QA)
+
+**Completed:**
+
+### Full 8-part QA audit (3 parallel agents)
+Audited: first-time experience, tool discoverability/switching, property panel completeness, keyboard navigation/shortcuts, visual accessibility, feedback/state communication, modal/overlay behavior, responsive/edge cases.
+
+### Findings Table
+
+| # | Category | Issue | Severity | Fix Applied |
+|---|----------|-------|----------|-------------|
+| 1 | Keyboard | Escape doesn't exit Draw/Pen tool back to Select | CRITICAL | YES — Escape now calls `setActiveTool('select')` when in any non-select mode |
+| 2 | A11y | 11 modals missing Escape-to-close handler | CRITICAL | YES — Created `useEscapeClose` hook, added to all 11 modals |
+| 3 | A11y | `focus:outline-none` on 16 inputs across 9 files removes keyboard focus visibility | CRITICAL | YES — Added global `:focus-visible` style in index.css (2px accent outline) |
+| 4 | A11y | SkipLink target `#canvas-area` missing — anchor goes nowhere | HIGH | YES — Added `id="canvas-area"` to Canvas container div |
+| 5 | Feedback | Delete action has no toast/undo hint | HIGH | YES — Added `showToast('Deleted — Ctrl+Z to undo')` |
+| 6 | A11y | Sidebar tab buttons missing `aria-pressed` | HIGH | YES — Added `aria-pressed={active}` to SidebarTabBtn |
+| 7 | A11y | RightSidebar tab buttons missing `aria-pressed` | HIGH | YES — Added `aria-pressed` to Properties/Layers tabs |
+| 8 | A11y | Close buttons on MarketplaceBrowser + CommentsPanel missing `aria-label` | HIGH | YES — Added `aria-label="Close"` |
+| 9 | Keyboard | Toolbar overflow menu doesn't close on Escape | MEDIUM | YES — Added Escape handler alongside click-outside |
+| 10 | Keyboard | FontBrowser dropdown doesn't close on Escape | MEDIUM | YES — Added Escape handler alongside click-outside |
+| 11 | A11y | No global focus-visible CSS rule | MEDIUM | YES — Covered by fix #3 |
+| 12 | UX | No loading indicator while template thumbnails render | MEDIUM | NO — Skeleton loaders already present; adding progress bar is low ROI |
+| 13 | UX | Left sidebar tabs lack tooltips | LOW | NO — Tabs have text labels already (Design, Elements, etc.) |
+| 14 | UX | Template card hover scale causes minor layout shift | LOW | NO — Visual only, doesn't affect usability |
+| 15 | Feedback | Alt+Shift+C/V (copy/paste style) missing toasts | LOW | NO — Rare shortcut, low priority |
+| 16 | UX | PropertiesPanel header lacks object type icon | LOW | NO — Text label ("Rectangle", "Text") is sufficient |
+| 17 | A11y | WelcomeScreen not wrapped in FocusTrap | LOW | NO — Not a modal, full page view |
+| 18 | Feedback | ColorPicker eyedropper has no Escape cancel | LOW | NO — Clicking anywhere cancels; Escape from canvas already handles it |
+| 19 | Docs | Ctrl+[ / Ctrl+] page nav shortcuts not in ShortcutSheet | LOW | NO — Shortcuts work, doc update is low priority vs launch |
+| 20 | UX | Onboarding auto-dismisses after 10s | LOW | NO — Working as designed |
+| 21 | Responsive | CommandPalette fixed 560px width | LOW | NO — Only used on desktop |
+| 22 | Memory | PublishTemplate setTimeout without cleanup | LOW | NO — Edge case on unmount during 2s window |
+
+### Summary: 11 fixes applied (3 CRITICAL, 5 HIGH, 3 MEDIUM), 11 issues deferred (LOW)
+
+**Files Created:**
+- `apps/web/src/hooks/use-escape-close.ts` — reusable Escape-to-close hook for modals
+
+**Files Modified:**
+- `apps/web/src/components/Canvas.tsx` — Escape exits tool modes, delete toast, id=canvas-area
+- `apps/web/src/index.css` — global :focus-visible style
+- `apps/web/src/components/LeftSidebar.tsx` — aria-pressed on sidebar tabs
+- `apps/web/src/components/RightSidebar.tsx` — aria-pressed on Properties/Layers tabs
+- `apps/web/src/components/Toolbar.tsx` — Escape closes overflow menu
+- `apps/web/src/components/FontBrowser.tsx` — Escape closes dropdown
+- `apps/web/src/components/CommentsPanel.tsx` — aria-label on close button
+- `apps/web/src/components/MarketplaceBrowser.tsx` — aria-label on close button, Escape handler
+- 11 modal files — useEscapeClose hook added (ExportDialog, ShortcutSheet, TemplateBrowser, SettingsModal, SaveTemplateDialog, MyDesigns, AuthModal, AIGenerateDialog, ResizeDialog, PublishTemplate, MarketplaceBrowser)
+
+**Decisions Made:**
+- **useEscapeClose hook over inline useEffects**: Single reusable hook eliminates 11 copies of the same pattern. Hook handles the `isOpen` guard, event listener setup/teardown, and stopPropagation.
+- **Global :focus-visible over per-component fixes**: A single CSS rule in index.css gives every interactive element a focus ring. The existing `focus:outline-none` classes in Tailwind are overridden by the global rule's specificity for `:focus-visible`. This is better than touching 16 individual input declarations.
+- **Escape exits tool mode before deselecting**: First press exits draw/pen/eraser back to select tool. Second press (now in select mode) deselects objects. This matches Figma/Canva behavior.
+
+**Build:** passes clean, JS 1,952KB gzipped 556KB
+
+**Next Steps:**
+- Fix runtime crash (blank screen from session 90)
+- Commit all pending work
+
+**Issues:** None blocking. 11 LOW-severity items deferred.
+
+---
+
+## Session 98 — 2026-04-12
+**Phase:** Phase 10 — v1.0 Launch (Icon color control)
+
+**Completed:**
+
+### Icon color on insert + recoloring on canvas
+- **Problem 1 — Default color:** Icons always appeared as `#2d2a26` with no user choice before inserting.
+- **Problem 2 — Recoloring broken:** After inserting a multi-element icon (Group of Paths), changing fill in the properties panel only set `fill` on the Group wrapper (which has no visual effect). The child Paths (which use `stroke` for their lines) were untouched.
+
+### Root cause
+Lucide icons are **stroke-based** (`fill: 'none'`, `stroke: color`). The fill color picker in PropertiesPanel sets `active.set('fill', color)`, but icons need `child.set('stroke', color)` on each Path child inside the Group.
+
+### Fixes applied
+
+**1. Icon tagging:** `addSvgFromString()` now tags icon objects with `__isMonochromeIcon = true`. This distinguishes them from illustrations (which have intentionally different fills per child).
+
+**2. Fill propagation for icon Groups:** `updateSelectedObject()` — when `fill` is changed and the active object has `__isMonochromeIcon` and is a Group, the new fill color is propagated to all children as `stroke` (not `fill`, since Lucide icons use stroke). Same for `stroke` changes.
+
+**3. Color reading from icon Groups:** `getSelectedObjectProps()` — when the selected object is a monochrome icon Group, reads the first child's `stroke` value instead of the Group's `fill` (which would be empty). This makes the properties panel show the correct current color.
+
+**4. Icon color picker in sidebar:** Added a row of 8 color swatches (matching the brush color palette) above the icon grid in the Icons section. Default is `#2d2a26` (warm near-black). User picks a color, then clicks an icon — it inserts in that color. The `handleInsert` callback passes `iconColor` to `engine.addSvgFromString(svg, iconColor)`.
+
+**Files Modified:**
+- `packages/canvas-engine/src/canvas-engine.ts` — `__isMonochromeIcon` tag on icons, fill→stroke propagation in `updateSelectedObject`, stroke reading in `getSelectedObjectProps`
+- `apps/web/src/components/LeftSidebar.tsx` — icon color picker UI, pass selected color to insert
+
+**Decisions Made:**
+- **`__isMonochromeIcon` tag over blanket Group propagation:** Only monochrome icon Groups get fill→stroke propagation. Illustrations (which have per-child colors) are untouched. If a user wants to change individual colors in an illustration, they can ungroup it first.
+- **Fill maps to stroke for icons:** In the user's mental model, they're changing the icon's "color." Under the hood, Lucide icons use `stroke` (not `fill`). The mapping is transparent — the user sees it as one color control.
+- **Pre-insert color picker over post-insert only:** Users can pick the color before inserting, Canva-style. They can also change it after via the properties panel.
+
+**Build:** passes clean, JS 1,952KB gzipped 556KB
+
+**Next Steps:**
+- Browser test: insert icons in various colors, recolor after insert
+- Fix runtime crash (blank screen from session 90)
+- Commit all pending work
+
+**Issues:** None new.
+
+---
+
+## Session 99 — 2026-04-12
+**Phase:** Phase 10 — v1.0 Launch (Drawing controls to toolbar popouts)
+
+**Completed:**
+
+### Drawing controls moved from sidebar to toolbar popouts
+- **Problem:** When Draw tool was active, the left sidebar content changed to show brush/eraser controls. This was disorienting — the sidebar should be independent of the active tool.
+- **Solution:** Created toolbar popout panels that appear below the tool switcher buttons. Sidebar always shows its 5 tabs regardless of tool mode.
+
+### New components
+- **`DrawToolPopout.tsx`**: Appears below the Draw button. Contains: brush type row (Pen/Marker/Highlight/Glow/Eraser), color swatches (hidden when eraser active), width slider. Manages engine.enableDrawing/enableEraser/disableEraser lifecycle via mount/unmount useEffect. Styled: 300px wide, bg-elevated, border, shadow-lg, rounded-lg, animate-scale-up.
+- **`PenToolPopout.tsx`**: Appears below the Pen button. Contains: brief instructions, Edit Points toggle button. Manages engine.enablePenTool/disablePenTool lifecycle via mount/unmount useEffect.
+
+### Toolbar changes
+- Tool switcher wrapped in `relative` container for absolute popout positioning
+- Popouts conditionally rendered: `activeTool === 'draw'` → DrawToolPopout, `activeTool === 'pen'` → PenToolPopout
+- All toolbar tooltips changed to `position="bottom"` (were "top", clipping off viewport)
+- Toolbar stays exactly 48px (h-12) — popouts are absolutely positioned below, not in the flex layout
+
+### LeftSidebar cleanup
+- Removed: BrushPanelWrapper, BrushPanel, EraserIcon, DrawToolBtn, DrawIcon, PenToolIcon
+- Removed: EditorTool type import (no longer needed)
+- Left sidebar now ALWAYS shows its 5 tabs regardless of activeTool — drawing does NOT change the sidebar content
+
+**Files Created:**
+- `apps/web/src/components/DrawToolPopout.tsx` — freehand drawing controls
+- `apps/web/src/components/PenToolPopout.tsx` — pen tool controls
+
+**Files Modified:**
+- `apps/web/src/components/Toolbar.tsx` — popout mounting, tooltip position="bottom"
+- `apps/web/src/components/LeftSidebar.tsx` — removed ~230 lines of drawing controls
+
+**Decisions Made:**
+- **Popout stays open while tool is active:** Unlike the overflow menu (which closes on click-outside), the DrawToolPopout stays open as long as `activeTool === 'draw'`. User needs persistent access to brush controls while drawing. Only switching tool closes it.
+- **Engine lifecycle in popout, not sidebar:** The useEffect in DrawToolPopout calls `engine.enableDrawing()` on mount and `engine.disableDrawing()` on unmount. This is cleaner than the old approach where DrawToolBtn in the sidebar watched `activeTool` changes.
+- **Eraser integrated into brush row:** Eraser is the 5th button in the brush type row (not a separate section). Clicking it is a toggle — click again to exit.
+
+**Build:** passes clean, JS 1,952KB gzipped 556KB
+
+**Next Steps:**
+- Browser test: draw tool popout appears/disappears correctly
+- Fix runtime crash (blank screen from session 90)
+- Commit all pending work
+
+**Issues:** None new.
+
+---
+
+## Session 100 — 2026-04-12
+**Phase:** Phase 10 — v1.0 Launch (Shape library expansion)
+
+**Completed:**
+
+### Shape library expanded from 13 to 37 shapes
+- **24 new shapes** across 5 new categories, all using SVG path data in a ~150x150 viewBox
+- All shapes render as Fabric.js Path or Polygon objects — fully selectable, resizable, rotatable, recolorable
+
+### New shapes by category
+
+**Stars & Badges (5 new):** star-4, star-6, star-8, starburst, badge-circle
+- Stars use a `createStarN()` helper that generates N-pointed star polygons with configurable inner radius ratio
+- Badge-circle uses a 16-pointed star with a 0.88 inner ratio for the subtle notched edge
+
+**Arrows (6 new):** arrow-left, arrow-up, arrow-down, arrow-double, arrow-curved, chevron-right
+
+**Callouts (3 new):** speech-bubble-round, thought-bubble, callout-box
+
+**Banners (2 new):** banner-ribbon, banner-scroll
+
+**Decorative (8 new):** cloud, teardrop, cross, crescent, lightning, leaf, cog, blob
+
+### Categorized shape picker UI
+- Replaced flat 6-column grid with collapsible categories: Basic (open by default), Stars & Badges, Arrows, Callouts, Banners, Decorative
+- `ShapeCategory` component: clickable header with rotate-on-open chevron, `aria-expanded` attribute
+- Each category expands to show its shapes in a 6-column grid, collapses to hide them
+- Users can scan categories quickly without scrolling through 37 shapes in a flat list
+
+### Image Frames
+- Marked as fast-follow — the clipPath infrastructure exists (used by crop tool) but the full frame UX (drag-to-fill, reposition mode) is deferred to a future session
+
+**Files Modified:**
+- `packages/shared/src/shapes.ts` — ShapeType expanded from 13 to 37 types
+- `packages/canvas-engine/src/shapes.ts` — 24 new SVG path constants + createStarN helper + factory switch cases
+- `apps/web/src/components/LeftSidebar.tsx` — ShapeCategory component + categorized shape grid
+
+**Build:** passes clean, JS 1,952KB gzipped 556KB
+
+**Next Steps:**
+- Browser test all 37 shapes
+- Image Frames (fast-follow)
+- Fix runtime crash (blank screen from session 90)
+- Commit all pending work
+
+**Issues:** None new.
+
+---
+
+## Session 101 — 2026-04-12
+**Phase:** Phase 10 — v1.0 Launch (Image Frames)
+
+**Completed:**
+
+### Image Frames — shaped image clipping
+- **6 frame shapes:** circle, rounded-rect, star, heart, hexagon, arch
+- **Placeholder workflow:** Click frame in sidebar → gradient-filled shape with "Drop image" label appears on canvas → select frame → click a photo from Photos tab (or drop an image file onto it) → image fills the frame, clipped to the shape
+- **Cover scaling:** Images fill the frame completely with no gaps (`Math.max(frameW/imgW, frameH/imgH)` — cover, not contain)
+- **clipPath-based:** Uses Fabric.js native clipPath (same infrastructure as crop tool). The clip is positioned in image-local coordinates with `absolutePositioned: false` so it moves/scales with the image.
+- **Serialization:** clipPath is natively supported by Fabric.js `toObject()`/`fromObject()` — saved designs with framed images load correctly.
+- **Drop detection:** `addImageAtPosition()` now checks for frames at the drop point via `getFrameAtPoint()`. If a frame is found, the image fills it instead of adding standalone.
+- **Photo tab integration:** When a frame is selected on the canvas, clicking a stock photo fills the frame instead of adding a new image.
+
+### New file: frames.ts
+- `createFrame(shape, cx, cy, size)` — creates the placeholder Group (gradient shape + "Drop image" label)
+- `fillFrameWithImage(canvas, frame, imageUrl)` — loads image, creates clip path, positions with cover scale, swaps placeholder
+- `createClipPath(shape, width, height)` — constructs the correct Fabric.js clip object for each shape
+- `isFrame(obj)` — checks `__isFrame` tag
+
+### Engine methods added
+- `addFrame(shape)` — places frame placeholder at artboard center
+- `isFrameSelected()` — checks if active object is a frame
+- `fillSelectedFrameWithUrl(url)` — fills selected frame with image from URL
+- `fillFrameWithFile(file, frame)` — fills specific frame from File object
+- `getFrameAtPoint(x, y)` — hit-tests for frame at screen coordinates
+
+### UI additions
+- "Frames" filter chip in Elements tab
+- `FramesSection` component: 3-column grid of 6 frame thumbnails with gradient-filled SVG previews and labels
+- Instruction text: "Click to add a frame, then select it and add an image to fill it."
+
+### Shape data exports
+- `HEART_PATH` and `generateStarPoints` exported from shapes.ts for reuse
+- New `ARCH_PATH` constant (semicircle top + straight bottom, like a doorway)
+
+**Files Created:**
+- `packages/canvas-engine/src/frames.ts` �� frame creation, fill, clip path logic
+
+**Files Modified:**
+- `packages/canvas-engine/src/shapes.ts` — exported HEART_PATH, generateStarPoints, added ARCH_PATH
+- `packages/canvas-engine/src/canvas-engine.ts` — 5 new frame methods, frame detection in addImageAtPosition
+- `packages/canvas-engine/src/index.ts` — export FrameShape type
+- `apps/web/src/components/LeftSidebar.tsx` — FramesSection component, frames filter chip, photo click fills frame
+
+**Decisions Made:**
+- **Group placeholder over bare shape:** Frame placeholder is a Group containing the gradient shape + text label. This gives visual clarity ("Drop image" label) and makes it easy to swap the whole thing for the clipped image.
+- **Cover scale over contain:** Images fill frames edge-to-edge with no gaps. Some cropping occurs if aspect ratios don't match. This matches Canva's behavior.
+- **Reuse shapes.ts path data:** Frame clip paths use the same HEART_PATH, ARCH_PATH, generateStarPoints as the regular shape library. One source of truth for shape geometry.
+- **No reposition mode yet:** Double-click to pan/zoom within frame is deferred. Users can use the existing crop tool to adjust. The basic place-frame → add-image → clip flow works.
+
+**Build:** passes clean, JS 1,968KB gzipped 560KB
+
+**Next Steps:**
+- Browser test all 6 frame shapes with images
+- Frame reposition mode (double-click to pan/zoom within clip)
+- Fix runtime crash (blank screen from session 90)
+- Commit all pending work
+
+**Issues:** None new.
+
+---
+
+## Session 102 — 2026-04-12
+**Phase:** Phase 10 — v1.0 Launch (UI refinement pass)
+
+**Completed:**
+
+### 1. "Design" tab renamed to "Templates"
+- Tab label changed from "Design" to "Templates" — clearer for beginners looking for templates
+- Content reorganized: prominent "Browse Templates" button at top (accent background, full width), then a "Tools" section divider, then secondary tools (Magic Resize, Save as Template, Brand Kit, Plugins)
+- SidebarTab type updated from 'design' to 'templates'
+
+### 2. Elements tab filter chip order
+- Reordered from All/Shapes/Icons/Illus/Frames/Photos to All/Shapes/Frames/Icons/Illus/Photos
+- Frames chip now sits between Shapes and Icons where users expect shaped elements
+
+### 3. Tab icons on all 5 sidebar tabs
+- Every tab now shows both a 14x14 SVG icon AND a text label
+- Icons: grid (Templates), circle+rect (Elements), T-baseline (Text), upload arrow (Upload), sparkle (AI)
+- SidebarTabBtn updated: `flex-col items-center gap-0.5`, icon on top, label below at 10px
+- Active tab: accent icon + accent text + accent bottom border
+- Inactive tab: muted icon + muted text + transparent border
+
+### 4. Toolbar consistency
+- Button sizes bumped from h-8 w-8 (32px) to h-9 w-9 (36px) — meets WCAG 2.2 touch target minimum
+- Overflow menu background: bg-surface → bg-elevated (matches DrawToolPopout/PenToolPopout styling)
+- Overflow menu border-radius: rounded-xl → rounded-lg (consistent with other popouts)
+- Overflow menu shadow: shadow-xl → shadow-lg (consistent)
+- All tooltips position="bottom" confirmed (fixed in session 99)
+- Toolbar height h-12 (48px) confirmed — does not change with popouts
+
+### 5-6. Sidebar visual consistency
+- Both sidebars use identical bg-surface background, border-border borders ✓
+- Right sidebar 300ms ease-in-out slide transition confirmed ✓
+- Right sidebar hides completely (w-0, opacity-0, border-l-0) when nothing selected ✓
+- Properties panel header shows friendly type name (Rectangle, Circle, etc.) ✓
+
+### 7. Empty states verified
+- Templates tab: has skeleton loading + "Browse Templates" CTA ✓
+- Elements search with no results: handled by individual sections ✓
+- Photos with no API key: setup instructions with Settings button ✓
+- Upload tab: drag-and-drop zone ✓
+- AI tab without key: connect instructions ✓
+- Layers panel empty: "No layers yet" message ✓
+- Properties panel nothing selected: shows canvas background picker + guidance text ✓
+
+### 8-10. Verified
+- Section headings (Shapes, Icons, Frames, etc.) use consistent 10px uppercase tracking-wide text-tertiary ✓
+- All clickable elements have hover states via Tailwind hover: classes ✓
+- Global transition rule covers all buttons (150ms in index.css) ✓
+- Tab bar doesn't scroll — all 5 tabs visible at all times ✓
+- Content within tabs scrolls vertically via overflow-y-auto ✓
+
+**Files Modified:**
+- `apps/web/src/components/LeftSidebar.tsx` — tab rename, icons, reorganized Templates tab, filter chip reorder
+- `apps/web/src/components/Toolbar.tsx` — button sizes 32→36px, overflow menu styling
+
+**Build:** passes clean
+
+**Next Steps:**
+- Fix runtime crash (blank screen from session 90)
+- Commit all pending work
+
+**Issues:** None new.

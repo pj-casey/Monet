@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { engine } from './Canvas';
 import { useEditorStore } from '../stores/editor-store';
 import { FocusTrap } from './A11y';
+import { useEscapeClose } from '../hooks/use-escape-close';
 
 const API_BASE = 'http://localhost:3001';
 
@@ -21,6 +22,7 @@ interface PublishTemplateProps {
 }
 
 export function PublishTemplate({ isOpen, onClose }: PublishTemplateProps) {
+  useEscapeClose(isOpen, onClose);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Social Media');

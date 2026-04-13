@@ -12,6 +12,7 @@
 
 import { useState, useCallback } from 'react';
 import { FocusTrap } from './A11y';
+import { useEscapeClose } from '../hooks/use-escape-close';
 import {
   generateDesign,
   isAIConfigured,
@@ -27,6 +28,7 @@ interface AIGenerateDialogProps {
 }
 
 export function AIGenerateDialog({ onClose }: AIGenerateDialogProps) {
+  useEscapeClose(true, onClose);
   const [connected, setConnected] = useState(isAIConfigured());
   const [keyInput, setKeyInput] = useState('');
   const [prompt, setPrompt] = useState('');

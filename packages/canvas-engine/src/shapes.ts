@@ -80,6 +80,59 @@ export function createShape(
       return createPathShape(ARROW_RIGHT_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
     case 'speech-bubble':
       return createPathShape(SPEECH_BUBBLE_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    // Stars & Badges
+    case 'star-4':
+      return createStarN(4, 0.45, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'star-6':
+      return createStarN(6, 0.55, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'star-8':
+      return createStarN(8, 0.55, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'starburst':
+      return createStarN(12, 0.7, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    // Arrows
+    case 'arrow-left':
+      return createPathShape(ARROW_LEFT_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'arrow-up':
+      return createPathShape(ARROW_UP_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'arrow-down':
+      return createPathShape(ARROW_DOWN_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'arrow-double':
+      return createPathShape(ARROW_DOUBLE_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'arrow-curved':
+      return createPathShape(ARROW_CURVED_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'chevron-right':
+      return createPathShape(CHEVRON_RIGHT_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    // Callouts
+    case 'speech-bubble-round':
+      return createPathShape(SPEECH_BUBBLE_ROUND_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'thought-bubble':
+      return createPathShape(THOUGHT_BUBBLE_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'callout-box':
+      return createPathShape(CALLOUT_BOX_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    // Banners
+    case 'banner-ribbon':
+      return createPathShape(BANNER_RIBBON_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'banner-scroll':
+      return createPathShape(BANNER_SCROLL_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'badge-circle':
+      return createStarN(16, 0.88, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    // Decorative
+    case 'cloud':
+      return createPathShape(CLOUD_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'teardrop':
+      return createPathShape(TEARDROP_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'cross':
+      return createPathShape(CROSS_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'crescent':
+      return createPathShape(CRESCENT_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'lightning':
+      return createPathShape(LIGHTNING_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'leaf':
+      return createPathShape(LEAF_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'cog':
+      return createPathShape(COG_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
+    case 'blob':
+      return createPathShape(BLOB_PATH, fill, stroke, strokeWidth, opacity, centerX, centerY);
     default:
       throw new Error(`Unknown shape type: ${options.type}`);
   }
@@ -260,7 +313,7 @@ function createStar(
  * @param outerRadius - Distance from center to tip
  * @param innerRadius - Distance from center to indentation
  */
-function generateStarPoints(
+export function generateStarPoints(
   numPoints: number,
   outerRadius: number,
   innerRadius: number,
@@ -370,12 +423,67 @@ function createRegularPolygon(
   });
 }
 
-/** SVG path data for preset shapes (scaled to ~150x150 viewbox) */
-const HEART_PATH = 'M75 30 C75 30 60 0 37.5 0 C15 0 0 18 0 40 C0 75 75 120 75 150 C75 120 150 75 150 40 C150 18 135 0 112.5 0 C90 0 75 30 75 30 Z';
+/** Create an N-pointed star polygon with configurable inner radius ratio */
+function createStarN(
+  points: number,
+  innerRatio: number,
+  fill: string | Gradient<'linear'> | Gradient<'radial'>,
+  stroke: string,
+  strokeWidth: number,
+  opacity: number,
+  cx: number,
+  cy: number,
+): FabricObject {
+  const size = DEFAULT_SIZE;
+  const outerRadius = size / 2;
+  const innerRadius = outerRadius * innerRatio;
+  const pts = generateStarPoints(points, outerRadius, innerRadius);
+  return new Polygon(pts, {
+    left: cx - outerRadius,
+    top: cy - outerRadius,
+    fill,
+    stroke,
+    strokeWidth,
+    opacity,
+  });
+}
 
+/* ═══════════════════════════════════════════════════════════════════ */
+/* SVG path data (normalized to ~150x150 viewbox)                     */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+// --- Basic (existing) --- exported for reuse by frames.ts
+export const HEART_PATH = 'M75 30 C75 30 60 0 37.5 0 C15 0 0 18 0 40 C0 75 75 120 75 150 C75 120 150 75 150 40 C150 18 135 0 112.5 0 C90 0 75 30 75 30 Z';
+export const ARCH_PATH = 'M0 150 L0 75 C0 33 33 0 75 0 C117 0 150 33 150 75 L150 150 Z';
 const ARROW_RIGHT_PATH = 'M0 30 L0 120 L90 120 L90 150 L150 75 L90 0 L90 30 Z';
-
 const SPEECH_BUBBLE_PATH = 'M10 0 L140 0 Q150 0 150 10 L150 100 Q150 110 140 110 L50 110 L20 140 L30 110 L10 110 Q0 110 0 100 L0 10 Q0 0 10 0 Z';
+
+// --- Arrows ---
+const ARROW_LEFT_PATH = 'M150 30 L150 120 L60 120 L60 150 L0 75 L60 0 L60 30 Z';
+const ARROW_UP_PATH = 'M30 150 L120 150 L120 60 L150 60 L75 0 L0 60 L30 60 Z';
+const ARROW_DOWN_PATH = 'M30 0 L120 0 L120 90 L150 90 L75 150 L0 90 L30 90 Z';
+const ARROW_DOUBLE_PATH = 'M0 75 L40 30 L40 55 L110 55 L110 30 L150 75 L110 120 L110 95 L40 95 L40 120 Z';
+const ARROW_CURVED_PATH = 'M10 140 Q10 40 75 30 L75 0 L140 50 L75 100 L75 70 Q40 75 35 140 Z';
+const CHEVRON_RIGHT_PATH = 'M20 0 L110 75 L20 150 L50 75 Z';
+
+// --- Callouts ---
+const SPEECH_BUBBLE_ROUND_PATH = 'M75 0 C116 0 150 25 150 55 C150 85 116 110 75 110 C65 110 55 108 46 105 L15 140 L25 105 C10 95 0 77 0 55 C0 25 34 0 75 0 Z';
+const THOUGHT_BUBBLE_PATH = 'M75 0 C116 0 145 22 145 50 C145 78 116 100 75 100 C34 100 5 78 5 50 C5 22 34 0 75 0 Z M35 105 C42 105 48 111 48 118 C48 125 42 130 35 130 C28 130 22 125 22 118 C22 111 28 105 35 105 Z M18 133 C22 133 26 137 26 141 C26 146 22 150 18 150 C13 150 10 146 10 141 C10 137 13 133 18 133 Z';
+const CALLOUT_BOX_PATH = 'M0 0 L150 0 L150 100 L70 100 L40 135 L50 100 L0 100 Z';
+
+// --- Banners ---
+const BANNER_RIBBON_PATH = 'M0 25 L20 0 L20 20 L130 20 L130 0 L150 25 L130 50 L130 80 L20 80 L20 50 Z M20 50 L0 75 L20 80 M130 50 L150 75 L130 80';
+const BANNER_SCROLL_PATH = 'M15 10 Q0 10 0 30 L0 130 Q0 150 20 140 Q30 135 30 120 L30 40 L120 40 L120 120 Q120 135 130 140 Q150 150 150 130 L150 30 Q150 10 135 10 Z M30 25 L120 25 Q135 25 135 10 M30 40 Q15 40 15 25';
+
+// --- Decorative ---
+const CLOUD_PATH = 'M37.5 120 C16 120 0 106 0 88 C0 74 9 62 23 57 C20 45 28 30 45 25 C55 7 75 0 95 5 C108 -2 128 3 137 18 C145 15 150 20 150 30 C150 48 138 55 128 55 C135 65 133 82 120 90 C122 105 110 120 90 120 Z';
+const TEARDROP_PATH = 'M75 0 C75 0 140 70 140 100 C140 136 110 150 75 150 C40 150 10 136 10 100 C10 70 75 0 75 0 Z';
+const CROSS_PATH = 'M55 0 L95 0 L95 55 L150 55 L150 95 L95 95 L95 150 L55 150 L55 95 L0 95 L0 55 L55 55 Z';
+const CRESCENT_PATH = 'M100 0 C45 0 0 33 0 75 C0 117 45 150 100 150 C75 135 60 108 60 75 C60 42 75 15 100 0 Z';
+const LIGHTNING_PATH = 'M85 0 L35 65 L65 65 L25 150 L125 60 L80 60 L120 0 Z';
+const LEAF_PATH = 'M75 0 C120 15 150 55 150 100 C150 130 125 150 95 150 C75 150 55 140 45 120 C25 85 20 50 75 0 Z M75 20 Q50 80 55 130';
+const COG_PATH = 'M65 0 L85 0 L90 18 L108 10 L118 26 L103 38 L115 55 L135 50 L140 68 L122 75 L135 90 L120 103 L108 90 L95 108 L108 118 L98 135 L80 125 L75 150 L65 150 L60 132 L42 140 L32 124 L47 112 L35 95 L15 100 L10 82 L28 75 L15 60 L30 47 L42 60 L55 42 L42 32 L52 15 L70 25 Z';
+const BLOB_PATH = 'M95 5 C130 -5 155 30 145 65 C155 95 135 130 105 140 C80 155 40 150 20 125 C-5 105 -5 65 15 40 C30 15 60 10 95 5 Z';
 
 /** Create a shape from an SVG path string */
 function createPathShape(

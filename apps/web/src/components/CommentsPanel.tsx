@@ -27,7 +27,7 @@ export function CommentsPanel({ comments, isOpen, onClose }: CommentsPanelProps)
         <h3 className="text-sm font-semibold text-text-primary">
           Comments ({comments.length})
         </h3>
-        <button type="button" onClick={onClose}
+        <button type="button" onClick={onClose} aria-label="Close"
           className="text-text-tertiary hover:text-text-secondary">&#x2715;</button>
       </div>
 

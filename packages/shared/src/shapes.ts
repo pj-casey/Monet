@@ -7,7 +7,21 @@
  */
 
 /** The kinds of shapes users can create */
-export type ShapeType = 'rectangle' | 'circle' | 'triangle' | 'line' | 'arrow' | 'star' | 'rounded-rect' | 'diamond' | 'pentagon' | 'hexagon' | 'heart' | 'arrow-right' | 'speech-bubble';
+export type ShapeType =
+  // Basic
+  | 'rectangle' | 'rounded-rect' | 'circle' | 'triangle' | 'line' | 'arrow'
+  // Stars & Badges
+  | 'star' | 'star-4' | 'star-6' | 'star-8' | 'starburst'
+  // Polygons
+  | 'diamond' | 'pentagon' | 'hexagon'
+  // Arrows
+  | 'arrow-right' | 'arrow-left' | 'arrow-up' | 'arrow-down' | 'arrow-double' | 'arrow-curved' | 'chevron-right'
+  // Callouts
+  | 'speech-bubble' | 'speech-bubble-round' | 'thought-bubble' | 'callout-box'
+  // Banners
+  | 'banner-ribbon' | 'banner-scroll' | 'badge-circle'
+  // Decorative
+  | 'heart' | 'cloud' | 'teardrop' | 'cross' | 'crescent' | 'lightning' | 'leaf' | 'cog' | 'blob';
 
 /** Options when creating a new shape */
 export interface ShapeOptions {
