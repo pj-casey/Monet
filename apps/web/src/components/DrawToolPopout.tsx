@@ -28,10 +28,10 @@ export function DrawToolPopout() {
   const [eraserWidth, setEraserWidthState] = useState(20);
   const [isEraser, setIsEraser] = useState(false);
 
-  // Initialize drawing mode on mount
+  // Initialize drawing mode on mount (engine methods no-op if canvas not ready)
   useEffect(() => {
     engine.enableDrawing(color, width, brushType);
-    return () => { engine.disableDrawing(); };
+    return () => engine.disableDrawing();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync freehand settings — only when NOT in eraser mode

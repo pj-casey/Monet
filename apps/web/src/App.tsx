@@ -243,15 +243,29 @@ function App() {
     const doc = pendingDoc.current;
     pendingDoc.current = null;
     setActivity('loading');
+    let cancelled = false;
+    let attempts = 0;
+    const MAX_ATTEMPTS = 100; // 5 seconds at 50ms intervals
     // Wait for Canvas component to mount and initialize the engine
     const tryLoad = () => {
+      if (cancelled) return;
       if (engine.isInitialized()) {
-        engine.fromJSON(doc).then(() => { setCanvasReady(true); setActivity('idle'); });
-      } else {
+        engine.fromJSON(doc)
+          .then(() => { if (!cancelled) { setCanvasReady(true); setActivity('idle'); } })
+          .catch((err) => {
+            console.error('Failed to load design:', err);
+            if (!cancelled) { setCanvasReady(true); setActivity('idle'); }
+          });
+      } else if (attempts < MAX_ATTEMPTS) {
+        attempts++;
         setTimeout(tryLoad, 50);
+      } else {
+        console.error('Canvas engine failed to initialize after 5s');
+        if (!cancelled) { setCanvasReady(true); setActivity('idle'); }
       }
     };
     setTimeout(tryLoad, 50);
+    return () => { cancelled = true; };
   }, [view, setActivity]);
 
   /** Start from a template (from welcome screen category grid) */
