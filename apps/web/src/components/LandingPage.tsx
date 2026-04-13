@@ -666,24 +666,23 @@ function CryptoAddr({ label, address }: { label: string; address: string }) {
 
 // ─── Template previews for the "Start with a template" section ─────────
 
-/** Pick 6 diverse templates from the registry (one per unique category) */
-const PREVIEW_TEMPLATES = (() => {
-  const seen = new Set<string>();
-  const picks: typeof TEMPLATE_REGISTRY = [];
-  for (const t of TEMPLATE_REGISTRY) {
-    const cat = t.category || 'Other';
-    if (!seen.has(cat) && picks.length < 6) {
-      seen.add(cat);
-      picks.push(t);
-    }
-  }
-  // Fill remaining slots if fewer than 6 categories
-  for (const t of TEMPLATE_REGISTRY) {
-    if (picks.length >= 6) break;
-    if (!picks.includes(t)) picks.push(t);
-  }
-  return picks;
-})();
+/**
+ * Hand-curated 6 best templates for the landing page preview grid.
+ * Chosen for visual variety: dark/light contrast, diverse categories,
+ * and distinct aesthetics. Ordered for a pleasing 3x2 grid:
+ *   Row 1: dark podcast | light wedding | dark concert
+ *   Row 2: warm gala    | fun halloween | dark product
+ */
+const SHOWCASE_IDS = [
+  'podcast-cover',       // Dark gradient spotlight with waveform
+  'wedding-emma-james',  // Elegant light floral
+  'concert-midnight',    // Dramatic heavy typography with glow
+  'gala-evening',        // Art deco warm gold
+  'halloween-dare',      // Fun spooky with pumpkin and bats
+  'product-launch',      // Dark tech product announcement
+];
+const _idLookup = new Map(TEMPLATE_REGISTRY.map((t) => [t.templateId, t]));
+const PREVIEW_TEMPLATES = SHOWCASE_IDS.map((id) => _idLookup.get(id)).filter(Boolean) as typeof TEMPLATE_REGISTRY;
 
 const _lpThumbCache = new Map<string, string>();
 
