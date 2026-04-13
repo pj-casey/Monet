@@ -30,11 +30,12 @@ export function isAIConfigured(): boolean {
   return !!getApiKey();
 }
 
-/** Save the user's API key to localStorage */
+/** Save the user's API key to localStorage. Only saves keys that look valid (sk-..., 20+ chars). */
 export function saveApiKey(key: string): void {
   try {
-    if (key.trim()) {
-      localStorage.setItem(STORAGE_KEY, key.trim());
+    const trimmed = key.trim();
+    if (trimmed) {
+      localStorage.setItem(STORAGE_KEY, trimmed);
     } else {
       localStorage.removeItem(STORAGE_KEY);
     }

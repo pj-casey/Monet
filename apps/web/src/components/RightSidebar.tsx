@@ -63,12 +63,12 @@ export function RightSidebar({ selection, layers, selectedIndex }: RightSidebarP
 
           {/* Content */}
           {activeTab === 'properties' && (
-            <div className="animate-fade-in flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto">
               <PropertiesPanel selection={selection} />
             </div>
           )}
           {activeTab === 'layers' && (
-            <div className="animate-fade-in flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto">
               <LayerPanel layers={layers} selectedIndex={selectedIndex} />
             </div>
           )}

@@ -350,7 +350,7 @@ function SuggestCopyButton({ text }: { text?: string }) {
       if (response.suggestions) {
         setSuggestions(response.suggestions);
       }
-    } catch { /* ignore */ }
+    } catch { setSuggestions([]); }
     setLoading(false);
   }, [text]);
 
@@ -964,8 +964,7 @@ function TextPathSection({ text, fontFamily, fontSize, fontWeight, fill }: {
 
   const handleToggle = useCallback(async () => {
     if (curved) {
-      // TODO: convert back to textbox (complex — skip for now)
-      setCurved(false);
+      // Uncurving is not supported — user should undo or delete and re-add
       return;
     }
     setCurved(true);
@@ -991,8 +990,10 @@ function TextPathSection({ text, fontFamily, fontSize, fontWeight, fill }: {
           <button
             type="button"
             onClick={() => { if (curved) handleToggle(); }}
+            disabled={curved}
+            title={curved ? 'Use Ctrl+Z to undo curving' : ''}
             className={`flex-1 rounded-md px-2 py-1 text-[10px] font-medium ${
-              !curved ? 'bg-accent-subtle text-accent' : 'bg-wash text-text-secondary'
+              !curved ? 'bg-accent-subtle text-accent' : 'bg-wash text-text-tertiary opacity-50'
             }`}
           >
             Straight

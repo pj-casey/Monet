@@ -45,11 +45,6 @@ export function ShortcutSheet({ isOpen, onClose }: ShortcutSheetProps) {
           <Shortcut keys="P" desc="Pen tool" />
         </ShortcutGroup>
 
-        <ShortcutGroup title="File">
-          <Shortcut keys="Ctrl + N" desc="New design" />
-          <Shortcut keys="Ctrl + S" desc="Save" />
-          <Shortcut keys="Ctrl + ," desc="Settings" />
-        </ShortcutGroup>
 
         <ShortcutGroup title="Editing">
           <Shortcut keys="Ctrl + Z" desc="Undo" />

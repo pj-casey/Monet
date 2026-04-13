@@ -202,10 +202,21 @@ export class HistoryManager {
     if (objectsData.length > 0) {
       // Use Fabric's enlivening to recreate objects from their serialized form
       const enlivenedItems = await util.enlivenObjects(objectsData);
-      for (const item of enlivenedItems) {
+      for (let i = 0; i < enlivenedItems.length; i++) {
+        const item = enlivenedItems[i];
         // enlivenObjects can return various types; we only want FabricObjects
         if (item && typeof (item as FabricObject).set === 'function') {
-          this.canvas?.add(item as FabricObject);
+          const obj = item as FabricObject;
+          // Re-apply custom properties that Fabric.js doesn't restore automatically
+          const data = objectsData[i];
+          if (data.__isFreehandStroke) {
+            (obj as any).__isFreehandStroke = true;
+            (obj as any).erasable = true;
+          }
+          if (data.__isMonochromeIcon) {
+            (obj as any).__isMonochromeIcon = true;
+          }
+          this.canvas?.add(obj);
         }
       }
     }

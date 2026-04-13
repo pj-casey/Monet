@@ -234,6 +234,13 @@ function handlePointerUp(canvas: FabricCanvas) {
   (path as any).__isFreehandStroke = true;
   (path as any).erasable = true;
 
+  // Ensure these custom properties survive serialization (save/load/undo).
+  // Fabric.js toObject() only serializes known properties by default.
+  const origToObject = path.toObject.bind(path);
+  (path as any).toObject = function(propertiesToInclude?: any) {
+    return { ...origToObject(propertiesToInclude), erasable: true, __isFreehandStroke: true };
+  };
+
   // Glow effect — add colored shadow
   if (state.brushType === 'glow') {
     path.shadow = new Shadow({

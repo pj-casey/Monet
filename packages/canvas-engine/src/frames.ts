@@ -265,16 +265,23 @@ export async function fillFrameWithImage(
   const frameW = (frame.width ?? DEFAULT_FRAME_SIZE) * (frame.scaleX ?? 1);
   const frameH = (frame.height ?? DEFAULT_FRAME_SIZE) * (frame.scaleY ?? 1);
 
-  // Load image
-  const img = await FabricImage.fromURL(imageUrl, { crossOrigin: 'anonymous' });
+  // Load image — if this fails, keep the frame placeholder intact
+  let img: InstanceType<typeof FabricImage>;
+  try {
+    img = await FabricImage.fromURL(imageUrl, { crossOrigin: 'anonymous' });
+  } catch {
+    console.warn('[frames] Failed to load image for frame:', imageUrl);
+    return null; // Frame stays on canvas, caller can show error toast
+  }
+
   const imgW = img.width ?? 1;
   const imgH = img.height ?? 1;
+  if (imgW <= 1 || imgH <= 1) return null; // Invalid image
 
   // Cover scale — fill frame completely with no gaps
   const coverScale = Math.max(frameW / imgW, frameH / imgH);
 
   // Create clip path at the image's local coordinate scale
-  // The clip path is sized to match the frame in image-local space
   const clipW = frameW / coverScale;
   const clipH = frameH / coverScale;
   const clip = createClipPath(shape, clipW, clipH);
