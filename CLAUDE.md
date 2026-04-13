@@ -9,7 +9,7 @@ Monet is a free, open-source, web-based graphic design editor — an alternative
 
 ## Tech Stack
 - React 18 + TypeScript + Vite (frontend framework + build tool)
-- Fabric.js v6+ (the library that powers the drag-and-drop canvas)
+- Fabric.js v7 (the library that powers the drag-and-drop canvas — v7 defaults originX/Y to 'center', we override to 'left'/'top')
 - Tailwind CSS (utility-based styling — write CSS as class names)
 - Zustand (lightweight state management — think of it as shared memory between components)
 - pnpm workspaces (monorepo tool — one repo, multiple packages)
@@ -531,19 +531,43 @@ pnpm test         # Run tests
 - **5 comprehensive QA passes** (10 parallel agents total): canvas engine, properties panel, save/load+export, templates+navigation, AI+plugins+edge cases. 17 additional bugs found and fixed.
 - `pnpm build` succeeds, JS ~1,913KB gzipped ~542KB
 
-**Drawing Tools QA + Eraser Fix + Cursor Indicators (Sessions 92-93, complete):**
-- **Real eraser via @erase2d/fabric:** Replaced background-color hack with `EraserBrush` from `@erase2d/fabric` (MIT, by ShaMan123). True compositing eraser that clips erasable objects — shows background through (solid, gradient, image). Uses Fabric.js `isDrawingMode=true` (separate from perfect-freehand's custom pointer events).
-- **ClippingGroup serialization:** `@erase2d/fabric` self-registers `ClippingGroup` (type: `'clipping'`) with Fabric's classRegistry on import. Erased designs serialize/deserialize automatically.
-- **Selective erasing:** All infrastructure objects (artboard, grid, guides, bg image, pen preview, crop overlay) marked `erasable: false`. User objects default to `erasable: true`.
-- **Eraser undo:** `eraser.on('start')` → checkpoint, `eraser.on('end')` → commit via `queueMicrotask()` (waits for erase2d tree commit).
-- **Eraser toggle UI:** Button toggles between eraser and freehand. Separate `eraserWidth` state. Color picker hidden when erasing. Width slider relabels to "Eraser Size".
-- **Custom cursor indicators:** `cursors.ts` generates SVG data-URL cursors. Drawing: dashed circle matching brush size. Eraser: circle-with-X. Pen tool: crosshair (pointer near close threshold). All update in real-time.
-- **Infrastructure tag fix:** `disableDrawing()` uses centralized `isInfrastructure()` instead of incomplete inline checks.
-- **BrushPanel race condition fixed:** Split useEffects; guard with `if (!isEraser)` to prevent freehand setters from running during eraser mode.
-- **Full QA pass:** 24 drawing tool tests traced through code — all PASS.
+**Sessions 92-102 (2026-04-12, all committed and pushed):**
 
-**Known Issues:** All P0 and P1 bugs fixed. P2/P3 issues from QA audit remain (cosmetic/edge-case only, not launch-blocking). API server routes still have no auth middleware (optional backend, not needed for client-only deployment).
-**What's Next:** Fix the runtime crash (blank/black screen at runtime, build passes). Debug in browser console to find the crashing module. Most likely colorthief or drawing.ts. Fix the crash, then commit all pending work. See SESSION_LOG.md session 90 for full debugging notes.
+**Drawing System (Sessions 92, 96):**
+- **perfect-freehand** pressure-sensitive strokes: 4 brush types (pen, marker, highlighter, glow)
+- **Live stroke preview** on Fabric.js upper canvas via native Path2D — real-time feedback during drawing
+- **Custom SVG cursors:** `cursors.ts` generates data-URL cursors. Drawing: dashed circle matching brush size. Eraser: circle-with-X. Pen tool: crosshair (pointer near close threshold). All update in real-time when width slider changes.
+
+**Real Eraser (Sessions 93-95):**
+- **@erase2d/fabric EraserBrush** — true compositing eraser that clips via ClippingGroup. Shows background through on any background type.
+- **Selective erasing:** Only freehand strokes have `erasable: true` + `__isFreehandStroke` tag. All other objects (shapes, text, images, templates) are NOT affected by the eraser. Infrastructure objects have `erasable: false`.
+- **CRITICAL NOTE:** `@erase2d/fabric` does NOT set a default `erasable` property. Its `walk()` checks `!object.erasable` — objects with `undefined` are skipped. Only freehand strokes opt in.
+
+**Accessibility QA (Session 97):**
+- Escape key exits Draw/Pen tool → Select. `useEscapeClose` hook on all 11 modals. Global `:focus-visible` style. `aria-pressed` on tabs. `aria-label="Close"` on close buttons. Delete toast with undo hint. `id="canvas-area"` for SkipLink target. Escape closes FontBrowser dropdown + Toolbar overflow menu.
+
+**Icon Color Control (Session 98):**
+- Icons tagged `__isMonochromeIcon` — fill changes propagate as stroke to Group children. Pre-insert color picker in Icons tab.
+
+**Drawing Controls Restructured (Session 99):**
+- `DrawToolPopout.tsx` + `PenToolPopout.tsx` — toolbar popouts replacing sidebar drawing controls
+- Left sidebar is ALWAYS tool-independent (always shows 5 tabs regardless of active tool)
+
+**Shape Library Expansion (Session 100):**
+- 37 shapes (was 13) across 6 categories: Basic, Stars & Badges, Arrows, Callouts, Banners, Decorative
+- Categorized picker with collapsible `ShapeCategory` sections
+
+**Image Frames (Session 101):**
+- 6 frame shapes: circle, rounded-rect, star, heart, hexagon, arch
+- Gradient placeholder → fill via Photos tab or drag-and-drop → clipPath-based clipping with cover scaling
+- `frames.ts` module in canvas-engine
+
+**UI Refinement (Session 102):**
+- "Design" tab renamed to "Templates" with reorganized layout (Browse Templates CTA at top, Tools section below)
+- Icons on all 5 sidebar tabs (icon + label). Template thumbnails render in TemplateBrowser modal. Toolbar buttons 36x36px. Overflow menu styled consistently.
+
+**Known Issues:** Runtime crash (blank/black screen) from session 90 still unresolved — `pnpm build` passes but the app crashes at runtime. Most likely suspect: `colorthief` module initialization. All P0/P1 bugs fixed. P2/P3 from QA audit remain. API server Hono type errors are pre-existing and unrelated.
+**What's Next:** PRIORITY 1: Fix the runtime crash. `pnpm dev` → browser console → find first error → fix it. PRIORITY 2: Browser test all new features (drawing, eraser, frames, shapes, icons, a11y). DO NOT add more features until the crash is resolved.
 
 **Phase 5 — Backend, Auth, Cloud Sync, Self-Hosting (complete):**
 - **Hono API server** with SQLite, auth (email/password, sessions), designs CRUD, preferences
@@ -605,6 +629,16 @@ pnpm test         # Run tests
 - Brand kit import assigns a new ID to avoid overwriting existing kits
 - Eraser uses `@erase2d/fabric` EraserBrush — true compositing eraser, not a colored overlay. Uses Fabric.js `isDrawingMode=true` with `canvas.freeDrawingBrush = new EraserBrush(canvas)`. Separate from freehand drawing (which uses `isDrawingMode=false` with custom pointer events). `ClippingGroup` (type: `'clipping'`) self-registers with `classRegistry` on import for automatic serialization. All infrastructure objects tagged `erasable: false`.
 - **CRITICAL:** `@erase2d/fabric` does NOT set a default `erasable` property. Its `walk()` function checks `!object.erasable` and skips anything where it's falsy (including `undefined`). Only freehand drawing strokes get `erasable: true` (set in drawing.ts `handlePointerUp()`). All other objects (shapes, text, images, pen tool paths, templates) default to `undefined` and are ignored by the eraser. Infrastructure objects explicitly set `erasable: false` for safety. Freehand strokes are also tagged with `__isFreehandStroke = true`.
+- Freehand drawing uses custom pointer events (`isDrawingMode=false`) while eraser uses Fabric.js `isDrawingMode=true` — these are separate systems that never run simultaneously. `enableDrawing()` calls `disableEraser()` first and vice versa.
+- Live stroke preview renders on `canvas.getTopContext()` (upper canvas) using native `Path2D` — dramatically faster than creating/removing temp Fabric.js objects each frame. Cleared on `handlePointerUp` before creating the final fabric.Path.
+- Drawing controls live in toolbar popouts (`DrawToolPopout.tsx`, `PenToolPopout.tsx`), NOT the left sidebar. Popouts mount/unmount with tool activation and manage engine lifecycle in their own useEffects. Left sidebar is always tool-independent.
+- Image frames use clipPath with `absolutePositioned: false` (same pattern as crop). Frame placeholder is a Group (gradient shape + text label) tagged `__isFrame = true`. Fill replaces placeholder with clipped image. Cover scaling via `Math.max(frameW/imgW, frameH/imgH)`.
+- `addImageAtPosition()` checks `getFrameAtPoint()` before adding standalone image — if drop lands on a frame, fills it instead.
+- Shape library uses `createPathShape()` for SVG path-based shapes and `createStarN()` for N-pointed star polygons. All path data normalized to ~150x150 viewBox.
+- Icon Groups tagged `__isMonochromeIcon` — `updateSelectedObject()` propagates fill→stroke to children. `getSelectedObjectProps()` reads first child's stroke for icon Groups.
+- `useEscapeClose(isOpen, onClose)` hook in `apps/web/src/hooks/use-escape-close.ts` — reusable Escape handler for all modals. Must be called before any conditional returns (React hooks rule).
+- Global `:focus-visible` style in index.css overrides Tailwind's `focus:outline-none` — one rule covers all interactive elements.
+- Template thumbnails in TemplateBrowser use `renderTemplateThumbnail()` with per-card caching in a module-level Map. Same approach as WelcomeScreen.
 - Magic Resize uses `Math.min(scaleX, scaleY)` for uniform scaling — objects stay proportional, centered via offset
 - Batch export temporarily loads each resized doc via `fromJSON`, renders via `getArtboardDataURL`, then restores original
 - JSZip generates the zip client-side — no server needed
