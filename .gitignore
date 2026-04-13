@@ -27,9 +27,13 @@ Thumbs.db
 # pnpm
 .pnpm-store/
 
-# Claude / AI development artifacts
+# Claude / AI development artifacts — NEVER commit these
+# These are local operational files, not part of the shipped product.
+# They were previously tracked by mistake and removed in commit [this one].
 CLAUDE.md
 docs/SESSION_LOG.md
+template-audit.md
+*.audit.md
 .claude/
 .cursor/
 .cursorrules
