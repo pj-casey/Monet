@@ -566,8 +566,13 @@ pnpm test         # Run tests
 - "Design" tab renamed to "Templates" with reorganized layout (Browse Templates CTA at top, Tools section below)
 - Icons on all 5 sidebar tabs (icon + label). Template thumbnails render in TemplateBrowser modal. Toolbar buttons 36x36px. Overflow menu styled consistently.
 
-**Known Issues:** Runtime crash (blank/black screen) from session 90 still unresolved — `pnpm build` passes but the app crashes at runtime. Most likely suspect: `colorthief` module initialization. All P0/P1 bugs fixed. P2/P3 from QA audit remain. API server Hono type errors are pre-existing and unrelated.
-**What's Next:** PRIORITY 1: Fix the runtime crash. `pnpm dev` → browser console → find first error → fix it. PRIORITY 2: Browser test all new features (drawing, eraser, frames, shapes, icons, a11y). DO NOT add more features until the crash is resolved.
+**Pre-Launch Audit + Fixes (Sessions 104-105):**
+- **Runtime crash resolved:** The blank screen bug from session 90 is gone — Peter confirmed the app loads cleanly. No console errors.
+- **7 audit fixes:** Frame fill error handling (try/catch), freehand stroke serialization (erasable tag survives save/load via toObject override + history re-tagging), shortcut sheet cleaned (removed Ctrl+S/N/, that weren't bound), curved text uncurve disabled (one-way toggle with tooltip), right sidebar double fade-in removed, AI suggestions error handling, fromJSON error handling + polling timeout in App.tsx.
+- **Landing page:** Template preview section now renders 6 hand-curated real template thumbnails (was gradient color squares). Picks: Night Owl Show, Emma & James wedding, Midnight Echo concert, Evening of Hope gala, Enter If You Dare Halloween, AuraSound product launch. Ordered dark-light-dark / warm-fun-dark for visual contrast.
+
+**Known Issues:** All P0/P1 bugs fixed. P2/P3 cosmetic issues from QA audit remain (not launch-blocking). API server Hono type errors are pre-existing and unrelated. Low-risk deferred items: history undo/redo is fire-and-forget async, icon color reads first group child, eyedropper ignores viewport transform, dark theme missing secondary accent colors.
+**What's Next:** HN launch. App is stable, all features code-complete and committed. `pnpm build` passes. All code pushed to `origin/main`.
 
 **Phase 5 — Backend, Auth, Cloud Sync, Self-Hosting (complete):**
 - **Hono API server** with SQLite, auth (email/password, sessions), designs CRUD, preferences

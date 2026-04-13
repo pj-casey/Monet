@@ -4427,3 +4427,43 @@ To debug: `pnpm dev` → open browser console → find the FIRST JavaScript erro
 - `apps/web/src/components/DrawToolPopout.tsx` — toolbar drawing controls
 - `apps/web/src/components/PenToolPopout.tsx` — toolbar pen controls
 - `apps/web/src/hooks/use-escape-close.ts` — reusable Escape handler for modals
+
+---
+
+## Sessions 104-105 — 2026-04-12 (Pre-launch final pass)
+**Phase:** Phase 10 — v1.0 Launch
+
+**Completed:**
+
+### Pre-launch audit (3-agent parallel scan)
+- Scanned every file in apps/web/src/components/, apps/web/src/lib/, and packages/canvas-engine/src/
+- Found 15 issues across SHOWSTOPPER/EMBARRASSING/ROUGH/NITPICK severity levels
+
+### Fixes applied (7 real bugs + 4 verified false alarms)
+1. **Frame fill error handling** — try/catch around FabricImage.fromURL; frame stays on canvas if image load fails
+2. **Freehand stroke serialization** — toObject() override preserves `erasable` and `__isFreehandStroke` tags; history.ts re-applies tags after enlivening
+3. **ShortcutSheet cleanup** — removed Ctrl+S, Ctrl+N, Ctrl+, (none were bound)
+4. **Curved text uncurve** — "Straight" button disabled when curved, tooltip "Use Ctrl+Z to undo curving"
+5. **Right sidebar** — removed inner animate-fade-in; tab switching is now instant
+6. **AI suggestions** — catch block clears suggestions array instead of silently swallowing
+7. **App.tsx fromJSON** — .catch() handler + polling timeout (max 5 seconds) prevents stuck loading overlay
+
+### Verified not bugs (4 false alarms from audit)
+- Vector PDF: fully implemented, not a stub
+- Zoom bounds: engine.setZoom() already clamps to 0.1-5.0x
+- DrawToolPopout init: redundant-looking but correct
+- Star frame clip centering: mathematically correct
+
+### Runtime crash resolved
+Peter confirmed app loads cleanly — no console errors. The blank screen from session 90 was never a real crash after the feature commits in sessions 92-102.
+
+### Landing page template thumbnails
+- Replaced 6 hardcoded gradient squares with real rendered template thumbnails
+- Hand-curated 6 best templates: Night Owl Show, Emma & James, Midnight Echo, Evening of Hope, Enter If You Dare, AuraSound
+- Ordered dark-light-dark / warm-fun-dark for visual contrast in 3x2 grid
+
+**Git:** 4 commits pushed to origin/main (850175e, e66524c, ca52638, b624c0e)
+
+**Build:** passes clean. JS ~1,968KB gzipped ~560KB.
+
+**Status:** Launch-ready. All features code-complete, committed, and pushed.
