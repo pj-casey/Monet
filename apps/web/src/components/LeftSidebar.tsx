@@ -342,8 +342,17 @@ function ShapesSection(_props: { collapsed?: boolean }) {
         <DrawToolBtn tool="draw" label="Freehand Draw" />
         <DrawToolBtn tool="pen" label="Pen Tool" />
       </div>
+
+      {/* Brush type selector — shown when freehand draw is active */}
+      <BrushPanelWrapper />
     </div>
   );
+}
+
+function BrushPanelWrapper() {
+  const activeTool = useEditorStore((s) => s.activeTool);
+  if (activeTool !== 'draw') return null;
+  return <BrushPanel />;
 }
 
 function ShapeBtn({ label, onClick, children }: {
@@ -362,6 +371,178 @@ function ShapeBtn({ label, onClick, children }: {
   );
 }
 
+/* ─── Brush Panel — shown when freehand draw is active ──────────── */
+
+type BrushTypeOption = 'pen' | 'marker' | 'highlighter' | 'glow';
+
+const BRUSH_TYPES: { type: BrushTypeOption; label: string; preview: string }[] = [
+  { type: 'pen', label: 'Pen', preview: 'M2 14 Q6 6 10 8 Q14 10 18 4 Q22 1 26 6' },
+  { type: 'marker', label: 'Marker', preview: 'M2 10 Q8 6 14 8 Q20 10 26 7' },
+  { type: 'highlighter', label: 'Highlight', preview: 'M2 8 L26 8' },
+  { type: 'glow', label: 'Glow', preview: 'M2 14 Q6 6 10 8 Q14 10 18 4 Q22 1 26 6' },
+];
+
+const BRUSH_COLORS = ['#2d2a26', '#C4704A', '#e53935', '#1e88e5', '#43a047', '#8e24aa', '#ff6d00', '#ffffff'];
+
+function BrushPanel() {
+  const [brushType, setBrushType] = useState<BrushTypeOption>('pen');
+  const [color, setColor] = useState('#2d2a26');
+  const [width, setWidth] = useState(4);
+  const [eraserWidth, setEraserWidth] = useState(20);
+  const [isEraser, setIsEraser] = useState(false);
+
+  // Sync freehand brush settings — only when NOT in eraser mode
+  useEffect(() => { if (!isEraser) engine.setDrawingBrushType(brushType); }, [brushType, isEraser]);
+  useEffect(() => { if (!isEraser) engine.setDrawingColor(color); }, [color, isEraser]);
+  useEffect(() => { if (!isEraser) engine.setDrawingWidth(width); }, [width, isEraser]);
+
+  // Sync eraser width when in eraser mode
+  useEffect(() => { if (isEraser) engine.setEraserWidth(eraserWidth); }, [eraserWidth, isEraser]);
+
+  const handleBrushTypeClick = (type: BrushTypeOption) => {
+    setBrushType(type);
+    if (isEraser) {
+      setIsEraser(false);
+      // Switch from eraser back to freehand drawing
+      engine.disableEraser();
+      engine.enableDrawing(color, width, type);
+    }
+  };
+
+  const handleColorClick = (c: string) => {
+    setColor(c);
+    if (isEraser) {
+      setIsEraser(false);
+      engine.disableEraser();
+      engine.enableDrawing(c, width, brushType);
+    }
+  };
+
+  const handleEraserClick = () => {
+    if (isEraser) {
+      // Toggle off — switch back to freehand
+      setIsEraser(false);
+      engine.disableEraser();
+      engine.enableDrawing(color, width, brushType);
+    } else {
+      setIsEraser(true);
+      engine.enableEraser(eraserWidth);
+    }
+  };
+
+  return (
+    <div className="mt-3 space-y-3 border-t border-border pt-3">
+      {/* Brush type buttons */}
+      <div>
+        <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">Brush</p>
+        <div className="grid grid-cols-4 gap-1">
+          {BRUSH_TYPES.map((b) => (
+            <button
+              key={b.type}
+              type="button"
+              onClick={() => handleBrushTypeClick(b.type)}
+              className={`flex flex-col items-center gap-1 rounded-md px-1 py-1.5 text-[9px] font-medium ${
+                !isEraser && brushType === b.type
+                  ? 'bg-accent-subtle text-accent'
+                  : 'text-text-secondary hover:bg-wash'
+              }`}
+              title={b.label}
+            >
+              <svg viewBox="0 0 28 16" className="h-3 w-7">
+                <path
+                  d={b.preview}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={b.type === 'marker' ? 4 : b.type === 'highlighter' ? 6 : 2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity={b.type === 'highlighter' ? 0.4 : 1}
+                  filter={b.type === 'glow' ? 'url(#glow-filter)' : undefined}
+                />
+              </svg>
+              {b.label}
+            </button>
+          ))}
+        </div>
+        {/* SVG filter for glow preview */}
+        <svg className="absolute h-0 w-0">
+          <defs>
+            <filter id="glow-filter">
+              <feGaussianBlur stdDeviation="1.5" result="blur" />
+              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+          </defs>
+        </svg>
+      </div>
+
+      {/* Color picker — hidden when eraser active */}
+      {!isEraser && (
+        <div>
+          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">Color</p>
+          <div className="flex flex-wrap gap-1">
+            {BRUSH_COLORS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => handleColorClick(c)}
+                className={`h-6 w-6 rounded-full border-2 ${
+                  color === c ? 'border-accent' : 'border-border'
+                }`}
+                style={{ backgroundColor: c }}
+                title={c}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Width slider — controls brush size or eraser size */}
+      <div>
+        <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+          {isEraser ? 'Eraser' : 'Brush'} Size: {isEraser ? eraserWidth : width}px
+        </p>
+        <input
+          type="range"
+          min={1}
+          max={100}
+          value={isEraser ? eraserWidth : width}
+          onChange={(e) => {
+            const v = Number(e.target.value);
+            if (isEraser) setEraserWidth(v);
+            else setWidth(v);
+          }}
+          className="w-full accent-accent"
+        />
+      </div>
+
+      {/* Eraser button */}
+      <button
+        type="button"
+        onClick={handleEraserClick}
+        className={`flex w-full items-center justify-center gap-1.5 rounded-md py-1.5 text-[10px] font-medium ${
+          isEraser
+            ? 'bg-accent-subtle text-accent'
+            : 'bg-wash text-text-secondary hover:bg-border'
+        }`}
+        title="Eraser — truly erases content, showing the background through"
+        aria-pressed={isEraser}
+      >
+        <EraserIcon />
+        Eraser{isEraser ? ' (active)' : ''}
+      </button>
+    </div>
+  );
+}
+
+function EraserIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 2l3 3-7 7H4l-1-1 .5-.5L11 2z" />
+      <path d="M3.5 11.5L7 15" />
+    </svg>
+  );
+}
+
 function DrawToolBtn({ tool, label }: { tool: EditorTool; label: string }) {
   const activeTool = useEditorStore((s) => s.activeTool);
   const setActiveTool = useEditorStore((s) => s.setActiveTool);
@@ -371,7 +552,7 @@ function DrawToolBtn({ tool, label }: { tool: EditorTool; label: string }) {
   useEffect(() => {
     if (tool === 'draw') {
       if (activeTool === 'draw') {
-        engine.enableDrawing('#2d2a26', 4);
+        engine.enableDrawing('#2d2a26', 4, 'pen');
       } else {
         engine.disableDrawing();
       }
@@ -386,7 +567,7 @@ function DrawToolBtn({ tool, label }: { tool: EditorTool; label: string }) {
         }
       }
     }
-    // Cleanup on unmount — disable tool if component is removed while active
+    // Cleanup on unmount
     return () => {
       if (tool === 'draw') engine.disableDrawing();
       if (tool === 'pen') { engine.disablePenTool(); if (engine.isEditPointsActive()) engine.exitEditPoints(); }

@@ -10,9 +10,16 @@
  * The exported file is downloaded via a temporary <a> link — no server needed.
  */
 
-import { type Canvas as FabricCanvas } from 'fabric';
+import { type Canvas as FabricCanvas, Textbox, Rect, Circle, Ellipse, FabricImage, Path, Polygon, Triangle, Gradient } from 'fabric';
 import { jsPDF } from 'jspdf';
+// pdf-lib is lazy-loaded — only downloaded when vector PDF export is first used
+let _pdfLib: typeof import('pdf-lib') | null = null;
+async function getPdfLib() {
+  if (!_pdfLib) _pdfLib = await import('pdf-lib');
+  return _pdfLib;
+}
 import type { TaggedObject } from './tagged-object';
+import { isInfrastructure } from './tagged-object';
 
 export type ExportFormat = 'png' | 'jpg' | 'svg' | 'pdf';
 
@@ -231,6 +238,294 @@ function exportMultiPagePDF(
   }
 
   pdf.save(`${filename}.pdf`);
+}
+
+// ─── Vector PDF Export ────────────────────────────────────────────
+
+/**
+ * Font cache for PDF embedding — avoids re-fetching the same font.
+ */
+const pdfFontCache = new Map<string, Uint8Array>();
+
+/**
+ * Fetch a Google Font's .ttf bytes for PDF embedding.
+ */
+async function fetchFontBytes(family: string, weight: string): Promise<Uint8Array | null> {
+  const cacheKey = `${family}:${weight}`;
+  const cached = pdfFontCache.get(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const wght = weight === 'bold' || weight === '700' ? '700' : '400';
+    const encoded = encodeURIComponent(family);
+    const cssUrl = `https://fonts.googleapis.com/css2?family=${encoded}:wght@${wght}&display=swap`;
+    const cssResp = await fetch(cssUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+    });
+    if (!cssResp.ok) return null;
+    const css = await cssResp.text();
+    const urlMatch = css.match(/url\(([^)]+\.(?:woff2?|ttf|otf))\)/);
+    if (!urlMatch) return null;
+    const fontUrl = urlMatch[1].replace(/['"]/g, '');
+    const fontResp = await fetch(fontUrl);
+    if (!fontResp.ok) return null;
+    const bytes = new Uint8Array(await fontResp.arrayBuffer());
+    pdfFontCache.set(cacheKey, bytes);
+    return bytes;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Parse a CSS color string to pdf-lib rgb() values (0-1 range).
+ */
+function parseColor(color: string): { r: number; g: number; b: number } {
+  if (!color || color === 'transparent') return { r: 0, g: 0, b: 0 };
+
+  // Handle rgba()
+  const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  if (rgbaMatch) {
+    return { r: parseInt(rgbaMatch[1]) / 255, g: parseInt(rgbaMatch[2]) / 255, b: parseInt(rgbaMatch[3]) / 255 };
+  }
+
+  // Handle hex
+  let hex = color.replace('#', '');
+  if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+  if (hex.length >= 6) {
+    return {
+      r: parseInt(hex.substring(0, 2), 16) / 255,
+      g: parseInt(hex.substring(2, 4), 16) / 255,
+      b: parseInt(hex.substring(4, 6), 16) / 255,
+    };
+  }
+
+  return { r: 0, g: 0, b: 0 };
+}
+
+/**
+ * Check if a Fabric.js fill is a gradient (not a simple color string).
+ */
+function isGradientFill(fill: unknown): boolean {
+  return fill !== null && typeof fill === 'object' && fill instanceof Gradient;
+}
+
+/**
+ * Export the canvas as a vector PDF using pdf-lib.
+ * Text remains selectable, shapes are sharp at any zoom.
+ * Gradients and shadows fall back to rasterized images.
+ */
+export async function exportVectorPDF(
+  canvas: FabricCanvas,
+  artboardWidth: number,
+  artboardHeight: number,
+  filename: string = 'design',
+): Promise<void> {
+  const { PDFDocument, rgb, StandardFonts } = await getPdfLib();
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([artboardWidth, artboardHeight]);
+  const pageH = artboardHeight;
+
+  // Embed fallback font
+  const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+  // Font embed cache (per PDF document)
+  const embeddedFonts = new Map<string, Awaited<ReturnType<typeof pdfDoc.embedFont>>>();
+
+  async function getEmbeddedFont(family: string, weight: string) {
+    const key = `${family}:${weight}`;
+    const cached = embeddedFonts.get(key);
+    if (cached) return cached;
+
+    const bytes = await fetchFontBytes(family, weight);
+    if (bytes) {
+      try {
+        const font = await pdfDoc.embedFont(bytes);
+        embeddedFonts.set(key, font);
+        return font;
+      } catch {
+        // Font embedding failed — fall back
+      }
+    }
+    return weight === 'bold' || weight === '700' ? helveticaBold : helvetica;
+  }
+
+  // Draw artboard background
+  const artboard = canvas.getObjects().find((o) => (o as TaggedObject).__isArtboard);
+  if (artboard) {
+    const fillColor = typeof artboard.fill === 'string' ? artboard.fill : '#ffffff';
+    const c = parseColor(fillColor);
+    page.drawRectangle({
+      x: 0, y: 0, width: artboardWidth, height: artboardHeight,
+      color: rgb(c.r, c.g, c.b),
+    });
+  }
+
+  // Iterate user objects (skip infrastructure)
+  for (const obj of canvas.getObjects()) {
+    if (isInfrastructure(obj as TaggedObject)) continue;
+    if ((obj as TaggedObject).__isArtboard) continue;
+
+    const left = obj.left ?? 0;
+    const top = obj.top ?? 0;
+    const scaleX = obj.scaleX ?? 1;
+    const scaleY = obj.scaleY ?? 1;
+    const angle = obj.angle ?? 0;
+    const opacity = obj.opacity ?? 1;
+
+    // If object has gradient fill or shadow, rasterize it as fallback
+    if (isGradientFill(obj.fill) || obj.shadow) {
+      try {
+        const dataUrl = obj.toDataURL({ format: 'png', multiplier: 2 });
+        const pngBytes = Uint8Array.from(atob(dataUrl.split(',')[1]), (c) => c.charCodeAt(0));
+        const pngImage = await pdfDoc.embedPng(pngBytes);
+        const w = (obj.width ?? 0) * scaleX;
+        const h = (obj.height ?? 0) * scaleY;
+        page.drawImage(pngImage, {
+          x: left, y: pageH - top - h, width: w, height: h, opacity,
+          rotate: angle ? { type: 0 /* Degrees */, angle: -angle } as any : undefined,
+        });
+      } catch {
+        // Skip objects that can't be rasterized
+      }
+      continue;
+    }
+
+    const fillStr = typeof obj.fill === 'string' ? obj.fill : '#000000';
+    const fc = parseColor(fillStr);
+    const fillColor = rgb(fc.r, fc.g, fc.b);
+
+    const strokeStr = typeof obj.stroke === 'string' ? obj.stroke : '';
+    const sc = parseColor(strokeStr);
+    const borderColor = strokeStr && strokeStr !== 'transparent' ? rgb(sc.r, sc.g, sc.b) : undefined;
+    const borderWidth = (obj.strokeWidth ?? 0) > 0 ? obj.strokeWidth : undefined;
+
+    // Textbox → drawText
+    if (obj instanceof Textbox) {
+      const text = obj.text ?? '';
+      const fontSize = (obj.fontSize ?? 16) * scaleY;
+      const family = obj.fontFamily ?? 'Helvetica';
+      const weight = obj.fontWeight === 'bold' ? 'bold' : 'normal';
+      const font = await getEmbeddedFont(family, weight);
+
+      // Split text into lines and draw each
+      const lines = text.split('\n');
+      const lineH = fontSize * (obj.lineHeight ?? 1.2);
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line.trim()) continue;
+        const y = pageH - top * scaleY - (i + 1) * lineH;
+        try {
+          page.drawText(line, {
+            x: left, y, size: fontSize, font,
+            color: fillColor, opacity,
+          });
+        } catch {
+          // Some characters may not be supported by the font
+        }
+      }
+      continue;
+    }
+
+    // Rect → drawRectangle
+    if (obj instanceof Rect) {
+      const w = (obj.width ?? 0) * scaleX;
+      const h = (obj.height ?? 0) * scaleY;
+      page.drawRectangle({
+        x: left, y: pageH - top - h, width: w, height: h,
+        color: fillStr !== 'transparent' && fillStr !== 'rgba(0,0,0,0)' ? fillColor : undefined,
+        borderColor, borderWidth, opacity,
+      });
+      continue;
+    }
+
+    // Circle → drawCircle
+    if (obj instanceof Circle) {
+      const r = (obj.radius ?? 0) * Math.max(scaleX, scaleY);
+      page.drawCircle({
+        x: left + r, y: pageH - top - r, size: r,
+        color: fillColor, borderColor, borderWidth, opacity,
+      });
+      continue;
+    }
+
+    // Ellipse → drawEllipse
+    if (obj instanceof Ellipse) {
+      const rx = (obj.rx ?? 0) * scaleX;
+      const ry = (obj.ry ?? 0) * scaleY;
+      page.drawEllipse({
+        x: left + rx, y: pageH - top - ry, xScale: rx, yScale: ry,
+        color: fillColor, borderColor, borderWidth, opacity,
+      });
+      continue;
+    }
+
+    // Image → embed as raster
+    if (obj instanceof FabricImage) {
+      try {
+        const dataUrl = obj.toDataURL({ format: 'png', multiplier: 1 });
+        const pngBytes = Uint8Array.from(atob(dataUrl.split(',')[1]), (c) => c.charCodeAt(0));
+        const pngImage = await pdfDoc.embedPng(pngBytes);
+        const w = (obj.width ?? 0) * scaleX;
+        const h = (obj.height ?? 0) * scaleY;
+        page.drawImage(pngImage, {
+          x: left, y: pageH - top - h, width: w, height: h, opacity,
+        });
+      } catch {
+        // Skip images that fail to embed
+      }
+      continue;
+    }
+
+    // Path / Polygon / Triangle → drawSvgPath
+    if (obj instanceof Path || obj instanceof Polygon || obj instanceof Triangle) {
+      try {
+        const svgStr = obj.toSVG();
+        // Extract path data from the SVG string
+        const pathMatch = svgStr.match(/\bd="([^"]+)"/);
+        if (pathMatch) {
+          page.drawSvgPath(pathMatch[1], {
+            x: left, y: pageH - top,
+            color: fillColor, borderColor, borderWidth, opacity,
+            scale: scaleX,
+          });
+        }
+      } catch {
+        // Fall back to raster if SVG path fails
+        try {
+          const dataUrl = obj.toDataURL({ format: 'png', multiplier: 2 });
+          const pngBytes = Uint8Array.from(atob(dataUrl.split(',')[1]), (c) => c.charCodeAt(0));
+          const pngImage = await pdfDoc.embedPng(pngBytes);
+          const w = (obj.width ?? 0) * scaleX;
+          const h = (obj.height ?? 0) * scaleY;
+          page.drawImage(pngImage, { x: left, y: pageH - top - h, width: w, height: h, opacity });
+        } catch {
+          // Skip entirely
+        }
+      }
+      continue;
+    }
+
+    // Fallback for any unknown object type — rasterize
+    try {
+      const dataUrl = obj.toDataURL({ format: 'png', multiplier: 2 });
+      const pngBytes = Uint8Array.from(atob(dataUrl.split(',')[1]), (c) => c.charCodeAt(0));
+      const pngImage = await pdfDoc.embedPng(pngBytes);
+      const w = (obj.width ?? 0) * scaleX;
+      const h = (obj.height ?? 0) * scaleY;
+      page.drawImage(pngImage, { x: left, y: pageH - top - h, width: w, height: h, opacity });
+    } catch {
+      // Skip
+    }
+  }
+
+  // Save and download
+  const pdfBytes = await pdfDoc.save();
+  const blob = new Blob([pdfBytes as BlobPart], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  downloadURL(url, `${filename}.pdf`);
+  URL.revokeObjectURL(url);
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────

@@ -44,6 +44,7 @@ export function drawGrid(
       excludeFromExport: true,
     });
     (line as GridLine).__isGridLine = true;
+    (line as any).erasable = false;
     lines.push(line);
   }
 
@@ -57,6 +58,7 @@ export function drawGrid(
       excludeFromExport: true,
     });
     (line as GridLine).__isGridLine = true;
+    (line as any).erasable = false;
     lines.push(line);
   }
 

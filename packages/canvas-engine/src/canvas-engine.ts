@@ -39,6 +39,14 @@ FabricObjectClass.ownDefaults.transparentCorners = false;
 FabricObjectClass.ownDefaults.borderScaleFactor = 1;
 FabricObjectClass.ownDefaults.padding = 0;
 
+/**
+ * @erase2d/fabric `erasable` property: NOT set globally.
+ * Only freehand drawing strokes get `erasable: true` (set in drawing.ts).
+ * All other objects (shapes, text, images, pen tool paths, templates)
+ * default to `erasable: undefined` (falsy) and are ignored by the eraser.
+ * Infrastructure objects still explicitly set `erasable: false` for safety.
+ */
+
 import type { BackgroundOptions, ShapeOptions, SelectedObjectProps, TextOptions, ImageFilterValues, LayerInfo, DesignDocument, DesignPage } from '@monet/shared';
 import { setupWheelZoom, setupPanning, fitToScreen, setZoom, disposeViewport } from './viewport';
 import { drawGrid, removeGrid, snapToGrid, DEFAULT_GRID_SIZE } from './grid';
@@ -52,12 +60,29 @@ import {
   enableDrawing,
   disableDrawing,
   enableEraser,
+  disableEraser,
+  isEraserActive,
+  setEraserWidth,
   setDrawingColor as setBrushColor,
   setDrawingWidth as setBrushWidth,
+  setDrawingBrushType,
+  getDrawingBrushType,
 } from './drawing';
+// Import ClippingGroup so it self-registers with Fabric's classRegistry
+// (needed for deserializing erased objects). The import itself is the side effect.
+import '@erase2d/fabric';
+import type { BrushType } from './drawing';
+import {
+  createCurvedText,
+  updateCurvedText,
+  isCurvedText,
+  getCurvedTextMeta,
+} from './curved-text';
+import { extractPaletteFromFabricImage, extractPaletteFromUrl } from './color-extraction';
+import type { CurvedTextOptions } from './curved-text';
 import { getLayerList } from './layers';
 import { serializeCanvas, deserializeCanvas, deserializeObjects, serializeCurrentPageObjects, normalizePagesToArray, generateId } from './serialization';
-import { exportCanvas } from './export';
+import { exportCanvas, exportVectorPDF } from './export';
 import type { ExportOptions } from './export';
 import { isInfrastructure, type TaggedObject } from './tagged-object';
 import { PenTool, EditPointsMode } from './pen-tool';
@@ -193,17 +218,8 @@ export class CanvasEngine {
     // Set up selection change notifications (so the properties panel updates)
     this.setupSelectionTracking();
 
-    // Record freehand strokes for undo/redo:
-    // Save checkpoint before each stroke starts (mouse down while drawing)
-    this.canvas.on('mouse:down:before', () => {
-      if (this.canvas?.isDrawingMode) {
-        this.history.saveCheckpoint();
-      }
-    });
-    // Commit after the stroke finishes and becomes a Path object
-    this.canvas.on('path:created', () => {
-      this.history.commit('Draw stroke');
-    });
+    // Note: freehand stroke undo/redo is handled by the drawing module
+    // via onCheckpoint/onCommit callbacks passed to enableDrawing().
 
     // Alt+drag to duplicate — clone the object in place, let user drag the original
     this.setupAltDragDuplicate();
@@ -279,9 +295,10 @@ export class CanvasEngine {
       }),
     });
 
-
     // Tag it so other modules can identify it
     (this.artboard as TaggedObject).__isArtboard = true;
+    // Prevent eraser from erasing the artboard
+    (this.artboard as any).erasable = false;
 
     this.canvas.add(this.artboard);
     this.canvas.sendObjectToBack(this.artboard);
@@ -764,6 +781,24 @@ export class CanvasEngine {
     return tmpCanvas.toDataURL('image/png');
   }
 
+  /**
+   * Extract a color palette from the currently selected image.
+   * Returns an array of hex color strings, or empty array if no image selected.
+   */
+  async getSelectedImagePalette(colorCount: number = 6): Promise<string[]> {
+    if (!this.canvas) return [];
+    const active = this.canvas.getActiveObject();
+    if (!active || !(active instanceof FabricImage)) return [];
+    return await extractPaletteFromFabricImage(active, colorCount);
+  }
+
+  /**
+   * Extract a color palette from a URL (for brand kit extraction).
+   */
+  async extractPaletteFromUrl(src: string, colorCount: number = 6): Promise<string[]> {
+    return extractPaletteFromUrl(src, colorCount);
+  }
+
   // ─── Crop Mode ─────────────────────────────────────────────────
 
   /** Whether the engine is currently in crop mode */
@@ -855,6 +890,7 @@ export class CanvasEngine {
       borderColor: '#ffffff',
     });
     (this.cropRect as TaggedObject).__isCropOverlay = true;
+    (this.cropRect as any).erasable = false;
 
     // Constrain crop rect to image bounds
     this.cropRect.on('moving', () => this.constrainCropRect());
@@ -1764,6 +1800,7 @@ export class CanvasEngine {
           evented: false,
         });
         (label as TaggedObject).__isPenPreview = true; // tag to exclude from serialization
+        (label as any).erasable = false;
         this.canvas.add(label);
       }
       label.set({
@@ -2262,26 +2299,123 @@ export class CanvasEngine {
    * @param color - Pen color
    * @param width - Pen width in pixels
    */
-  enableDrawing(color?: string, width?: number): void {
+  enableDrawing(color?: string, width?: number, brushType?: BrushType): void {
     if (!this.canvas) return;
-    enableDrawing(this.canvas, color, width);
+    enableDrawing(
+      this.canvas, color, width, brushType,
+      () => this.history.saveCheckpoint(),
+      (label: string) => this.history.commit(label),
+    );
   }
 
   /**
-   * Enable eraser mode — draws white strokes to cover content.
+   * Enable eraser mode using @erase2d/fabric EraserBrush.
+   * This is a real compositing eraser — clips erasable objects so
+   * the background shows through (works on all backgrounds).
    *
    * @param width - Eraser width in pixels (default 20)
    */
   enableEraser(width?: number): void {
     if (!this.canvas) return;
-    enableEraser(this.canvas, width);
+    enableEraser(
+      this.canvas, width,
+      () => this.history.saveCheckpoint(),
+      (label: string) => this.history.commit(label),
+    );
   }
 
   /**
-   * Disable drawing mode, returning to normal selection mode.
+   * Disable eraser mode.
+   */
+  disableEraser(): void {
+    if (!this.canvas) return;
+    disableEraser(this.canvas);
+  }
+
+  /**
+   * Check whether eraser mode is currently active.
+   */
+  isEraserActive(): boolean {
+    if (!this.canvas) return false;
+    return isEraserActive(this.canvas);
+  }
+
+  /**
+   * Update eraser width while in eraser mode.
+   */
+  setEraserWidth(width: number): void {
+    if (!this.canvas) return;
+    setEraserWidth(this.canvas, width);
+  }
+
+  /**
+   * Set the drawing brush type (pen, marker, highlighter, glow).
+   */
+  setDrawingBrushType(type: BrushType): void {
+    if (!this.canvas) return;
+    setDrawingBrushType(this.canvas, type);
+  }
+
+  /**
+   * Get the current drawing brush type.
+   */
+  getDrawingBrushType(): BrushType {
+    if (!this.canvas) return 'pen';
+    return getDrawingBrushType(this.canvas);
+  }
+
+  // ─── Curved Text ─────────────────────────────────────────────────
+
+  /**
+   * Create curved text from a textbox or from scratch.
+   * If a textbox is selected, replaces it with a curved path.
+   */
+  async createCurvedText(options: CurvedTextOptions): Promise<void> {
+    if (!this.canvas) return;
+    this.history.saveCheckpoint();
+    const active = this.canvas.getActiveObject();
+    await createCurvedText(this.canvas, options, active ?? undefined);
+    this.history.commit('Create curved text');
+    this.emitSelectionChange();
+  }
+
+  /**
+   * Update an existing curved text path with new parameters.
+   */
+  async updateCurvedText(updates: Partial<CurvedTextOptions>): Promise<void> {
+    if (!this.canvas) return;
+    const active = this.canvas.getActiveObject();
+    if (!active || !isCurvedText(active)) return;
+    this.history.saveCheckpoint();
+    await updateCurvedText(this.canvas, active, updates);
+    this.history.commit('Update curved text');
+    this.emitSelectionChange();
+  }
+
+  /**
+   * Check if the selected object is a curved text path.
+   */
+  isCurvedText(): boolean {
+    if (!this.canvas) return false;
+    const active = this.canvas.getActiveObject();
+    return active ? isCurvedText(active) : false;
+  }
+
+  /**
+   * Get curved text metadata from the selected object.
+   */
+  getCurvedTextMeta() {
+    if (!this.canvas) return null;
+    const active = this.canvas.getActiveObject();
+    return active ? getCurvedTextMeta(active) : null;
+  }
+
+  /**
+   * Disable drawing mode (and eraser if active), returning to normal selection mode.
    */
   disableDrawing(): void {
     if (!this.canvas) return;
+    disableEraser(this.canvas);
     disableDrawing(this.canvas);
   }
 
@@ -2707,6 +2841,16 @@ export class CanvasEngine {
       format: 'pdf',
       pageDataUrls,
     });
+  }
+
+  /**
+   * Export the canvas as a vector PDF using pdf-lib.
+   * Text remains selectable, shapes stay sharp at any zoom.
+   * Gradients and shadows fall back to rasterized images.
+   */
+  async exportVectorPDF(filename?: string): Promise<void> {
+    if (!this.canvas) return;
+    await exportVectorPDF(this.canvas, this.artboardWidth, this.artboardHeight, filename);
   }
 
   /**

@@ -58,6 +58,7 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
   const [transparent, setTransparent] = useState(false);
   const [allPages, setAllPages] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [vectorPdf, setVectorPdf] = useState(true);
   const artboardWidth = useEditorStore((s) => s.artboardWidth);
   const artboardHeight = useEditorStore((s) => s.artboardHeight);
   const pageCount = useEditorStore((s) => s.pageCount);
@@ -72,7 +73,11 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
   const handleExport = async () => {
     setActivity('processing');
     try {
-    if (format === 'pdf' && allPages && pageCount > 1) {
+    if (format === 'pdf' && vectorPdf) {
+      setExporting(true);
+      await engine.exportVectorPDF(filename);
+      setExporting(false);
+    } else if (format === 'pdf' && allPages && pageCount > 1) {
       setExporting(true);
       await engine.exportAllPagesAsPDF({ quality: quality / 100, multiplier, filename });
       setExporting(false);
@@ -166,6 +171,42 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
             ))}
           </div>
         </div>
+
+        {/* Vector / Raster PDF toggle */}
+        {format === 'pdf' && (
+          <div className="mb-4">
+            <label className="mb-2 block text-xs font-medium text-text-secondary">PDF Mode</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setVectorPdf(true)}
+                className={`flex-1 rounded-lg border px-3 py-2 text-xs font-medium ${
+                  vectorPdf
+                    ? 'border-accent bg-accent-subtle text-accent'
+                    : 'border-border text-text-secondary hover:bg-canvas'
+                }`}
+              >
+                Vector PDF
+              </button>
+              <button
+                type="button"
+                onClick={() => setVectorPdf(false)}
+                className={`flex-1 rounded-lg border px-3 py-2 text-xs font-medium ${
+                  !vectorPdf
+                    ? 'border-accent bg-accent-subtle text-accent'
+                    : 'border-border text-text-secondary hover:bg-canvas'
+                }`}
+              >
+                Raster PDF
+              </button>
+            </div>
+            <p className="mt-1 text-[11px] text-text-tertiary">
+              {vectorPdf
+                ? 'Text stays selectable, shapes stay sharp at any zoom. Gradients render as images.'
+                : 'Exact canvas appearance as a high-res image embedded in PDF.'}
+            </p>
+          </div>
+        )}
 
         {/* Quality slider */}
         {showQuality && (

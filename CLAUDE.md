@@ -531,8 +531,19 @@ pnpm test         # Run tests
 - **5 comprehensive QA passes** (10 parallel agents total): canvas engine, properties panel, save/load+export, templates+navigation, AI+plugins+edge cases. 17 additional bugs found and fixed.
 - `pnpm build` succeeds, JS ~1,913KB gzipped ~542KB
 
+**Drawing Tools QA + Eraser Fix + Cursor Indicators (Sessions 92-93, complete):**
+- **Real eraser via @erase2d/fabric:** Replaced background-color hack with `EraserBrush` from `@erase2d/fabric` (MIT, by ShaMan123). True compositing eraser that clips erasable objects — shows background through (solid, gradient, image). Uses Fabric.js `isDrawingMode=true` (separate from perfect-freehand's custom pointer events).
+- **ClippingGroup serialization:** `@erase2d/fabric` self-registers `ClippingGroup` (type: `'clipping'`) with Fabric's classRegistry on import. Erased designs serialize/deserialize automatically.
+- **Selective erasing:** All infrastructure objects (artboard, grid, guides, bg image, pen preview, crop overlay) marked `erasable: false`. User objects default to `erasable: true`.
+- **Eraser undo:** `eraser.on('start')` → checkpoint, `eraser.on('end')` → commit via `queueMicrotask()` (waits for erase2d tree commit).
+- **Eraser toggle UI:** Button toggles between eraser and freehand. Separate `eraserWidth` state. Color picker hidden when erasing. Width slider relabels to "Eraser Size".
+- **Custom cursor indicators:** `cursors.ts` generates SVG data-URL cursors. Drawing: dashed circle matching brush size. Eraser: circle-with-X. Pen tool: crosshair (pointer near close threshold). All update in real-time.
+- **Infrastructure tag fix:** `disableDrawing()` uses centralized `isInfrastructure()` instead of incomplete inline checks.
+- **BrushPanel race condition fixed:** Split useEffects; guard with `if (!isEraser)` to prevent freehand setters from running during eraser mode.
+- **Full QA pass:** 24 drawing tool tests traced through code — all PASS.
+
 **Known Issues:** All P0 and P1 bugs fixed. P2/P3 issues from QA audit remain (cosmetic/edge-case only, not launch-blocking). API server routes still have no auth middleware (optional backend, not needed for client-only deployment).
-**What's Next:** Visual QA of all 51 templates (open in editor, verify rendering). Verify template-loader compatibility with new shape types (heart, star, diamond, hexagon, pentagon, arrow-right). Then final launch checklist.
+**What's Next:** Fix the runtime crash (blank/black screen at runtime, build passes). Debug in browser console to find the crashing module. Most likely colorthief or drawing.ts. Fix the crash, then commit all pending work. See SESSION_LOG.md session 90 for full debugging notes.
 
 **Phase 5 — Backend, Auth, Cloud Sync, Self-Hosting (complete):**
 - **Hono API server** with SQLite, auth (email/password, sessions), designs CRUD, preferences
@@ -592,6 +603,8 @@ pnpm test         # Run tests
 - Brand colors injected into PropertiesPanel's `ColorInput` via `brandColors` prop — shown as small swatches before the native picker
 - Logos stored as base64 data URLs in the kit object (not in a separate blob store) for simplicity
 - Brand kit import assigns a new ID to avoid overwriting existing kits
+- Eraser uses `@erase2d/fabric` EraserBrush — true compositing eraser, not a colored overlay. Uses Fabric.js `isDrawingMode=true` with `canvas.freeDrawingBrush = new EraserBrush(canvas)`. Separate from freehand drawing (which uses `isDrawingMode=false` with custom pointer events). `ClippingGroup` (type: `'clipping'`) self-registers with `classRegistry` on import for automatic serialization. All infrastructure objects tagged `erasable: false`.
+- **CRITICAL:** `@erase2d/fabric` does NOT set a default `erasable` property. Its `walk()` function checks `!object.erasable` and skips anything where it's falsy (including `undefined`). Only freehand drawing strokes get `erasable: true` (set in drawing.ts `handlePointerUp()`). All other objects (shapes, text, images, pen tool paths, templates) default to `undefined` and are ignored by the eraser. Infrastructure objects explicitly set `erasable: false` for safety. Freehand strokes are also tagged with `__isFreehandStroke = true`.
 - Magic Resize uses `Math.min(scaleX, scaleY)` for uniform scaling — objects stay proportional, centered via offset
 - Batch export temporarily loads each resized doc via `fromJSON`, renders via `getArtboardDataURL`, then restores original
 - JSZip generates the zip client-side — no server needed

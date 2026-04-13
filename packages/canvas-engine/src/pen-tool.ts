@@ -219,6 +219,13 @@ export class PenTool {
     } else if (this.points.length > 0) {
       // Not dragging — update the "cursor line" preview from last point to mouse
       this.updatePreview(pt);
+
+      // Change cursor to 'pointer' when near the start point (close threshold)
+      if (this.points.length >= 3) {
+        const start = this.points[0];
+        const dist = Math.sqrt((pt.x - start.x) ** 2 + (pt.y - start.y) ** 2);
+        this.canvas.defaultCursor = dist < CLOSE_THRESHOLD ? 'pointer' : 'crosshair';
+      }
     }
   }
 
@@ -455,6 +462,7 @@ export class PenTool {
   private addPreviewObject(obj: FabricObject): void {
     if (!this.canvas) return;
     (obj as PenPreviewObject).__isPenPreview = true;
+    (obj as any).erasable = false;
     this.previewObjects.push(obj);
     this.canvas.add(obj);
   }
@@ -613,6 +621,7 @@ export class EditPointsMode {
       });
 
       (handle as PenPreviewObject).__isPenPreview = true;
+      (handle as any).erasable = false;
       this.handles.push(handle);
       this.canvas.add(handle);
     }

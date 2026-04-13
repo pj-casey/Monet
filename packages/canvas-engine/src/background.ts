@@ -173,6 +173,7 @@ async function createBackgroundImage(
     });
 
     (img as TaggedObject).__isBgImage = true;
+    (img as any).erasable = false;
     return img;
   } catch {
     console.warn('Failed to load background image:', url);

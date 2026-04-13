@@ -15,6 +15,7 @@ import { removeBackground, type BgRemovalStatus } from '../lib/remove-bg';
 import { isAIConfigured, chatWithClaude } from '../lib/ai-assistant';
 import { FontBrowser } from './FontBrowser';
 import { ColorPicker } from './ColorPicker';
+import { showToast } from './Toast';
 import { engine } from './Canvas';
 
 interface PropertiesPanelProps {
@@ -52,6 +53,7 @@ export function PropertiesPanel({ selection }: PropertiesPanelProps) {
           <CropToolSection isCropping={selection.isCropping ?? false} />
           <ImageReplaceButton />
           <RemoveBackgroundCard />
+          <ImageColorsSection />
           <ImageFiltersSection
             brightness={selection.filterBrightness ?? 0}
             contrast={selection.filterContrast ?? 0}
@@ -97,6 +99,13 @@ export function PropertiesPanel({ selection }: PropertiesPanelProps) {
           <TextOutlineSection
             stroke={selection.textStroke ?? ''}
             strokeWidth={selection.textStrokeWidth ?? 0}
+          />
+          <TextPathSection
+            text={selection.text ?? ''}
+            fontFamily={selection.fontFamily ?? 'DM Sans'}
+            fontSize={selection.fontSize ?? 32}
+            fontWeight={(selection.fontWeight ?? 'normal') as 'normal' | 'bold'}
+            fill={selection.fill ?? '#2d2a26'}
           />
         </>
       )}
@@ -439,6 +448,41 @@ function Spinner() {
       <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="2" opacity="0.3" />
       <path d="M14 8a6 6 0 00-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
     </svg>
+  );
+}
+
+function ImageColorsSection() {
+  const [colors, setColors] = useState<string[]>([]);
+
+  useEffect(() => {
+    engine.getSelectedImagePalette(6).then(setColors).catch(() => setColors([]));
+  }, []);
+
+  if (colors.length === 0) return null;
+
+  const handleCopy = (hex: string) => {
+    navigator.clipboard.writeText(hex).then(() => {
+      showToast(`Copied ${hex}`);
+    });
+  };
+
+  return (
+    <div>
+      <label className="mb-1.5 block text-xs font-medium text-text-secondary">Image Colors</label>
+      <div className="flex flex-wrap gap-1.5">
+        {colors.map((c, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => handleCopy(c)}
+            title={`${c} — click to copy`}
+            className="h-7 w-7 rounded-md border border-border shadow-sm hover:scale-110 transition-transform"
+            style={{ backgroundColor: c }}
+          />
+        ))}
+      </div>
+      <p className="mt-1 text-[9px] text-text-tertiary">Click a swatch to copy its hex value</p>
+    </div>
   );
 }
 
@@ -868,6 +912,150 @@ function TextOutlineSection({ stroke, strokeWidth }: {
           onChange={(e) => engine.updateSelectedObject({ textStrokeWidth: Number(e.target.value) })}
           className="flex-1" aria-label="Text outline width" />
         <span className="w-7 text-right text-[10px] text-text-tertiary">{strokeWidth}px</span>
+      </div>
+    </div>
+  );
+}
+
+function TextPathSection({ text, fontFamily, fontSize, fontWeight, fill }: {
+  text: string; fontFamily: string; fontSize: number; fontWeight: 'normal' | 'bold'; fill: string;
+}) {
+  const [curved, setCurved] = useState(false);
+  const [arc, setArc] = useState(180);
+  const [radius, setRadius] = useState(200);
+  const [loading, setLoading] = useState(false);
+
+  // Check if the selected object is already curved text
+  useEffect(() => {
+    const meta = engine.getCurvedTextMeta();
+    if (meta) {
+      setCurved(true);
+      setArc(meta.__ctArc);
+      setRadius(meta.__ctRadius);
+    } else {
+      setCurved(false);
+    }
+  }, [text]);
+
+  const applyCurve = useCallback(async (newArc?: number, newRadius?: number) => {
+    setLoading(true);
+    try {
+      if (engine.isCurvedText()) {
+        await engine.updateCurvedText({
+          text,
+          arc: newArc ?? arc,
+          radius: newRadius ?? radius,
+        });
+      } else {
+        await engine.createCurvedText({
+          text,
+          fontFamily,
+          fontSize,
+          fontWeight,
+          arc: newArc ?? arc,
+          radius: newRadius ?? radius,
+          fill,
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [text, fontFamily, fontSize, fontWeight, fill, arc, radius]);
+
+  const handleToggle = useCallback(async () => {
+    if (curved) {
+      // TODO: convert back to textbox (complex — skip for now)
+      setCurved(false);
+      return;
+    }
+    setCurved(true);
+    await applyCurve();
+  }, [curved, applyCurve]);
+
+  const handleArcChange = useCallback((val: number) => {
+    setArc(val);
+    applyCurve(val, undefined);
+  }, [applyCurve]);
+
+  const handleRadiusChange = useCallback((val: number) => {
+    setRadius(val);
+    applyCurve(undefined, val);
+  }, [applyCurve]);
+
+  return (
+    <div>
+      <label className="mb-1 block text-xs font-medium text-text-secondary">Text Path</label>
+      <div className="space-y-2">
+        {/* Straight / Curved toggle */}
+        <div className="flex gap-1">
+          <button
+            type="button"
+            onClick={() => { if (curved) handleToggle(); }}
+            className={`flex-1 rounded-md px-2 py-1 text-[10px] font-medium ${
+              !curved ? 'bg-accent-subtle text-accent' : 'bg-wash text-text-secondary'
+            }`}
+          >
+            Straight
+          </button>
+          <button
+            type="button"
+            onClick={() => { if (!curved) handleToggle(); }}
+            className={`flex-1 rounded-md px-2 py-1 text-[10px] font-medium ${
+              curved ? 'bg-accent-subtle text-accent' : 'bg-wash text-text-secondary'
+            }`}
+            disabled={loading}
+          >
+            {loading ? 'Loading...' : 'Curved'}
+          </button>
+        </div>
+
+        {curved && (
+          <>
+            {/* Arc slider */}
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-text-tertiary">Arc</span>
+                <span className="text-[10px] text-text-tertiary">{arc}°</span>
+              </div>
+              <input
+                type="range"
+                min={-360}
+                max={360}
+                value={arc}
+                onChange={(e) => handleArcChange(Number(e.target.value))}
+                className="w-full accent-accent"
+              />
+            </div>
+
+            {/* Radius slider */}
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-text-tertiary">Radius</span>
+                <span className="text-[10px] text-text-tertiary">{radius}px</span>
+              </div>
+              <input
+                type="range"
+                min={50}
+                max={500}
+                value={radius}
+                onChange={(e) => handleRadiusChange(Number(e.target.value))}
+                className="w-full accent-accent"
+              />
+            </div>
+
+            {/* Full circle preset */}
+            <button
+              type="button"
+              onClick={() => {
+                setArc(360);
+                applyCurve(360, undefined);
+              }}
+              className="w-full rounded-md bg-wash py-1 text-[10px] font-medium text-text-secondary hover:bg-border"
+            >
+              Text on Circle (360°)
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

@@ -161,6 +161,7 @@ export function setupSmartGuides(
         excludeFromExport: true,
       });
       (line as TaggedObject).__isGuide = true;
+      (line as any).erasable = false;
       canvas.add(line);
       activeGuides.push(line);
     }
@@ -174,6 +175,7 @@ export function setupSmartGuides(
         excludeFromExport: true,
       });
       (line as TaggedObject).__isGuide = true;
+      (line as any).erasable = false;
       canvas.add(line);
       activeGuides.push(line);
     }
