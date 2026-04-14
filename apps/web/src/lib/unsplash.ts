@@ -72,7 +72,9 @@ export async function searchPhotos(
   });
 
   if (!res.ok) {
-    throw new Error(`Unsplash API error: ${res.status}`);
+    const body = await res.text().catch(() => '');
+    const detail = res.status === 401 ? 'Invalid API key' : body.slice(0, 200);
+    throw new Error(`Unsplash API error (${res.status}): ${detail}`);
   }
 
   const data: UnsplashSearchResult = await res.json();

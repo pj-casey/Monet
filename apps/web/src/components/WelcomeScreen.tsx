@@ -90,12 +90,14 @@ export function WelcomeScreen({
     if (toRender.length === 0) return;
 
     renderingRef.current = true;
+    let cancelled = false;
     const BATCH_SIZE = 6;
 
     (async () => {
       // Dynamic import — Fabric.js only loads when we start rendering thumbnails
       const renderTemplateThumbnail = await lazyThumbnail();
       for (let i = 0; i < toRender.length; i += BATCH_SIZE) {
+        if (cancelled) break;
         const batch = toRender.slice(i, i + BATCH_SIZE);
         const results = await Promise.all(
           batch.map(async (t) => {
@@ -107,7 +109,8 @@ export function WelcomeScreen({
             }
           }),
         );
-        // Update cache and state
+        // Update cache and state — skip if component unmounted
+        if (cancelled) break;
         for (const r of results) {
           if (r.dataUrl) thumbnailCache.set(r.id, r.dataUrl);
         }
@@ -115,6 +118,8 @@ export function WelcomeScreen({
       }
       renderingRef.current = false;
     })();
+
+    return () => { cancelled = true; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Filter templates by category + search

@@ -43,9 +43,14 @@ export function importDesignFile(): Promise<DesignDocument | null> {
       try {
         const text = await file.text();
         const doc = JSON.parse(text) as DesignDocument;
-        // Basic validation
+        // Validate required fields exist and the design has content
         if (!doc.version || !doc.dimensions) {
-          throw new Error('Invalid file format');
+          throw new Error('Invalid file format: missing version or dimensions');
+        }
+        const hasObjects = Array.isArray(doc.objects) && doc.objects.length > 0;
+        const hasPages = Array.isArray(doc.pages) && doc.pages.length > 0;
+        if (!hasObjects && !hasPages) {
+          throw new Error('Invalid file format: no design content found');
         }
         resolve(doc);
       } catch {

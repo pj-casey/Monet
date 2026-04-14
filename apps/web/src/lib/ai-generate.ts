@@ -225,6 +225,9 @@ function validateDesignDocument(doc: unknown): DesignDocument {
   if (typeof dims.width !== 'number' || typeof dims.height !== 'number') {
     throw new Error('Invalid dimensions in AI response');
   }
+  // Clamp to sane bounds — prevent zero-size or absurdly large artboards
+  dims.width = Math.max(50, Math.min(dims.width as number, 10000));
+  dims.height = Math.max(50, Math.min(dims.height as number, 10000));
 
   if (!Array.isArray(d.objects)) {
     throw new Error('Missing objects array in AI response');

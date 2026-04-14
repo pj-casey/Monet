@@ -1578,6 +1578,8 @@ export class CanvasEngine {
     // Clone the mask shape to use as clipPath.
     // absolutePositioned = true keeps it aligned with the canvas, not the target
     const cloned = await maskShape.clone() as FabricObject;
+    // Canvas may have been disposed while awaiting the clone
+    if (!this.canvas) return;
     cloned.set('absolutePositioned', true);
     target.set('clipPath', cloned);
 
@@ -1820,18 +1822,25 @@ export class CanvasEngine {
       if (isInfrastructure(opt.target)) return;
 
       const original = opt.target;
+      const canvas = this.canvas;
 
       // Clone the original and place it at the same position (this becomes the "original stays behind")
-      original.clone().then((cloned: FabricObject) => {
-        if (!this.canvas) return;
-        cloned.set({ left: original.left, top: original.top });
-        cloned.setCoords();
-        this.canvas.add(cloned);
-        this.canvas.sendObjectBackwards(cloned);
-        // The user is now dragging `original` — the clone sits behind as the "copy left behind"
-        // History: before:transform already saved a checkpoint, commit will fire on object:modified
-        this.emitLayersChange();
-      });
+      (async () => {
+        try {
+          const cloned = await original.clone() as FabricObject;
+          // Canvas may have been disposed while awaiting the clone
+          if (!this.canvas) return;
+          cloned.set({ left: original.left, top: original.top });
+          cloned.setCoords();
+          canvas.add(cloned);
+          canvas.sendObjectBackwards(cloned);
+          // The user is now dragging `original` — the clone sits behind as the "copy left behind"
+          // History: before:transform already saved a checkpoint, commit will fire on object:modified
+          this.emitLayersChange();
+        } catch (err) {
+          console.warn('[canvas-engine] Alt-drag clone failed:', err);
+        }
+      })();
     });
   }
 

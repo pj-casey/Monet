@@ -82,7 +82,9 @@ export async function searchPexelsPhotos(
   });
 
   if (!res.ok) {
-    throw new Error(`Pexels API error: ${res.status}`);
+    const body = await res.text().catch(() => '');
+    const detail = res.status === 401 ? 'Invalid API key' : body.slice(0, 200);
+    throw new Error(`Pexels API error (${res.status}): ${detail}`);
   }
 
   const data: PexelsSearchResult = await res.json();

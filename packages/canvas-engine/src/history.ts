@@ -114,14 +114,16 @@ export class HistoryManager {
 
   /**
    * Undo the last action — restores the canvas to its previous state.
+   * Async because restoreState() must finish before we update pendingState,
+   * otherwise a concurrent commit() could capture stale canvas data.
    */
-  undo(): void {
+  async undo(): Promise<void> {
     if (!this.canvas || this.undoStack.length === 0 || this.isRestoring) return;
 
     const command = this.undoStack.pop()!;
     this.redoStack.push(command);
 
-    this.restoreState(command.beforeState);
+    await this.restoreState(command.beforeState);
     this.pendingState = command.beforeState;
 
     this.notifyChange();
@@ -129,14 +131,15 @@ export class HistoryManager {
 
   /**
    * Redo a previously undone action — restores the canvas to its "after" state.
+   * Async because restoreState() must finish before we update pendingState.
    */
-  redo(): void {
+  async redo(): Promise<void> {
     if (!this.canvas || this.redoStack.length === 0 || this.isRestoring) return;
 
     const command = this.redoStack.pop()!;
     this.undoStack.push(command);
 
-    this.restoreState(command.afterState);
+    await this.restoreState(command.afterState);
     this.pendingState = command.afterState;
 
     this.notifyChange();

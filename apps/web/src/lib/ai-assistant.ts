@@ -384,9 +384,17 @@ export async function translateTexts(
     cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
   }
 
-  const arr = JSON.parse(cleaned);
+  let arr: unknown[];
+  try {
+    arr = JSON.parse(cleaned);
+  } catch {
+    // Claude may return text instead of JSON — fall back to original texts
+    console.warn('[ai-assistant] Failed to parse translation response:', cleaned.slice(0, 100));
+    return texts;
+  }
   if (!Array.isArray(arr) || arr.length !== texts.length) {
-    throw new Error(`Expected ${texts.length} translations, got ${Array.isArray(arr) ? arr.length : 0}.`);
+    console.warn(`[ai-assistant] Expected ${texts.length} translations, got ${Array.isArray(arr) ? arr.length : 0}`);
+    return texts;
   }
 
   return arr.map(String);

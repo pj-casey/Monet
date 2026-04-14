@@ -10,7 +10,7 @@
 
 import { getAllDesigns, saveDesign, type SavedDesign } from './db';
 
-const API_BASE = 'http://localhost:3001';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
 
 /** Conflict that needs user resolution */
 export interface SyncConflict {

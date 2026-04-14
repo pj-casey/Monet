@@ -135,13 +135,11 @@ export function resizeDesign(
     createdAt: now,
     updatedAt: now,
     dimensions: { width: newWidth, height: newHeight },
-    objects: resizedObjects,
+    // When pages exist, objects live inside pages — top-level objects stays empty
+    // to avoid the hybrid state where fromJSON sees both objects and pages
+    objects: resizedPages ? [] : resizedObjects,
+    pages: resizedPages || [{ id: '', name: 'Page 1', objects: resizedObjects }],
   };
-
-  // Preserve pages array if the source document had one
-  if (resizedPages) {
-    result.pages = resizedPages;
-  }
 
   return result;
 }
