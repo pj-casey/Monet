@@ -10,6 +10,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { escapeHtml } from '@monet/canvas-engine';
 import type { MonetPlugin, PluginAPI } from '../lib/plugin-api';
 
 let pluginAPI: PluginAPI | null = null;
@@ -30,7 +31,7 @@ function buildBarChart(values: number[], labels: string[]): string {
     const x = pad + i * (barW + 4) + 2;
     const y = pad + chartH - barH;
     const color = COLORS[i % COLORS.length];
-    const label = labels[i] || '';
+    const label = escapeHtml(labels[i] || '');
     return `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="${color}" rx="3"/>` +
       `<text x="${x + barW / 2}" y="${h - 8}" text-anchor="middle" font-size="10" fill="#64748b" font-family="sans-serif">${label}</text>` +
       `<text x="${x + barW / 2}" y="${y - 5}" text-anchor="middle" font-size="11" fill="#374151" font-family="sans-serif">${v}</text>`;
@@ -61,7 +62,7 @@ function buildLineChart(values: number[], labels: string[]): string {
   const dots = values.map((v, i) => {
     const x = pad + i * step;
     const y = pad + chartH - (v / max) * chartH;
-    const label = labels[i] || '';
+    const label = escapeHtml(labels[i] || '');
     return `<circle cx="${x}" cy="${y}" r="4" fill="#3b82f6"/>` +
       `<text x="${x}" y="${h - 8}" text-anchor="middle" font-size="10" fill="#64748b" font-family="sans-serif">${label}</text>`;
   }).join('');
@@ -99,7 +100,7 @@ function buildPieChart(values: number[], labels: string[]): string {
   }).join('');
 
   const legend = values.map((v, i) => {
-    const label = labels[i] || `${Math.round(v / total * 100)}%`;
+    const label = escapeHtml(labels[i] || `${Math.round(v / total * 100)}%`);
     const color = COLORS[i % COLORS.length];
     return `<rect x="${20 + i * 80}" y="${h - 25}" width="10" height="10" rx="2" fill="${color}"/>` +
       `<text x="${34 + i * 80}" y="${h - 16}" font-size="10" fill="#374151" font-family="sans-serif">${label}</text>`;

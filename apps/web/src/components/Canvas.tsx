@@ -94,42 +94,47 @@ export function Canvas() {
     const container = containerRef.current;
     if (!el || !container) return;
 
-    const rect = container.getBoundingClientRect();
+    let observer: ResizeObserver | null = null;
 
-    engine.init(el, rect.width, rect.height, {
-      width: artboardWidth,
-      height: artboardHeight,
-      background,
-      onZoomChange: (zoom) => setZoom(zoom),
-      onHistoryChange: (canUndo, canRedo) => {
-        setCanUndo(canUndo);
-        setCanRedo(canRedo);
-      },
-      onSelectionChange: (props) => {
-        selectionListeners.forEach(fn => fn(props));
-      },
-      getActiveTool: () => useEditorStore.getState().activeTool,
-      onLayersChange: (newLayers) => {
-        layersListeners.forEach(fn => fn(newLayers));
-      },
-      onPagesChange: (pages, currentIndex) => {
-        useEditorStore.getState().setPagesState(pages, currentIndex);
-      },
-    });
+    // Defer layout read to a rAF callback to avoid forced reflow during mount.
+    const rafId = requestAnimationFrame(() => {
+      const rect = container.getBoundingClientRect();
 
-    // ResizeObserver watches the container and resizes the canvas when it changes.
-    // After resizing the canvas element, re-center the artboard so it stays visible.
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        engine.resize(width, height);
-        engine.fitToScreen();
-      }
+      engine.init(el, rect.width, rect.height, {
+        width: artboardWidth,
+        height: artboardHeight,
+        background,
+        onZoomChange: (zoom) => setZoom(zoom),
+        onHistoryChange: (canUndo, canRedo) => {
+          setCanUndo(canUndo);
+          setCanRedo(canRedo);
+        },
+        onSelectionChange: (props) => {
+          selectionListeners.forEach(fn => fn(props));
+        },
+        getActiveTool: () => useEditorStore.getState().activeTool,
+        onLayersChange: (newLayers) => {
+          layersListeners.forEach(fn => fn(newLayers));
+        },
+        onPagesChange: (pages, currentIndex) => {
+          useEditorStore.getState().setPagesState(pages, currentIndex);
+        },
+      });
+
+      // ResizeObserver watches the container and resizes the canvas when it changes.
+      observer = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const { width, height } = entry.contentRect;
+          engine.resize(width, height);
+          engine.fitToScreen();
+        }
+      });
+      observer.observe(container);
     });
-    observer.observe(container);
 
     return () => {
-      observer.disconnect();
+      cancelAnimationFrame(rafId);
+      observer?.disconnect();
       engine.dispose();
     };
     // Only run on mount/unmount — artboard size changes are handled separately

@@ -179,7 +179,7 @@ export function isLoaded(): boolean {
 export function buildSvgString(nodes: SvgNode[]): string {
   const elements = nodes.map(([tag, attrs]) => {
     const attrStr = Object.entries(attrs)
-      .map(([k, v]) => `${k}="${v}"`)
+      .map(([k, v]) => `${k}="${String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}"`)
       .join(' ');
     return `<${tag} ${attrStr} />`;
   }).join('');

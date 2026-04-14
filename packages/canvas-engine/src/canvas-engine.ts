@@ -15,6 +15,7 @@
  */
 
 import { Canvas as FabricCanvas, Rect, Textbox, FabricImage, Path, Shadow, Gradient, Point, Group, ActiveSelection, FabricObject as FabricObjectClass, util, loadSVGFromString, type FabricObject } from 'fabric';
+import { sanitizeSvg } from './sanitize-svg.js';
 
 /**
  * Fabric.js v7 defaults originX/originY to 'center', meaning left/top
@@ -1236,7 +1237,7 @@ export class CanvasEngine {
   async addSvgFromString(svgString: string, color: string = '#2d2a26'): Promise<void> {
     if (!this.canvas) return;
 
-    const { objects } = await loadSVGFromString(svgString);
+    const { objects } = await loadSVGFromString(sanitizeSvg(svgString));
     const validObjects = objects.filter((obj): obj is FabricObject => obj !== null);
     if (validObjects.length === 0) return;
 
@@ -1290,7 +1291,7 @@ export class CanvasEngine {
   async addIllustration(svgString: string): Promise<void> {
     if (!this.canvas) return;
 
-    const { objects } = await loadSVGFromString(svgString);
+    const { objects } = await loadSVGFromString(sanitizeSvg(svgString));
     const validObjects = objects.filter((obj): obj is FabricObject => obj !== null);
     if (validObjects.length === 0) return;
 

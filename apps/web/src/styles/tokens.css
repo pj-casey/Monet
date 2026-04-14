@@ -19,7 +19,7 @@
   --accent-hover:       oklch(0.60 0.17 45);
   --accent-active:      oklch(0.55 0.18 45);
   --accent-subtle:      oklch(0.65 0.15 45 / 0.12);
-  --accent-foreground:  oklch(0.99 0.005 70);
+  --accent-foreground:  oklch(0.15 0.01 60);
 
   /* ─── Secondary Accents ─── */
   --accent-blue:        oklch(0.68 0.12 235);
@@ -135,8 +135,8 @@
 
   /* ─── Text ─── */
   --text-primary:       oklch(0.92 0.01 70);
-  --text-secondary:     oklch(0.62 0.01 60);
-  --text-tertiary:      oklch(0.42 0.01 60);
+  --text-secondary:     oklch(0.66 0.01 60);  /* 4.5:1 on bg-wash (0.26) */
+  --text-tertiary:      oklch(0.64 0.01 60);  /* 4.5:1 on bg-overlay (0.25) */
   --text-inverse:       oklch(0.16 0.01 60);
 
   /* ─── Borders ─── */

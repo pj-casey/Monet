@@ -42,7 +42,7 @@ Warm earth tones. Sand, clay, terracotta, parchment. The palette is inspired by 
 --accent-hover:      oklch(0.60 0.17 45);     /* deeper on hover */
 --accent-active:     oklch(0.55 0.18 45);     /* pressed state */
 --accent-subtle:     oklch(0.65 0.15 45 / 0.12);  /* tinted backgrounds */
---accent-foreground: oklch(0.99 0.005 70);    /* cream text on accent */
+--accent-foreground: oklch(0.15 0.01 60);     /* dark text on accent — 7:1 contrast */
 ```
 
 ### Secondary Accents (used sparingly)
@@ -109,8 +109,8 @@ Dark mode should feel like a warm studio at night — lamplight ambiance, not a 
 
   /* Text */
   --text-primary:   oklch(0.92 0.01 70);     /* warm off-white */
-  --text-secondary: oklch(0.62 0.01 60);     /* warm mid-gray */
-  --text-tertiary:  oklch(0.42 0.01 60);     /* very subtle */
+  --text-secondary: oklch(0.66 0.01 60);     /* 4.5:1 on bg-wash */
+  --text-tertiary:  oklch(0.64 0.01 60);     /* 4.5:1 on bg-overlay */
   --text-inverse:   oklch(0.16 0.01 60);     /* dark text on light bg */
 
   /* Borders */

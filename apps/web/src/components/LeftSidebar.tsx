@@ -905,7 +905,7 @@ function PhotosSection({ query, onOpenSettings }: { query: string; onOpenSetting
           <button key={photo.id} type="button" onClick={() => handleInsert(photo)}
             className="group relative overflow-hidden rounded" aria-label={`Insert photo by ${photo.credit}`}>
             <img src={photo.thumb} alt={photo.alt} className="h-16 w-full object-cover" loading="lazy" />
-            <span className="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5 text-[7px] text-accent-fg opacity-0 group-hover:opacity-100">
+            <span className="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5 text-[7px] text-white opacity-0 group-hover:opacity-100">
               {photo.credit}
             </span>
           </button>

@@ -15,7 +15,7 @@
  * - Modals: TemplateBrowser, ExportDialog, ShortcutSheet, ResizeDialog, etc.
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import type { SelectedObjectProps, LayerInfo, ArtboardPreset } from '@monet/shared';
 import { Canvas, onSelectionChange, onLayersChange, engine } from './components/Canvas';
 import { Toolbar } from './components/Toolbar';
@@ -26,28 +26,14 @@ import { RightSidebar } from './components/RightSidebar';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { CanvasHints } from './components/CanvasHints';
 import { ContextMenu } from './components/ContextMenu';
-import { TemplateBrowser } from './components/TemplateBrowser';
-import { ExportDialog } from './components/ExportDialog';
-import { ShortcutSheet } from './components/ShortcutSheet';
-import { MyDesigns } from './components/MyDesigns';
-import { ResizeDialog } from './components/ResizeDialog';
-import { AuthModal, checkAuth, logout as doLogout, type AuthUser } from './components/AuthModal';
+import { checkAuth, logout as doLogout, type AuthUser } from './components/AuthModal';
 import { pullAndMerge, pushAllLocal } from './lib/sync';
 import { useCollaboration } from './hooks/use-collaboration';
 import { CollabToolbar } from './components/CollabToolbar';
 import { CursorOverlay } from './components/CursorOverlay';
-import { PublishTemplate } from './components/PublishTemplate';
-import { MarketplaceBrowser } from './components/MarketplaceBrowser';
-import { SaveTemplateDialog } from './components/SaveTemplateDialog';
 import { registerBuiltinPlugins } from './plugins';
 import { pluginManager } from './lib/plugin-manager';
-import { CommentsPanel } from './components/CommentsPanel';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { Onboarding } from './components/Onboarding';
-import { CommandPalette } from './components/CommandPalette';
-import { ContextualAI } from './components/ContextualAI';
-import { TabSuggest } from './components/TabSuggest';
-import { SettingsModal } from './components/SettingsModal';
 import { SkipLink, LiveRegion } from './components/A11y';
 import { ToastContainer } from './components/Toast';
 import { useActivityStore } from './stores/activity-store';
@@ -58,6 +44,28 @@ import { getCurrentDesignId, getDesign } from './lib/db';
 import { exportDesignFile, importDesignFile } from './lib/file-io';
 import { useEditorStore } from './stores/editor-store';
 import type { Template } from '@monet/templates';
+
+// ─── Lazy-loaded modals and optional features ─────────────────────
+// These only load when the user actually opens them, keeping the
+// initial editor bundle small and reducing Total Blocking Time.
+const TemplateBrowser = lazy(() => import('./components/TemplateBrowser').then((m) => ({ default: m.TemplateBrowser })));
+const ExportDialog = lazy(() => import('./components/ExportDialog').then((m) => ({ default: m.ExportDialog })));
+const ShortcutSheet = lazy(() => import('./components/ShortcutSheet').then((m) => ({ default: m.ShortcutSheet })));
+const MyDesigns = lazy(() => import('./components/MyDesigns').then((m) => ({ default: m.MyDesigns })));
+const ResizeDialog = lazy(() => import('./components/ResizeDialog').then((m) => ({ default: m.ResizeDialog })));
+const AuthModal = lazy(() => import('./components/AuthModal').then((m) => ({ default: m.AuthModal })));
+const MarketplaceBrowser = lazy(() => import('./components/MarketplaceBrowser').then((m) => ({ default: m.MarketplaceBrowser })));
+const SaveTemplateDialog = lazy(() => import('./components/SaveTemplateDialog').then((m) => ({ default: m.SaveTemplateDialog })));
+const PublishTemplate = lazy(() => import('./components/PublishTemplate').then((m) => ({ default: m.PublishTemplate })));
+const CommentsPanel = lazy(() => import('./components/CommentsPanel').then((m) => ({ default: m.CommentsPanel })));
+const Onboarding = lazy(() => import('./components/Onboarding').then((m) => ({ default: m.Onboarding })));
+const CommandPalette = lazy(() => import('./components/CommandPalette').then((m) => ({ default: m.CommandPalette })));
+const ContextualAI = lazy(() => import('./components/ContextualAI').then((m) => ({ default: m.ContextualAI })));
+const TabSuggest = lazy(() => import('./components/TabSuggest').then((m) => ({ default: m.TabSuggest })));
+const SettingsModal = lazy(() => import('./components/SettingsModal').then((m) => ({ default: m.SettingsModal })));
+
+/** Invisible Suspense fallback — modals don't need a loading spinner */
+const NoFallback = null;
 
 /** Tracks whether we're on the welcome screen or in the editor */
 type AppView = 'welcome' | 'editor';
@@ -345,6 +353,7 @@ function App() {
   if (view === 'welcome' && initialized) {
     return (
       <div className="editor-shell">
+        <main>
         <WelcomeScreen
           onOpenDesign={handleOpenDesign}
           onNewDesign={handleNewDesign}
@@ -354,7 +363,10 @@ function App() {
           onToggleTheme={toggleTheme}
           onOpenSettings={() => setSettingsOpen(true)}
         />
-        <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+        </main>
+        <Suspense fallback={NoFallback}>
+          {settingsOpen && <SettingsModal isOpen onClose={() => setSettingsOpen(false)} />}
+        </Suspense>
       </div>
     );
   }
@@ -465,44 +477,47 @@ function App() {
         </ErrorBoundary>
       </main>
 
-      <CommentsPanel comments={collab.comments} isOpen={collab.commentsOpen} onClose={() => collab.setCommentsOpen(false)} />
+      <Suspense fallback={NoFallback}>
+        {collab.commentsOpen && <CommentsPanel comments={collab.comments} isOpen onClose={() => collab.setCommentsOpen(false)} />}
+      </Suspense>
 
       <PageNavigator />
       <BottomBar />
       <ToastContainer />
 
-      {/* Modals */}
-      {templateBrowserOpen && (
-        <ErrorBoundary name="Template Browser">
-          <TemplateBrowser
-            key={`tb-${templateBrowserTab || 'default'}`}
-            isOpen
-            initialTab={templateBrowserTab}
-            onClose={() => { setTemplateBrowserOpen(false); setTemplateBrowserTab(undefined); }}
-            onOpenSettings={() => { setTemplateBrowserOpen(false); setSettingsOpen(true); }}
-          />
-        </ErrorBoundary>
-      )}
-      <ExportDialog isOpen={exportDialogOpen} onClose={() => setExportDialogOpen(false)} />
-      <ShortcutSheet isOpen={shortcutSheetOpen} onClose={() => setShortcutSheetOpen(false)} />
-      <MyDesigns isOpen={myDesignsOpen} onClose={() => setMyDesignsOpen(false)} onOpenDesign={handleOpenDesign} />
-      <ResizeDialog isOpen={resizeDialogOpen} onClose={() => setResizeDialogOpen(false)} onOpenResized={handleOpenResized} />
-      <PublishTemplate isOpen={publishOpen} onClose={() => setPublishOpen(false)} />
-      <MarketplaceBrowser isOpen={marketplaceOpen} onClose={() => setMarketplaceOpen(false)} onUseTemplate={handleUseMarketplaceTemplate} />
-      {saveTemplateOpen && <SaveTemplateDialog onClose={() => setSaveTemplateOpen(false)} />}
-      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)}
-        onLogin={async (user, _token) => {
-          setAuthUser(user);
-          setAuthModalOpen(false);
-          // Sync: push local designs to server, then pull server designs
-          await pushAllLocal();
-          const conflicts = await pullAndMerge();
-          if (conflicts.length > 0) {
-            alert(`${conflicts.length} design(s) have conflicting changes. Local versions kept.`);
-          }
-        }} />
-      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
-      <Onboarding />
+      {/* Modals — all lazy-loaded, only mount when opened */}
+      <Suspense fallback={NoFallback}>
+        {templateBrowserOpen && (
+          <ErrorBoundary name="Template Browser">
+            <TemplateBrowser
+              key={`tb-${templateBrowserTab || 'default'}`}
+              isOpen
+              initialTab={templateBrowserTab}
+              onClose={() => { setTemplateBrowserOpen(false); setTemplateBrowserTab(undefined); }}
+              onOpenSettings={() => { setTemplateBrowserOpen(false); setSettingsOpen(true); }}
+            />
+          </ErrorBoundary>
+        )}
+        {exportDialogOpen && <ExportDialog isOpen onClose={() => setExportDialogOpen(false)} />}
+        {shortcutSheetOpen && <ShortcutSheet isOpen onClose={() => setShortcutSheetOpen(false)} />}
+        {myDesignsOpen && <MyDesigns isOpen onClose={() => setMyDesignsOpen(false)} onOpenDesign={handleOpenDesign} />}
+        {resizeDialogOpen && <ResizeDialog isOpen onClose={() => setResizeDialogOpen(false)} onOpenResized={handleOpenResized} />}
+        {publishOpen && <PublishTemplate isOpen onClose={() => setPublishOpen(false)} />}
+        {marketplaceOpen && <MarketplaceBrowser isOpen onClose={() => setMarketplaceOpen(false)} onUseTemplate={handleUseMarketplaceTemplate} />}
+        {saveTemplateOpen && <SaveTemplateDialog onClose={() => setSaveTemplateOpen(false)} />}
+        {authModalOpen && <AuthModal isOpen onClose={() => setAuthModalOpen(false)}
+          onLogin={async (user, _token) => {
+            setAuthUser(user);
+            setAuthModalOpen(false);
+            await pushAllLocal();
+            const conflicts = await pullAndMerge();
+            if (conflicts.length > 0) {
+              alert(`${conflicts.length} design(s) have conflicting changes. Local versions kept.`);
+            }
+          }} />}
+        {settingsOpen && <SettingsModal isOpen onClose={() => setSettingsOpen(false)} />}
+        <Onboarding />
+      </Suspense>
 
       {/* New Design confirmation dialog */}
       {newDesignConfirmOpen && (
@@ -529,24 +544,26 @@ function App() {
       )}
 
       {/* Command Palette — opens on / or Cmd+K */}
-      <CommandPalette
-        isOpen={commandPaletteOpen}
-        onClose={() => setCommandPaletteOpen(false)}
-        onExport={() => { setCommandPaletteOpen(false); setExportDialogOpen(true); }}
-        onResize={() => { setCommandPaletteOpen(false); setResizeDialogOpen(true); }}
-        onMyDesigns={() => { setCommandPaletteOpen(false); setMyDesignsOpen(true); }}
-        onShortcuts={() => { setCommandPaletteOpen(false); setShortcutSheetOpen(true); }}
-        onTemplates={() => { setCommandPaletteOpen(false); setTemplateBrowserOpen(true); }}
-        onNew={() => { setCommandPaletteOpen(false); autosave.newDesign(); }}
-        isDark={isDark}
-        onToggleTheme={toggleTheme}
-      />
+      <Suspense fallback={NoFallback}>
+        {commandPaletteOpen && <CommandPalette
+          isOpen
+          onClose={() => setCommandPaletteOpen(false)}
+          onExport={() => { setCommandPaletteOpen(false); setExportDialogOpen(true); }}
+          onResize={() => { setCommandPaletteOpen(false); setResizeDialogOpen(true); }}
+          onMyDesigns={() => { setCommandPaletteOpen(false); setMyDesignsOpen(true); }}
+          onShortcuts={() => { setCommandPaletteOpen(false); setShortcutSheetOpen(true); }}
+          onTemplates={() => { setCommandPaletteOpen(false); setTemplateBrowserOpen(true); }}
+          onNew={() => { setCommandPaletteOpen(false); autosave.newDesign(); }}
+          isDark={isDark}
+          onToggleTheme={toggleTheme}
+        />}
 
-      {/* Contextual AI actions — floating buttons near selected objects */}
-      <ContextualAI />
+        {/* Contextual AI actions — floating buttons near selected objects */}
+        <ContextualAI />
 
-      {/* Tab-to-suggest — AI copy suggestions on empty text objects */}
-      <TabSuggest />
+        {/* Tab-to-suggest — AI copy suggestions on empty text objects */}
+        <TabSuggest />
+      </Suspense>
     </div>
   );
 }

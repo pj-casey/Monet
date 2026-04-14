@@ -149,14 +149,18 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
  */
 export async function checkAuth(): Promise<{ user: AuthUser | null; reachable: boolean }> {
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2000);
     const res = await fetch(`${API_BASE}/api/auth/me`, {
       credentials: 'include',
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
     if (!res.ok) return { user: null, reachable: true };
     const data = await res.json();
     return { user: data.user ?? null, reachable: true };
   } catch {
-    return { user: null, reachable: false }; // Server not running — guest mode
+    return { user: null, reachable: false }; // Server not running or timeout — guest mode
   }
 }
 

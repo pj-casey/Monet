@@ -17,10 +17,12 @@
     <meta property="og:image:height" content="1080" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="/og-image.png" />
+    <!-- Preload LCP hero image so the browser discovers it before React hydrates -->
+    <link rel="preload" as="image" type="image/webp" href="/hero-screenshot.webp" />
     <!-- Design system fonts + template fonts preloaded to prevent FOUT -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&family=Fira+Code:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,100..900&family=Lora:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@400;500;600;700&family=Oswald:wght@400;700&family=Pacifico&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&family=Fira+Code:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,100..900&family=Lora:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@400;500;600;700&family=Oswald:wght@400;700&family=Pacifico&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   </head>
   <body>
     <script>

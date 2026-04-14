@@ -7,13 +7,14 @@
  * Intersection Observer drives subtle fade-in on scroll.
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
-import { TEMPLATE_REGISTRY } from '@monet/templates';
-import { renderTemplateThumbnail } from '@monet/canvas-engine';
 import {
   Check, X, Terminal, Heart, ArrowRight, Sun, Moon, Users,
 } from 'lucide-react';
+
+/** Lazy-load template previews — keeps Fabric.js out of the landing page bundle */
+const TemplatePreviews = lazy(() => import('./TemplatePreviews'));
 
 /** Inline GitHub mark SVG — lucide doesn't include brand logos */
 function GithubIcon({ size = 16, className = '' }: { size?: number; className?: string }) {
@@ -218,22 +219,31 @@ export function LandingPage() {
 
         {/* Hero image — editor screenshot with subtle perspective */}
         <div className="mx-auto mt-12 max-w-4xl">
-          <img
-            src={`${import.meta.env.BASE_URL}hero-screenshot.png`}
-            alt="Monet editor showing a design template with gradient fills, text shadows, and the properties panel"
-            className="w-full rounded-lg shadow-xl"
-            style={{
-              transform: 'perspective(2000px) rotateY(-2deg)',
-            }}
-            loading="eager"
-            onError={(e) => {
-              // Fallback to gradient placeholder if screenshot doesn't exist yet
-              const target = e.currentTarget;
-              target.style.display = 'none';
-              const fallback = target.nextElementSibling as HTMLElement;
-              if (fallback) fallback.style.display = 'flex';
-            }}
-          />
+          <picture>
+            <source
+              srcSet={`${import.meta.env.BASE_URL}hero-screenshot.webp`}
+              type="image/webp"
+            />
+            <img
+              src={`${import.meta.env.BASE_URL}hero-screenshot.png`}
+              alt="Monet editor showing a design template with gradient fills, text shadows, and the properties panel"
+              width={1456}
+              height={690}
+              fetchPriority="high"
+              className="w-full rounded-lg shadow-xl"
+              style={{
+                transform: 'perspective(2000px) rotateY(-2deg)',
+              }}
+              loading="eager"
+              onError={(e) => {
+                // Fallback to gradient placeholder if screenshot doesn't exist yet
+                const target = e.currentTarget;
+                target.style.display = 'none';
+                const fallback = target.nextElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = 'flex';
+              }}
+            />
+          </picture>
           {/* Fallback gradient — shown only if screenshot fails to load */}
           <div
             className="hidden aspect-video items-center justify-center rounded-lg shadow-xl"
@@ -341,7 +351,18 @@ export function LandingPage() {
             </p>
           </div>
           <div className="w-full max-w-xs md:w-80">
-            <TemplatePreviews />
+            <Suspense fallback={
+              <div className="rounded-lg border border-border bg-elevated p-3 shadow-sm">
+                <div className="grid grid-cols-3 gap-2">
+                  {Array.from({ length: 6 }, (_, i) => (
+                    <div key={i} className="aspect-square animate-pulse rounded bg-wash" />
+                  ))}
+                </div>
+                <p className="mt-3 text-center text-xs text-text-tertiary">50+ templates across 8 categories</p>
+              </div>
+            }>
+              <TemplatePreviews />
+            </Suspense>
           </div>
         </div>
 
@@ -459,7 +480,7 @@ export function LandingPage() {
                   key={row.label}
                   className={`border-b border-border last:border-b-0 ${i % 2 === 0 ? 'bg-elevated' : 'bg-surface'}`}
                 >
-                  <td className="px-4 py-3 font-medium text-text-primary">{row.label}</td>
+                  <th scope="row" className="px-4 py-3 text-left font-medium text-text-primary">{row.label}</th>
                   <td className="px-4 py-3 text-center"><CellDisplay value={row.monet} label={`Monet ${row.label}`} /></td>
                   <td className="px-4 py-3 text-center text-text-secondary"><CellDisplay value={row.canvaFree} label={`Canva Free ${row.label}`} /></td>
                   <td className="px-4 py-3 text-center text-text-secondary"><CellDisplay value={row.canvaPro} label={`Canva Pro ${row.label}`} /></td>
@@ -664,70 +685,5 @@ function CryptoAddr({ label, address }: { label: string; address: string }) {
   );
 }
 
-// ─── Template previews for the "Start with a template" section ─────────
-
-/**
- * Hand-curated 6 best templates for the landing page preview grid.
- * Chosen for visual variety: dark/light contrast, diverse categories,
- * and distinct aesthetics. Ordered for a pleasing 3x2 grid:
- *   Row 1: dark podcast | light wedding | dark concert
- *   Row 2: warm gala    | fun halloween | dark product
- */
-const SHOWCASE_IDS = [
-  'podcast-cover',       // Dark gradient spotlight with waveform
-  'wedding-emma-james',  // Elegant light floral
-  'concert-midnight',    // Dramatic heavy typography with glow
-  'gala-evening',        // Art deco warm gold
-  'halloween-dare',      // Fun spooky with pumpkin and bats
-  'product-launch',      // Dark tech product announcement
-];
-const _idLookup = new Map(TEMPLATE_REGISTRY.map((t) => [t.templateId, t]));
-const PREVIEW_TEMPLATES = SHOWCASE_IDS.map((id) => _idLookup.get(id)).filter(Boolean) as typeof TEMPLATE_REGISTRY;
-
-const _lpThumbCache = new Map<string, string>();
-
-function TemplatePreviews() {
-  const [thumbs, setThumbs] = useState<Map<string, string>>(_lpThumbCache);
-
-  useEffect(() => {
-    if (_lpThumbCache.size >= PREVIEW_TEMPLATES.length) return;
-    let cancelled = false;
-    (async () => {
-      for (const t of PREVIEW_TEMPLATES) {
-        if (_lpThumbCache.has(t.templateId) || cancelled) continue;
-        try {
-          const url = await renderTemplateThumbnail(t.document, 300);
-          if (url && !cancelled) {
-            _lpThumbCache.set(t.templateId, url);
-            setThumbs(new Map(_lpThumbCache));
-          }
-        } catch { /* skip failed renders */ }
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
-
-  return (
-    <div className="rounded-lg border border-border bg-elevated p-3 shadow-sm">
-      <div className="grid grid-cols-3 gap-2">
-        {PREVIEW_TEMPLATES.map((t) => {
-          const thumb = thumbs.get(t.templateId);
-          const bg = t.document.background;
-          const fallback = bg.type === 'solid' ? bg.value : '#e5ddd5';
-          return (
-            <div key={t.templateId} className="aspect-square overflow-hidden rounded" style={{ backgroundColor: fallback }}>
-              {thumb ? (
-                <img src={thumb} alt={t.name} className="h-full w-full object-cover" loading="lazy" />
-              ) : (
-                <div className="h-full w-full animate-pulse" style={{ backgroundColor: fallback }} />
-              )}
-            </div>
-          );
-        })}
-      </div>
-      <p className="mt-3 text-center text-xs text-text-tertiary">
-        {TEMPLATE_REGISTRY.length}+ templates across 8 categories
-      </p>
-    </div>
-  );
-}
+// TemplatePreviews moved to TemplatePreviews.tsx — lazy-loaded to keep
+// Fabric.js and template data out of the landing page's initial bundle.

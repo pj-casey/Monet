@@ -399,7 +399,7 @@ function ChatView({ onDisconnect }: ChatViewProps) {
         <div className="relative border-t border-border px-3 py-2">
           <img src={pendingImage} alt="Attached" className="h-16 rounded-lg object-cover" />
           <button type="button" onClick={() => setPendingImage(null)}
-            className="absolute right-4 top-3 rounded-full bg-black/50 p-0.5 text-[10px] text-accent-fg hover:bg-black/70">&times;</button>
+            className="absolute right-4 top-3 rounded-full bg-black/50 p-0.5 text-[10px] text-white hover:bg-black/70">&times;</button>
         </div>
       )}
 

@@ -169,6 +169,9 @@ importers:
       colorthief:
         specifier: ^3.3.1
         version: 3.3.1(sharp@0.34.5)
+      dompurify:
+        specifier: ^3.3.3
+        version: 3.3.3
       fabric:
         specifier: ^7.2.0
         version: 7.2.0
@@ -185,6 +188,9 @@ importers:
         specifier: ^1.2.3
         version: 1.2.3
     devDependencies:
+      '@types/dompurify':
+        specifier: ^3.2.0
+        version: 3.2.0
       typescript:
         specifier: ~6.0.2
         version: 6.0.2
@@ -986,6 +992,10 @@ packages:
 
   '@types/cors@2.8.19':
     resolution: {integrity: sha512-mFNylyeyqN93lfe/9CSxOGREz8cpzAhH+E93xJ4xWQf62V8sQ/24reV2nyzUWM6H6Xji+GGHpkbLe7pVoUEskg==}
+
+  '@types/dompurify@3.2.0':
+    resolution: {integrity: sha512-Fgg31wv9QbLDA0SpTOXO3MaxySc4DKGLi8sna4/Utjo4r3ZRPdCt4UQee8BWr+Q5z21yifghREPJGYaEOEIACg==}
+    deprecated: This is a stub types definition. dompurify provides its own type definitions, so you do not need this installed.
 
   '@types/emscripten@1.41.5':
     resolution: {integrity: sha512-cMQm7pxu6BxtHyqJ7mQZ2kXWV5SLmugybFdHCBbJ5eHzOo6VhBckEgAT3//rP5FwPHNPeEiq4SmQ5ucBwsOo4Q==}
@@ -3576,6 +3586,10 @@ snapshots:
     dependencies:
       '@types/node': 24.12.2
 
+  '@types/dompurify@3.2.0':
+    dependencies:
+      dompurify: 3.3.3
+
   '@types/emscripten@1.41.5': {}
 
   '@types/estree@1.0.8': {}
@@ -4052,7 +4066,6 @@ snapshots:
   dompurify@3.3.3:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
-    optional: true
 
   domutils@3.2.2:
     dependencies:

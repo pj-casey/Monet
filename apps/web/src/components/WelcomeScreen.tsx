@@ -16,9 +16,13 @@ import type { ArtboardPreset } from '@monet/shared';
 import { TEMPLATE_REGISTRY } from '@monet/templates';
 import type { Template } from '@monet/templates';
 import { getAllDesigns, deleteDesign, type SavedDesign } from '../lib/db';
-import { isAIConfigured, generateDesign } from '../lib/ai-generate';
-import { renderTemplateThumbnail } from '@monet/canvas-engine';
 import { useEditorStore } from '../stores/editor-store';
+
+// Lazy-load heavy modules — keeps Fabric.js and AI out of the initial bundle.
+// renderTemplateThumbnail pulls in all of @monet/canvas-engine (Fabric.js ~430KB).
+// generateDesign/isAIConfigured pull in the Anthropic API client.
+const lazyThumbnail = () => import('@monet/canvas-engine').then((m) => m.renderTemplateThumbnail);
+const lazyAI = () => import('../lib/ai-generate');
 
 // ─── Thumbnail cache (persists across re-renders, cleared on page reload) ──
 const thumbnailCache = new Map<string, string>();
@@ -89,6 +93,8 @@ export function WelcomeScreen({
     const BATCH_SIZE = 6;
 
     (async () => {
+      // Dynamic import — Fabric.js only loads when we start rendering thumbnails
+      const renderTemplateThumbnail = await lazyThumbnail();
       for (let i = 0; i < toRender.length; i += BATCH_SIZE) {
         const batch = toRender.slice(i, i + BATCH_SIZE);
         const results = await Promise.all(
@@ -138,7 +144,9 @@ export function WelcomeScreen({
 
   // AI generation handler
   const handleAiGenerate = useCallback(async () => {
-    if (!aiPrompt.trim() || !isAIConfigured()) return;
+    if (!aiPrompt.trim()) return;
+    const { isAIConfigured, generateDesign } = await lazyAI();
+    if (!isAIConfigured()) return;
     setAiLoading(true);
     setAiError('');
     try {
@@ -284,7 +292,7 @@ export function WelcomeScreen({
                 <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md bg-accent-subtle">
                   <SparkleIcon className="h-3.5 w-3.5 text-accent" />
                 </span>
-                {isAIConfigured() ? (
+                {localStorage.getItem('monet-anthropic-key') ? (
                   <input
                     type="text"
                     value={aiPrompt}
@@ -350,12 +358,13 @@ export function WelcomeScreen({
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {filteredTemplates.map((template) => (
+                {filteredTemplates.map((template, i) => (
                   <TemplateCard
                     key={template.templateId}
                     template={template}
                     thumbnailUrl={thumbnails.get(template.templateId)}
                     onClick={() => onStartFromTemplate(template)}
+                    isFirst={i === 0}
                   />
                 ))}
               </div>
@@ -393,8 +402,8 @@ export function WelcomeScreen({
 
 // ─── Template Card ────────────────────────────────────────────────
 
-function TemplateCard({ template, thumbnailUrl, onClick }: {
-  template: Template; thumbnailUrl?: string; onClick: () => void;
+function TemplateCard({ template, thumbnailUrl, onClick, isFirst }: {
+  template: Template; thumbnailUrl?: string; onClick: () => void; isFirst?: boolean;
 }) {
   // Fallback background for skeleton loading state
   const bg = template.document.background;
@@ -430,7 +439,7 @@ function TemplateCard({ template, thumbnailUrl, onClick }: {
             src={thumbnailUrl}
             alt={template.name}
             className="h-full w-full object-cover"
-            loading="lazy"
+            loading={isFirst ? 'eager' : 'lazy'}
           />
         ) : (
           /* Skeleton: background color + shimmer animation */
