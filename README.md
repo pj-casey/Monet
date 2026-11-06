@@ -176,14 +176,6 @@ If Monet saves you money, consider supporting development:
 - [GitHub Sponsors](https://github.com/sponsors/pj-casey)
 - [Open Collective](https://opencollective.com/claude-monet)
 
-**Crypto:**
-
-| Currency | Address |
-|----------|---------|
-| BTC | `bc1qws49067r4220vsf60ftg70fmnhmn2s24evnk8d` |
-| ETH/EVM | `0x149F845Cb27b0cFA7AFaFC893e8620228b052731` |
-| SOL | `8gRPQgjESd8cCWGtCnBv48FHeAAYaZVBdzzDqoJfN7Zr` |
-
 ## License
 
 [AGPLv3](LICENSE) — Free to use, modify, and self-host. If you distribute a modified version, you must open-source your changes.
